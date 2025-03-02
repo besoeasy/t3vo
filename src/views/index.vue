@@ -69,7 +69,6 @@
         </div>
       </div>
 
-      <!-- About Section -->
       <div class="mt-12 bg-white rounded-lg shadow-sm p-6">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Open Source for Everyone</h2>
         <p class="text-gray-700 mb-6">
@@ -91,14 +90,6 @@
           >
             <AlertCircleIcon class="h-5 w-5 mr-2" />
             Report an Issue
-          </a>
-          <a
-            href="https://t.me/t3volabs"
-            target="_blank"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <UsersRound class="h-5 w-5 mr-2" />
-            Join Telegram
           </a>
         </div>
       </div>
