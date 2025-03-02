@@ -1,124 +1,164 @@
 <template>
-  <div class="min-h-screen bg-[#f5f5f7] p-4 md:p-6">
-    <div class="space-y-6">
-      <!-- Top Row - Full Width Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Password Generator -->
-        <div class="bg-white rounded-xl shadow-md p-6 border border-[#e6e6e6] hover:shadow-lg transition-shadow">
-          <h2 class="text-xl font-bold text-[#1d1d1f] mb-4 flex items-center">
-            <LockIcon class="w-5 h-5 mr-2 text-[#0066cc]" />
-            Password Generator
-          </h2>
-          <div class="flex items-center justify-between bg-[#f5f5f7] p-4 rounded-xl mb-4 border border-[#e6e6e6]">
-            <p class="text-lg font-mono text-[#1d1d1f] truncate">{{ suggestedPassword }}</p>
-            <button @click="copyToClipboard" class="text-[#0066cc] hover:text-[#004499] focus:outline-none transition-colors ml-2" :class="{ 'text-[#34c759]': passwordCopied }">
-              <component :is="passwordCopied ? CheckIcon : ClipboardCopyIcon" class="w-5 h-5" />
-            </button>
-          </div>
-          <div class="flex items-center justify-between">
-            <button @click="generatePassword" class="bg-[#0066cc] hover:bg-[#004499] text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors">Generate New</button>
-            <div class="flex items-center">
-              <button @click="togglePasswordOptions" class="text-[#0066cc] hover:text-[#004499] text-sm font-medium flex items-center">
-                <SettingsIcon class="w-4 h-4 mr-1.5" />
-                Options
+  <div class="min-h-screen bg-white p-4 md:p-8">
+    <div class="m-auto">
+      <div class="space-y-8">
+        <!-- Top Row - Feature Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Password Generator Card -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mr-3">
+                    <LockIcon class="w-5 h-5 text-blue-600" />
+                  </div>
+                  Password Generator
+                </h2>
+                <button @click="togglePasswordOptions" class="text-gray-400 hover:text-gray-600 transition-colors">
+                  <SettingsIcon class="w-5 h-5" />
+                </button>
+              </div>
+
+              <div class="bg-gray-50 p-4 rounded-xl mb-4 border border-gray-100 group hover:border-blue-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <p class="text-lg font-mono text-gray-800 truncate group-hover:text-blue-700 transition-colors">{{ suggestedPassword }}</p>
+                  <button @click="copyToClipboard" class="text-gray-400 hover:text-blue-600 focus:outline-none transition-colors ml-2" :class="{ 'text-green-500': passwordCopied }">
+                    <component :is="passwordCopied ? CheckIcon : ClipboardCopyIcon" class="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <button @click="generatePassword" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center">
+                <RefreshCwIcon class="w-4 h-4 mr-2" />
+                Generate New Password
               </button>
             </div>
-          </div>
 
-          <!-- Password Options Panel -->
-          <div v-if="showPasswordOptions" class="mt-4 pt-4 border-t border-[#e6e6e6]">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <label class="text-sm text-[#1d1d1f]">Password Length</label>
-                <div class="flex items-center">
-                  <button @click="decreaseLength" class="w-6 h-6 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[#1d1d1f]">-</button>
-                  <span class="mx-2 text-sm">{{ passwordLength }}</span>
-                  <button @click="increaseLength" class="w-6 h-6 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[#1d1d1f]">+</button>
+            <!-- Password Options Panel -->
+            <div v-if="showPasswordOptions" class="px-6 pb-6 pt-2 border-t border-gray-100 bg-gray-50">
+              <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                  <label class="text-sm font-medium text-gray-700">Password Length</label>
+                  <div class="flex items-center">
+                    <button @click="decreaseLength" class="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
+                      <MinusIcon class="w-4 h-4" />
+                    </button>
+                    <span class="mx-3 text-sm font-medium">{{ passwordLength }}</span>
+                    <button @click="increaseLength" class="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
+                      <PlusIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <label class="text-sm font-medium text-gray-700 flex items-center">
+                    <HashIcon class="w-4 h-4 mr-2 text-gray-500" />
+                    Include Symbols
+                  </label>
+                  <div class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-200" :class="includeSymbols ? 'bg-blue-600' : 'bg-gray-300'" @click="includeSymbols = !includeSymbols">
+                    <div class="absolute w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 top-0.5" :class="includeSymbols ? 'translate-x-6' : 'translate-x-0.5'"></div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <label class="text-sm font-medium text-gray-700 flex items-center">
+                    <Hash class="w-4 h-4 mr-2 text-gray-500" />
+                    Include Numbers
+                  </label>
+                  <div class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-200" :class="includeNumbers ? 'bg-blue-600' : 'bg-gray-300'" @click="includeNumbers = !includeNumbers">
+                    <div class="absolute w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 top-0.5" :class="includeNumbers ? 'translate-x-6' : 'translate-x-0.5'"></div>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="flex justify-between items-center">
-                <label class="text-sm text-[#1d1d1f]">Include Symbols</label>
-                <div class="w-10 h-6 rounded-full relative cursor-pointer transition-colors duration-200" :class="includeSymbols ? 'bg-[#34c759]' : 'bg-[#d1d1d6]'" @click="includeSymbols = !includeSymbols">
-                  <div class="absolute w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 top-0.5" :class="includeSymbols ? 'translate-x-4' : 'translate-x-0.5'"></div>
+          <!-- Vault Stats Card -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
+            <div class="flex items-center mb-5">
+              <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mr-3">
+                <ShieldIcon class="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 class="text-xl font-bold text-gray-900">Your Vault</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div v-for="(stat, index) in stats" :key="index" class="flex items-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-gray-200 hover:bg-gray-100 transition-all duration-200">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="getStatBgColor(stat.title)">
+                  <component :is="getStatIcon(stat.title)" class="w-5 h-5 text-white" />
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-gray-500">{{ stat.title }}</p>
+                  <p class="text-lg font-semibold text-gray-900">{{ stat.count }}</p>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="flex justify-between items-center">
-                <label class="text-sm text-[#1d1d1f]">Include Numbers</label>
-                <div class="w-10 h-6 rounded-full relative cursor-pointer transition-colors duration-200" :class="includeNumbers ? 'bg-[#34c759]' : 'bg-[#d1d1d6]'" @click="includeNumbers = !includeNumbers">
-                  <div class="absolute w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 top-0.5" :class="includeNumbers ? 'translate-x-4' : 'translate-x-0.5'"></div>
+          <!-- Open Source Card -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
+            <div class="flex items-center mb-5">
+              <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mr-3">
+                <UsersRound class="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 class="text-xl font-bold text-gray-900">Open Source</h2>
+            </div>
+
+            <div class="flex flex-col">
+              <p class="text-gray-600 mb-4">We believe in the power of community-driven development. That's why T3VO is open source and available for anyone to contribute.</p>
+              <div class="text-sm space-x-6">
+                <a href="https://github.com/t3volabs/t3vo-app" target="_blank" class="inline-flex items-center font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                  <GithubIcon class="h-4 w-4 mr-1.5" />
+                  View on GitHub
+                </a>
+                <a href="https://github.com/t3volabs/t3vo-app/issues" target="_blank" class="inline-flex items-center font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                  <AlertCircleIcon class="h-4 w-4 mr-1.5" />
+                  Report Issue
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Logs Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center mr-3">
+                <ActivityIcon class="w-5 h-5 text-amber-600" />
+              </div>
+              <h2 class="text-xl font-bold text-gray-900">Activity Logs</h2>
+            </div>
+            <div class="text-sm text-gray-500">Showing recent activities</div>
+          </div>
+
+          <div v-if="isLoading" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+          </div>
+
+          <template v-else>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div v-for="activity in recentActivities" :key="activity.id" class="flex items-center p-4 rounded-xl hover:bg-yellow-50 transition-all duration-200">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="getActivityBgColor(activity.type)">
+                  <component :is="getIcon(activity.type)" class="w-5 h-5 text-white" />
+                </div>
+                <div class="ml-3 flex-grow">
+                  <p class="text-gray-800 font-medium truncate">
+                    {{ activity.message.length > 30 ? activity.message.slice(0, 30) + "..." : activity.message }}
+                  </p>
+                  <p class="text-gray-500 text-xs mt-1">Updated : {{ format(activity.updated_at) }}</p>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Stats -->
-        <div class="bg-white rounded-xl shadow-md p-6 border border-[#e6e6e6] hover:shadow-lg transition-shadow">
-          <h2 class="text-xl font-bold text-[#1d1d1f] mb-4 flex items-center">
-            <ShieldIcon class="w-5 h-5 mr-2 text-[#5856d6]" />
-            Your Vault
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div v-for="(stat, index) in stats" :key="index" class="flex items-center p-3 rounded-xl bg-[#f5f5f7] border border-[#e6e6e6] hover:bg-[#f0f0f2] transition-colors">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="getStatBgColor(stat.title)">
-                <component :is="getStatIcon(stat.title)" class="w-5 h-5 text-white" />
-              </div>
-              <div class="ml-3">
-                <p class="text-sm text-[#86868b]">{{ stat.title }}</p>
-                <p class="text-lg font-medium text-[#1d1d1f]">{{ stat.count }}</p>
-              </div>
+            <div v-if="hasMoreActivities" class="mt-8 text-center">
+              <button @click="loadMoreActivities" class="inline-flex items-center px-6 py-3 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-colors" :disabled="isLoading">
+                <DownloadIcon class="w-4 h-4 mr-2" />
+                Load More Activities
+              </button>
             </div>
-          </div>
+          </template>
         </div>
-
-        <div class="bg-white rounded-xl shadow-md p-6 border border-[#e6e6e6] hover:shadow-lg transition-shadow">
-          <h2 class="text-xl font-bold text-[#1d1d1f] mb-4 flex items-center">
-            <UsersRound class="w-5 h-5 mr-2 text-[#0066cc]" />
-            Open Source
-          </h2>
-          <div class="flex flex-col h-full">
-            <p class="text-[#424245] mb-4 flex-grow">We believe in the power of community-driven development. That's why T3VO is open source and available for anyone to contribute.</p>
-            <div class="flex flex-wrap gap-3 mt-auto">
-              <a href="https://github.com/t3volabs/t3vo-app" target="_blank" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-[#1d1d1f] to-[#2d2d2f] hover:from-[#000000] hover:to-[#1d1d1f] transition-colors">
-                <GithubIcon class="h-5 w-5 mr-2" />
-                View on GitHub
-              </a>
-              <a href="https://github.com/t3volabs/t3vo-app/issues" target="_blank" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-medium text-[#1d1d1f] bg-[#f5f5f7] hover:bg-[#e6e6e6] border border-[#e6e6e6] transition-colors">
-                <AlertCircleIcon class="h-5 w-5 mr-2" />
-                Report Issue
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activity (Full Width) -->
-      <div class="bg-white rounded-xl shadow-md p-6 border border-[#e6e6e6] hover:shadow-lg transition-shadow">
-        <h2 class="text-xl font-bold text-[#1d1d1f] mb-4 flex items-center">
-          <FileTextIcon class="w-5 h-5 mr-2 text-[#ff9500]" />
-          Activity Logs
-        </h2>
-        <div v-if="isLoading" class="flex justify-center py-4">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066cc]"></div>
-        </div>
-        <template v-else>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div v-for="activity in recentActivities" :key="activity.id" class="flex items-center text-sm p-3 rounded-xl bg-[#f5f5f7] border border-[#e6e6e6] hover:bg-[#f0f0f2] transition-colors">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="getActivityBgColor(activity.type)">
-                <component :is="getIcon(activity.type)" class="w-4 h-4 text-white" />
-              </div>
-              <div class="ml-3 flex-grow">
-                <p class="text-[#1d1d1f] font-medium truncate">{{ activity.message }}</p>
-                <p class="text-[#86868b] text-xs">{{ format(activity.updated_at) }}</p>
-              </div>
-            </div>
-          </div>
-          <div v-if="hasMoreActivities" class="mt-6 text-center">
-            <button @click="loadMoreActivities" class="bg-[#f5f5f7] hover:bg-[#e6e6e6] text-[#1d1d1f] px-5 py-2.5 rounded-full text-sm font-medium transition-colors border border-[#e6e6e6]" :disabled="isLoading">Load More Activities</button>
-          </div>
-        </template>
       </div>
     </div>
   </div>
@@ -128,7 +168,7 @@
 import { ref, onMounted, computed } from "vue";
 import { version } from "../../package.json";
 import { db, fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
-import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon } from "lucide-vue-next";
+import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon, RefreshCwIcon, MinusIcon, PlusIcon, HashIcon, Hash, ActivityIcon, DownloadIcon } from "lucide-vue-next";
 import { format } from "timeago.js";
 
 // Stats
@@ -156,11 +196,11 @@ const getIcon = (type) => {
 
 const getActivityBgColor = (type) => {
   const colors = {
-    password: "bg-[#0066cc]",
-    bookmark: "bg-[#34c759]",
-    note: "bg-[#ff9500]",
+    password: "bg-blue-600",
+    bookmark: "bg-green-600",
+    note: "bg-amber-600",
   };
-  return colors[type] || "bg-[#8e8e93]";
+  return colors[type] || "bg-gray-600";
 };
 
 const getStatIcon = (title) => {
@@ -175,12 +215,12 @@ const getStatIcon = (title) => {
 
 const getStatBgColor = (title) => {
   const colors = {
-    Passwords: "bg-[#0066cc]",
-    Bookmarks: "bg-[#34c759]",
-    Notes: "bg-[#ff9500]",
-    Version: "bg-[#5856d6]",
+    Passwords: "bg-blue-600",
+    Bookmarks: "bg-green-600",
+    Notes: "bg-amber-600",
+    Version: "bg-purple-600",
   };
-  return colors[title] || "bg-[#8e8e93]";
+  return colors[title] || "bg-gray-600";
 };
 
 // Password Suggester
@@ -244,9 +284,7 @@ const loadData = async () => {
   try {
     // Only count non-deleted items using filter
     savedPasswords.value = await db.passwords.filter((password) => !password.deleted_at).count();
-
     savedBookmarks.value = await db.bookmarks.filter((bookmark) => !bookmark.deleted_at).count();
-
     savedNotes.value = await db.notes.filter((note) => !note.deleted_at).count();
   } catch (error) {
     console.error("Error loading counts:", error);
@@ -262,17 +300,17 @@ const fetchRecentActivities = async () => {
       ...notes.map((note) => ({
         ...note,
         type: "note",
-        message: `Updated note: ${note.title}`,
+        message: `${note.title}`,
       })),
       ...bookmarks.map((bookmark) => ({
         ...bookmark,
         type: "bookmark",
-        message: `Updated bookmark: ${bookmark.title}`,
+        message: `${bookmark.title}`,
       })),
       ...passwords.map((password) => ({
         ...password,
         type: "password",
-        message: `Updated password: ${password.title}`,
+        message: `${password.title}`,
       })),
     ];
 
