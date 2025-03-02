@@ -77,7 +77,7 @@
         </p>
         <div class="flex flex-wrap gap-4">
           <a
-            href="https://github.com/t3volabs/app"
+            href="https://github.com/t3volabs/t3vo-app"
             target="_blank"
             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
@@ -85,7 +85,7 @@
             View on GitHub
           </a>
           <a
-            href="https://github.com/t3volabs/app/issues"
+            href="https://github.com/t3volabs/t3vo-app/issues"
             target="_blank"
             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
