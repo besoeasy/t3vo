@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8">
+  <div class="p-8 m-auto">
     <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">
       Backup <span class="text-blue-600">Manager</span>
     </h1>

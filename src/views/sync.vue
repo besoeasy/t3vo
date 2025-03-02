@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-    <div class="container mx-auto p-8">
+    <div class="m-auto p-6">
       <!-- Header -->
       <div class="text-center mb-16">
         <h1 class="text-5xl font-medium tracking-tight text-gray-900 mb-4">Sync</h1>
