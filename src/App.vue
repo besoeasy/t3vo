@@ -6,15 +6,27 @@
   </div>
 
   <template v-else>
-    <div class="flex h-screen">
-      <nav class="w-16 sm:w-24 bg-black text-yellow-400 bg-opacity-30 backdrop-blur-md flex flex-col justify-center">
-        <div class="flex flex-col items-center space-y-8">
-          <router-link v-for="item in navItems" :key="item.to" :to="item.to" class="block p-2 rounded-lg transition duration-200 group">
-            <component :is="item.icon" class="w-6 h-6 sm:w-8 sm:h-8 group-hover:text-red-400 transition-colors duration-200" />
+    <!-- Responsive layout that changes based on screen size -->
+    <div class="flex flex-col md:flex-row h-screen">
+      <!-- Navigation bar - top on small screens, left side on md+ screens -->
+      <nav class="bg-black text-yellow-400 bg-opacity-30 backdrop-blur-md
+                  w-full md:w-16 lg:w-24 h-16 md:h-screen
+                  flex md:flex-col justify-center items-center">
+        <div class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center">
+          <router-link 
+            v-for="item in navItems" 
+            :key="item.to" 
+            :to="item.to" 
+            class="block p-2 rounded-lg transition duration-200 group"
+            :title="item.name">
+            <component 
+              :is="item.icon" 
+              class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200" />
           </router-link>
         </div>
       </nav>
 
+      <!-- Main content area -->
       <main class="flex-1 overflow-y-auto">
         <RouterView />
       </main>
