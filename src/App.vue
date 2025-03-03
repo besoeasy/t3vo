@@ -4,10 +4,7 @@
 
     <input v-model="passwordInput" type="password" placeholder="Enter Master Password" class="w-full max-w-md mx-auto p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" />
     <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">UNLOCK</button>
-    <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">
-      Your master password is the main key which encrypts all your data.
-      <span class="font-medium">Using different master password will open different profiles. You cannot recover your data if you forget your master password.</span>
-    </p>
+    <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">Your master password is the primary encryption key for securing all of your data, and using a different master password will open a distinct profile. It is essential to remember that forgetting your master password will result in the inability to recover your encrypted data.</p>
   </div>
 
   <template v-else>
