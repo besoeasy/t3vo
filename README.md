@@ -1,22 +1,22 @@
-## T3VO APP
+ ## Overview
 
-Your Offline Vault for Passwords, Bookmarks & Private Notes.
-All encrypted. All offline-capable. Zero compromises.
+T3VO APP is designed to be a secure and efficient tool for managing your passwords, bookmarks, and private notes. It ensures your data is encrypted and accessible offline, providing a seamless experience without compromising security.
 
-## Deploy
+## Live Versions
 
-### Live Versions
+- **Stable Version**: Visit [app.t3vo.com](https://app.t3vo.com) for the production-ready application.
+- **Beta Version**: Check out [o.t3vo.com](https://o.t3vo.com) to test new features and provide feedback.
 
-- **Stable Version**: Visit [app.t3vo.com](https://app.t3vo.com) for the production-ready application
-- **Beta Version**: Check out [o.t3vo.com](https://o.t3vo.com) to test new features and provide feedback
+## Deployment
 
 ### Easy
 
-Fork This Repo & Enable Github Pages
+1. Fork this repository.
+2. Enable GitHub Pages on your fork.
 
 ### Super Easy
 
-Use these free services
+Use these free services to deploy the app with a single click:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/t3volabs/t3vo-app)
 
@@ -24,4 +24,4 @@ Use these free services
 
 ## Contribute
 
-Feel free to fork and submit your edits and improvements, I will try to get new updates in as soon as possible.
+Feel free to fork the repository and submit your edits and improvements. We aim to incorporate new updates as soon as possible.
