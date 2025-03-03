@@ -1,11 +1,7 @@
 <template>
   <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
-    <div class="mb-8 flex justify-center">
-      <div class="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px]">
-        <div class="relative group">
-          <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
-        </div>
-      </div>
+    <div class="mb-3 flex justify-center max-w-md mx-auto">
+      <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
     </div>
 
     <div class="w-full max-w-md mx-auto">
@@ -64,7 +60,7 @@ const getPasswordHash = (password) => {
 // Generate Robohash URL based on password length
 const roboHashUrl = computed(() => {
   const hash = getPasswordHash(passwordInput.value);
-  return `https://robohash.org/${hash}?set=set2&size=400x400`;
+  return `https://robohash.org/${hash}?set=set2&size=500x500`;
 });
 
 const checkPasswordStrength = () => {
