@@ -163,7 +163,7 @@ export async function deletePasswordEntry(id) {
 }
 
 // Periodically cleans up old entries that have been soft-deleted for more than 90 days.
-if (Math.random() < 0.95) {
+if (Math.random() > 0.9) {
   console.log("Cleaning up old entries...");
 
   const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
