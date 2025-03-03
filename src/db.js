@@ -1,17 +1,18 @@
 import Dexie from "dexie";
 import CryptoJS from "crypto-js";
-import { sha256 } from "js-sha256";
+import { getSHA256 } from "@/utils";
 
-// Retrieve the encryption key from sessionStorage.
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
 if (!ENCRYPTION_KEY) {
   console.error("Encryption key is missing. Ensure it is set in sessionStorage.");
 }
-const hashedKey = ENCRYPTION_KEY ? sha256(ENCRYPTION_KEY) : null;
+const hashedKey = ENCRYPTION_KEY ? getSHA256(ENCRYPTION_KEY) : null;
+
 export const dbname = `T3VO-${hashedKey}`;
 
 // Define the IndexedDB schema.
 export const db = new Dexie(dbname);
+
 db.version(1).stores({
   notes: "id, title, content, tags, updated_at, deleted_at",
   bookmarks: "id, title, note, url, updated_at, deleted_at",
@@ -25,7 +26,7 @@ const itemsPerPage = 10;
 const getCurrentTime = () => Date.now();
 
 // Helper: Generates a unique ID based on provided fields.
-const generateUniqueId = (...fields) => sha256(fields.join(""));
+const generateUniqueId = (...fields) => getSHA256(fields.join(""));
 
 // Helper: Encrypts data using AES.
 function encryptData(data) {

@@ -45,21 +45,15 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { Home, Bookmark, Key, FileText, RefreshCw, Import, Archive, Scaling } from "lucide-vue-next";
-import CryptoJS from "crypto-js";
+import { getSHA256 } from "@/utils";
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");
 const passwordStrength = ref(0);
 const router = useRouter();
 
-// Generate SHA-256 hash of the password
-const getPasswordHash = (password) => {
-  return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-};
-
-// Generate Robohash URL based on password length
 const roboHashUrl = computed(() => {
-  const hash = getPasswordHash(passwordInput.value);
+  const hash = getSHA256(passwordInput.value);
   return `https://robohash.org/${hash}?set=set2&size=500x500`;
 });
 
@@ -71,14 +65,11 @@ const checkPasswordStrength = () => {
     return;
   }
 
-  // Start with a base score
   let score = 0;
 
-  // Length check (up to 40 points)
   const lengthScore = Math.min(password.length * 4, 40);
   score += lengthScore;
 
-  // Character variety checks
   if (/[A-Z]/.test(password)) score += 15; // Uppercase
   if (/[a-z]/.test(password)) score += 15; // Lowercase
   if (/[0-9]/.test(password)) score += 15; // Numbers
