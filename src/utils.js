@@ -1,5 +1,13 @@
 import CryptoJS from "crypto-js";
 
+// Purpose: This file contains utility functions for cryptographic operations.
+
+/**
+ * Generates a SHA256 hash of the given password.
+ * 
+ * @param {string} password - The password to hash.
+ * @returns {string} - The resulting SHA256 hash.
+ */
 export const getSHA256 = (password) => {
   if (typeof password !== "string") {
     password = password.toString();
