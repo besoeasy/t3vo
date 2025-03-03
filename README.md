@@ -3,8 +3,7 @@
 Your Offline Vault for Passwords, Bookmarks & Private Notes.
 All encrypted. All offline-capable. Zero compromises.
 
-
-## Deploy 
+## Deploy
 
 ### Live Versions
 
@@ -17,7 +16,7 @@ Fork This Repo & Enable Github Pages
 
 ### Super Easy
 
-Use these free services 
+Use these free services
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/t3volabs/t3vo-app)
 
@@ -26,4 +25,3 @@ Use these free services
 ## Contribute
 
 Feel free to fork and submit your edits and improvements, I will try to get new updates in as soon as possible.
-
