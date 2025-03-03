@@ -223,7 +223,6 @@ const getStatBgColor = (title) => {
   return colors[title] || "bg-gray-600";
 };
 
-// Password Suggester
 const suggestedPassword = ref("");
 const passwordCopied = ref(false);
 const showPasswordOptions = ref(false);
@@ -293,10 +292,8 @@ const copyToClipboard = async () => {
   }
 };
 
-// Data fetching
 const loadData = async () => {
   try {
-    // Only count non-deleted items using filter
     savedPasswords.value = await db.passwords.filter((password) => !password.deleted_at).count();
     savedBookmarks.value = await db.bookmarks.filter((bookmark) => !bookmark.deleted_at).count();
     savedNotes.value = await db.notes.filter((note) => !note.deleted_at).count();
