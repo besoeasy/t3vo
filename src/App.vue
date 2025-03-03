@@ -1,47 +1,31 @@
 <template>
-  <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center h-screen">
-    <h1 class="text-3xl sm:text-4xl font-semibold text-gray-800 mb-8">Master Password</h1>
+  <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
+    <div class="mb-8 flex justify-center">
+      <div class="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px]">
+        <div class="relative group">
+          <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
+        </div>
+      </div>
+    </div>
 
     <div class="w-full max-w-md mx-auto">
-      <input 
-        v-model="passwordInput" 
-        type="password" 
-        placeholder="Enter Master Password" 
-        class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" 
-        @input="checkPasswordStrength"
-      />
-      
-      <!-- Password strength indicator -->
+      <input v-model="passwordInput" type="password" placeholder="Enter Master Password" class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" @input="checkPasswordStrength" />
+
       <div v-if="passwordInput" class="mt-3 w-full flex items-center">
         <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div 
-            class="h-full transition-all duration-300 ease-in-out" 
-            :class="strengthColorClass"
-            :style="{ width: `${strengthPercentage}%` }"
-          ></div>
+          <div class="h-full transition-all duration-300 ease-in-out" :class="strengthColorClass" :style="{ width: `${strengthPercentage}%` }"></div>
         </div>
         <span class="ml-3 text-sm font-medium" :class="strengthTextColorClass">
           {{ strengthLabel }}
         </span>
       </div>
-      
-      <!-- Password warning message -->
-      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">
-        Warning: Your master password is weak. Consider using a stronger password with a mix of uppercase, lowercase, numbers, and special characters.
-      </p>
+
+      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is weak. Consider using a stronger password with a mix of uppercase, lowercase, numbers, and special characters.</p>
     </div>
-    
-    <button 
-      @click="unlockApp" 
-      class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-      :disabled="passwordInput.length === 0"
-    >
-      UNLOCK
-    </button>
-    
-    <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">
-      Your master password is the primary encryption key for securing all of your data, and using a different master password will open a distinct profile. It is essential to remember that forgetting your master password will result in the inability to recover your encrypted data.
-    </p>
+
+    <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
+
+    <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">Your master password is the primary encryption key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually verify you're using the correct master password.</p>
   </div>
 
   <template v-else>
@@ -65,39 +49,48 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { Home, Bookmark, Key, FileText, RefreshCw, Import, Archive, Scaling } from "lucide-vue-next";
+import CryptoJS from "crypto-js";
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");
-const passwordStrength = ref(0); // 0-100 scale
+const passwordStrength = ref(0);
 const router = useRouter();
 
-// Check password strength
+// Generate SHA-256 hash of the password
+const getPasswordHash = (password) => {
+  return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+};
+
+// Generate Robohash URL based on password length
+const roboHashUrl = computed(() => {
+  const hash = getPasswordHash(passwordInput.value);
+  return `https://robohash.org/${hash}?set=set2&size=400x400`;
+});
+
 const checkPasswordStrength = () => {
   const password = passwordInput.value;
-  
+
   if (!password) {
     passwordStrength.value = 0;
     return;
   }
-  
+
   // Start with a base score
   let score = 0;
-  
+
   // Length check (up to 40 points)
   const lengthScore = Math.min(password.length * 4, 40);
   score += lengthScore;
-  
+
   // Character variety checks
   if (/[A-Z]/.test(password)) score += 15; // Uppercase
   if (/[a-z]/.test(password)) score += 15; // Lowercase
   if (/[0-9]/.test(password)) score += 15; // Numbers
   if (/[^A-Za-z0-9]/.test(password)) score += 15; // Special characters
-  
-  // Ensure score is between 0-100
+
   passwordStrength.value = Math.min(Math.max(score, 0), 100);
 };
 
-// Computed properties for UI
 const strengthPercentage = computed(() => passwordStrength.value);
 
 const strengthLabel = computed(() => {
@@ -134,11 +127,12 @@ const showWarning = computed(() => {
 
 const unlockApp = () => {
   if (passwordStrength.value < 50 && passwordInput.value.length > 0) {
-    const confirmUse = confirm("Your master password is weak and may be vulnerable to attacks. Are you sure you want to use this password?");
+    const confirmUse = confirm("Your master password is weak. Are you sure you want to use this password?");
     if (!confirmUse) return;
   }
-  
-  sessionStorage.setItem("ENCRYPTION_KEY", passwordInput.value);
+
+  const encryptionKey = passwordInput.value;
+  sessionStorage.setItem("ENCRYPTION_KEY", encryptionKey);
   passwordInput.value = "";
   location.reload();
 };
