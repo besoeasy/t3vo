@@ -44,7 +44,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Home, Bookmark, Key, FileText, RefreshCw, Import, Archive, Scaling } from "lucide-vue-next";
+import { Home, Bookmark, Key, FileText, RefreshCw, Import, Scaling } from "lucide-vue-next";
 import { getSHA256 } from "@/utils";
 
 const isUnlocked = ref(false);
@@ -53,7 +53,7 @@ const passwordStrength = ref(0);
 const router = useRouter();
 
 const roboHashUrl = computed(() => {
-  const hash = getSHA256(passwordInput.value);
+  const hash = getSHA256(passwordInput.value || new Date());
   return `https://robohash.org/${hash}?set=set2&size=500x500`;
 });
 
