@@ -260,10 +260,24 @@ const generatePassword = () => {
     charset += "!@#$%^&*()_+{}[]|:;<>,.?~";
   }
 
-  suggestedPassword.value = Array.from(crypto.getRandomValues(new Uint32Array(passwordLength.value)))
-    .map((x) => charset[x % charset.length])
-    .join("");
+  const charsetLength = charset.length;
+  const randomValues = new Uint32Array(passwordLength.value);
+  crypto.getRandomValues(randomValues);
 
+  let password = "";
+
+  for (let i = 0; i < randomValues.length; i++) {
+    let randomValue = randomValues[i];
+
+    // Reject values that would cause modulo bias
+    while (randomValue >= 2 ** 32 - (2 ** 32 % charsetLength)) {
+      randomValue = crypto.getRandomValues(new Uint32Array(1))[0];
+    }
+
+    password += charset[randomValue % charsetLength];
+  }
+
+  suggestedPassword.value = password;
   passwordCopied.value = false;
 };
 
