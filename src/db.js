@@ -4,9 +4,6 @@ import { getSHA256 } from "@/utils";
 
 // Retrieve encryption key from session storage
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
-if (!ENCRYPTION_KEY) {
-  console.error("Encryption key is missing. Ensure it is set in sessionStorage.");
-}
 // Hash the encryption key
 const hashedKey = ENCRYPTION_KEY ? getSHA256(ENCRYPTION_KEY) : null;
 
