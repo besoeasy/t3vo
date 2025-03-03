@@ -112,12 +112,19 @@ import { ref } from "vue";
 import { ArrowDownIcon, ArrowUpIcon, LoaderIcon } from "lucide-vue-next";
 import { dbname as DataBaseName, db } from "@/db";
 
+// Local database size state
 const localDbSize = ref(0);
+// Loading state
 const isLoading = ref(false);
+// Action type state
 const actionType = ref(null);
+// Progress state
 const progress = ref(0);
+// Show progress state
 const showProgress = ref(false);
+// Notification state
 const notification = ref({ show: false, message: "", type: "success" });
+// Import summary state
 const importSummary = ref({
   show: false,
   notes: 0,

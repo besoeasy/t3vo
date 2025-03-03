@@ -13,37 +13,37 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView,
+      component: HomeView, // Home route
     },
     {
       path: "/bookmark",
       name: "bookmark",
-      component: BookMark,
+      component: BookMark, // Bookmark route
     },
     {
       path: "/password",
       name: "password",
-      component: PassWord,
+      component: PassWord, // Password route
     },
     {
       path: "/note",
       name: "note",
-      component: Note,
+      component: Note, // Note route
     },
     {
       path: "/backup",
       name: "backup",
-      component: Backup,
+      component: Backup, // Backup route
     },
     {
       path: "/import",
       name: "import",
-      component: Import,
+      component: Import, // Import route
     },
     {
       path: "/sync",
       name: "sync",
-      component: Sync,
+      component: Sync, // Sync route
     },
   ],
 });

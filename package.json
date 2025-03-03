@@ -1,31 +1,31 @@
 {
-  "name": "t3vo",
-  "version": "0.1.7",
-  "private": true,
-  "type": "module",
+  "name": "t3vo", // Project name
+  "version": "0.1.7", // Project version
+  "private": true, // Private project
+  "type": "module", // Module type
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vite", // Start development server
+    "build": "vite build", // Build project
+    "preview": "vite preview" // Preview build
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.1",
-    "axios": "^1.7.9",
-    "crypto-js": "^4.2.0",
-    "dexie": "^4.0.11",
-    "lucide-vue-next": "^0.474.0",
-    "otpauth": "^9.3.6",
-    "papaparse": "^5.5.2",
-    "pinia": "^2.3.1",
-    "tailwindcss": "^4.0.1",
-    "timeago.js": "^4.0.2",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "@tailwindcss/vite": "^4.0.1", // Tailwind CSS Vite plugin
+    "axios": "^1.7.9", // HTTP client
+    "crypto-js": "^4.2.0", // Cryptography library
+    "dexie": "^4.0.11", // IndexedDB wrapper
+    "lucide-vue-next": "^0.474.0", // Vue icons
+    "otpauth": "^9.3.6", // OTP authentication
+    "papaparse": "^5.5.2", // CSV parser
+    "pinia": "^2.3.1", // State management
+    "tailwindcss": "^4.0.1", // CSS framework
+    "timeago.js": "^4.0.2", // Time formatting
+    "vue": "^3.5.13", // Vue.js framework
+    "vue-router": "^4.5.0" // Vue router
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.0.11",
-    "vite-plugin-pwa": "^0.21.1",
-    "vite-plugin-vue-devtools": "^7.7.0"
+    "@vitejs/plugin-vue": "^5.2.1", // Vite Vue plugin
+    "vite": "^6.0.11", // Vite build tool
+    "vite-plugin-pwa": "^0.21.1", // PWA plugin
+    "vite-plugin-vue-devtools": "^7.7.0" // Vue devtools plugin
   }
 }

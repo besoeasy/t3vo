@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read # Allows reading repository contents
+  pages: write # Allows writing to GitHub Pages
+  id-token: write # Allows generating ID tokens
 
 concurrency:
   group: 'pages'
@@ -16,32 +16,32 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Use the latest Ubuntu environment
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Check out the repository
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4 # Set up Node.js environment
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: 22 # Specify Node.js version
+          cache: 'npm' # Cache npm dependencies
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci # Install npm dependencies
 
       - name: Build
-        run: npm run build
+        run: npm run build # Build the project
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v4 # Configure GitHub Pages
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v3 # Upload build artifacts
         with:
-          path: './dist'
+          path: './dist' # Specify the path to artifacts
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: "contains(github.event.head_commit.message, 'stable')"
-        uses: actions/deploy-pages@v4
+        if: "contains(github.event.head_commit.message, 'stable')" # Deploy only if commit message contains 'stable'
+        uses: actions/deploy-pages@v4 # Deploy to GitHub Pages

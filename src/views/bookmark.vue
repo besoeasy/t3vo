@@ -1,8 +1,10 @@
 <script setup>
+// Import necessary modules and components
 import { ref, onMounted, computed, watch } from "vue";
 import { db, fetchBookmarks, addBookmarkEntry, softDeleteEntry } from "@/db.js";
 import { Search, Plus, X, FileText, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
+// Define reactive state variables
 const newBookmark = ref({ title: "", url: "", note: "" });
 const searchQuery = ref("");
 const currentPage = ref(1);
@@ -18,8 +20,7 @@ const getRandomGradient = () => {
   return `linear-gradient(135deg, hsl(${hue1}, 40%, 90%), hsl(${hue2}, 30%, 100%))`;
 };
 
-
-
+// Load bookmarks from the database
 const loadBookmarks = async () => {
   try {
     isLoading.value = true;
@@ -73,6 +74,7 @@ const totalPages = computed(() => {
   return Math.ceil(totalBookmarks.value / 10); // Using the itemsPerPage constant from db.js
 });
 
+// Extract domain from URL
 const extractDomain = (url) => {
   try {
     const { hostname } = new URL(url);

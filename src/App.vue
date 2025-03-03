@@ -1,12 +1,16 @@
 <template>
+  <!-- Display unlock screen if not unlocked -->
   <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
+    <!-- Display profile avatar -->
     <div class="mb-3 flex justify-center max-w-md mx-auto">
       <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
     </div>
 
+    <!-- Password input field -->
     <div class="w-full max-w-md mx-auto">
       <input v-model="passwordInput" type="password" placeholder="Enter Master Password" class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" @input="checkPasswordStrength" />
 
+      <!-- Password strength indicator -->
       <div v-if="passwordInput" class="mt-3 w-full flex items-center">
         <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
           <div class="h-full transition-all duration-300 ease-in-out" :class="strengthColorClass" :style="{ width: `${strengthPercentage}%` }"></div>
@@ -16,24 +20,31 @@
         </span>
       </div>
 
+      <!-- Warning message for weak password -->
       <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is weak. Consider using a stronger password with a mix of uppercase, lowercase, numbers, and special characters.</p>
     </div>
 
+    <!-- Unlock button -->
     <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
 
+    <!-- Information about master password -->
     <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">Your master password is the primary encryption key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually verify you're using the correct master password.</p>
   </div>
 
+  <!-- Display main app if unlocked -->
   <template v-else>
     <div class="flex flex-col md:flex-row h-screen">
+      <!-- Navigation bar -->
       <nav class="bg-black text-yellow-400 bg-opacity-30 backdrop-blur-md w-full md:w-16 lg:w-24 h-16 md:h-screen flex md:flex-col justify-center items-center">
         <div class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center">
+          <!-- Navigation items -->
           <router-link v-for="item in navItems" :key="item.to" :to="item.to" class="block p-2 rounded-lg transition duration-200 group" :title="item.name">
             <component :is="item.icon" class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200" />
           </router-link>
         </div>
       </nav>
 
+      <!-- Main content area -->
       <main class="flex-1 overflow-y-auto">
         <RouterView />
       </main>
@@ -47,16 +58,19 @@ import { useRouter } from "vue-router";
 import { Home, Bookmark, Key, FileText, RefreshCw, Import, Scaling } from "lucide-vue-next";
 import { getSHA256 } from "@/utils";
 
+// State variables
 const isUnlocked = ref(false);
 const passwordInput = ref("");
 const passwordStrength = ref(0);
 const router = useRouter();
 
+// Generate RoboHash URL based on password
 const roboHashUrl = computed(() => {
   const hash = getSHA256(passwordInput.value || new Date());
   return `https://robohash.org/${hash}?set=set2&size=500x500`;
 });
 
+// Check password strength
 const checkPasswordStrength = () => {
   const password = passwordInput.value;
 
@@ -78,6 +92,7 @@ const checkPasswordStrength = () => {
   passwordStrength.value = Math.min(Math.max(score, 0), 100);
 };
 
+// Computed properties for password strength
 const strengthPercentage = computed(() => passwordStrength.value);
 
 const strengthLabel = computed(() => {
@@ -108,10 +123,12 @@ const strengthTextColorClass = computed(() => {
   return "text-green-500";
 });
 
+// Show warning for weak password
 const showWarning = computed(() => {
   return passwordInput.value.length > 0 && passwordStrength.value < 50;
 });
 
+// Unlock the app
 const unlockApp = () => {
   if (passwordStrength.value < 50 && passwordInput.value.length > 0) {
     const confirmUse = confirm("Your master password is weak. Are you sure you want to use this password?");
@@ -124,12 +141,14 @@ const unlockApp = () => {
   location.reload();
 };
 
+// Check if the app is already unlocked
 onMounted(() => {
   if (sessionStorage.getItem("ENCRYPTION_KEY")) {
     isUnlocked.value = true;
   }
 });
 
+// Navigation items
 const navItems = [
   { name: "Home", icon: Home, to: "/" },
   { name: "Bookmark", icon: Bookmark, to: "/bookmark" },
@@ -142,11 +161,13 @@ const navItems = [
 </script>
 
 <style>
+/* Reset body margin and padding */
 body {
   margin: 0;
   padding: 0;
 }
 
+/* Ensure app takes full height */
 #app {
   min-height: 100vh;
   display: flex;

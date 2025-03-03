@@ -1,5 +1,6 @@
 ## T3VO APP
 
+<!-- Introduction to the T3VO app -->
 Your Offline Vault for Passwords, Bookmarks & Private Notes.
 All encrypted. All offline-capable. Zero compromises.
 
@@ -7,15 +8,18 @@ All encrypted. All offline-capable. Zero compromises.
 
 ### Live Versions
 
+<!-- Links to live versions of the app -->
 - **Stable Version**: Visit [app.t3vo.com](https://app.t3vo.com) for the production-ready application
 - **Beta Version**: Check out [o.t3vo.com](https://o.t3vo.com) to test new features and provide feedback
 
 ### Easy
 
+<!-- Instructions for easy deployment -->
 Fork This Repo & Enable Github Pages
 
 ### Super Easy
 
+<!-- Instructions for super easy deployment using free services -->
 Use these free services
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/t3volabs/t3vo-app)
@@ -24,4 +28,5 @@ Use these free services
 
 ## Contribute
 
+<!-- Encouragement to contribute to the project -->
 Feel free to fork and submit your edits and improvements, I will try to get new updates in as soon as possible.

@@ -1,9 +1,11 @@
 <script setup>
+// Import necessary modules and components
 import { ref, computed } from "vue";
 import { addBookmarkEntry, addPasswordEntry } from "@/db.js";
 import Papa from 'papaparse';
 import { AlertCircle } from 'lucide-vue-next';
 
+// File and import status state
 const file = ref(null);
 const importStatus = ref('');
 const importProgress = ref(0);
@@ -30,7 +32,7 @@ const columnMapping = ref({
   }
 });
 
-// File handling
+// Handle file upload
 const handleFileUpload = (event) => {
   const uploadedFile = event.target.files[0];
   if (!uploadedFile) return;
@@ -44,6 +46,7 @@ const handleFileUpload = (event) => {
   parseCSV();
 };
 
+// Parse CSV file
 const parseCSV = () => {
   error.value = '';
   importStatus.value = 'Parsing CSV...';
@@ -70,7 +73,7 @@ const parseCSV = () => {
   });
 };
 
-// Data validation
+// Validate row data
 const validateRow = (row, mapping, type) => {
   if (type === 'bookmarks') {
     const url = row[csvHeaders.value.indexOf(mapping.url)];
@@ -81,7 +84,7 @@ const validateRow = (row, mapping, type) => {
   }
 };
 
-// Import process
+// Import data from CSV
 const importData = async () => {
   if (!file.value) {
     error.value = 'Please select a CSV file to import.';
@@ -147,7 +150,7 @@ const importData = async () => {
   }
 };
 
-// Computed properties
+// Check if ready to import
 const isReadyToImport = computed(() => {
   return file.value && !isLoading.value && (
     (activeTab.value === 'bookmarks' && columnMapping.value.bookmarks.url) ||

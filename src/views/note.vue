@@ -1,8 +1,10 @@
 <script setup>
+// Import necessary modules and components
 import { ref, onMounted, computed, watch} from "vue";
 import { db, fetchNotes, addNoteEntry, softDeleteEntry } from "@/db";
 import { Search, ChevronLeft, ChevronRight, Trash, Plus, FileText, Calendar } from "lucide-vue-next";
 
+// Define reactive state variables
 const newNote = ref({ title: "", content: "" });
 const notes = ref([]);
 const searchQuery = ref("");
@@ -11,8 +13,7 @@ const totalNotes = ref(0);
 const showAddForm = ref(false);
 const isLoading = ref(false);
 
-
-
+// Load notes from the database
 const loadNotes = async () => {
   try {
     isLoading.value = true;

@@ -2,12 +2,15 @@ import Dexie from "dexie";
 import CryptoJS from "crypto-js";
 import { getSHA256 } from "@/utils";
 
+// Retrieve encryption key from session storage
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
 if (!ENCRYPTION_KEY) {
   console.error("Encryption key is missing. Ensure it is set in sessionStorage.");
 }
+// Hash the encryption key
 const hashedKey = ENCRYPTION_KEY ? getSHA256(ENCRYPTION_KEY) : null;
 
+// Define the database name using the hashed key
 export const dbname = `T3VO-${hashedKey}`;
 
 // Define the IndexedDB schema.
@@ -80,6 +83,7 @@ function matchesSearch(entry, keys, searchQuery) {
 
 // CRUD Functions
 
+// Add a new note entry to the database
 export async function addNoteEntry(entry) {
   entry.id = generateUniqueId(entry.title, entry.content);
   encryptEntry(entry, ["title", "content"]);
@@ -88,6 +92,7 @@ export async function addNoteEntry(entry) {
   await db.notes.add(entry);
 }
 
+// Add a new bookmark entry to the database
 export async function addBookmarkEntry(entry) {
   entry.id = generateUniqueId(entry.title, entry.url, entry.note);
   encryptEntry(entry, ["title", "url", "note"]);
@@ -96,6 +101,7 @@ export async function addBookmarkEntry(entry) {
   await db.bookmarks.add(entry);
 }
 
+// Add a new password entry to the database
 export async function addPasswordEntry(entry) {
   entry.id = generateUniqueId(entry.title, entry.username, entry.email);
   encryptEntry(entry, ["title", "username", "email", "password", "totpSecret", "urls"]);
@@ -121,35 +127,43 @@ async function fetchEntries(table, fieldsToDecrypt, searchFields, page, searchQu
   return entries.map((entry) => decryptEntry(entry, fieldsToDecrypt));
 }
 
+// Fetch notes with pagination and search
 export function fetchNotes(page = 1, searchQuery = "") {
   return fetchEntries("notes", ["title", "content"], ["title", "content"], page, searchQuery);
 }
 
+// Fetch bookmarks with pagination and search
 export function fetchBookmarks(page = 1, searchQuery = "") {
   return fetchEntries("bookmarks", ["title", "note", "url"], ["title", "note", "url"], page, searchQuery);
 }
 
+// Fetch passwords with pagination and search
 export function fetchPasswords(page = 1, searchQuery = "") {
   return fetchEntries("passwords", ["title", "username", "email", "password", "totpSecret", "urls"], ["title", "username", "email"], page, searchQuery);
 }
 
+// Soft delete an entry by setting deleted_at timestamp
 export async function softDeleteEntry(table, id) {
   const currentTime = getCurrentTime();
   await db[table].update(id, { deleted_at: currentTime, updated_at: currentTime });
 }
 
+// Soft delete a note entry
 export async function deleteNoteEntry(id) {
   return softDeleteEntry("notes", id);
 }
 
+// Soft delete a bookmark entry
 export async function deleteBookmarkEntry(id) {
   return softDeleteEntry("bookmarks", id);
 }
 
+// Soft delete a password entry
 export async function deletePasswordEntry(id) {
   return softDeleteEntry("passwords", id);
 }
 
+// Clean up old entries that were soft-deleted more than 90 days ago
 if (Math.random() < 0.95) {
   console.log("Cleaning up old entries...");
 
