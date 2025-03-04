@@ -177,7 +177,7 @@ onUnmounted(() => {
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size="20" />
         </div>
         <button @click="showAddForm = !showAddForm" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors flex items-center">
-          <Plus size="20" class="mr-2" />
+          <Plus size="20"  />
         </button>
       </div>
 

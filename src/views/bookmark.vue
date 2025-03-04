@@ -126,7 +126,7 @@ onMounted(loadBookmarks);
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size="20" />
         </div>
         <button @click="showAddForm = !showAddForm" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors flex items-center">
-          <Plus size="20" class="mr-2" />
+          <Plus size="20"  />
         </button>
       </div>
 
@@ -136,7 +136,7 @@ onMounted(loadBookmarks);
         <input v-model="newBookmark.url" placeholder="URL" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
         <textarea v-model="newBookmark.note" placeholder="Note" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3"></textarea>
         <button @click="addBookmark" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center">
-          <Plus size="20" class="mr-2" />
+          <Plus size="20"  />
         </button>
       </div>
 
