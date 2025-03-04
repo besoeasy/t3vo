@@ -1,17 +1,10 @@
 <template>
-  <div class="p-8 m-auto">
-    <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">
-      Backup <span class="text-blue-600">Manager</span>
-    </h1>
+  <div class="p-8 m-auto max-w-4xl">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center uppercase">Backup <span class="text-blue-600">Manager</span></h1>
 
     <div class="space-y-6">
-      <!-- Action Buttons -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <button 
-          @click="exportData" 
-          :disabled="isLoading" 
-          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-in-out overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <button @click="exportData" :disabled="isLoading" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-in-out overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3">
             <ArrowDownIcon class="h-5 w-5 text-blue-500 group-hover:text-blue-400 transition-all duration-300 ease-in-out" />
           </span>
@@ -22,13 +15,7 @@
           <span v-else class="ml-4">Export Data</span>
         </button>
 
-        <label 
-          for="file-upload" 
-          :class="[
-            'group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ease-in-out overflow-hidden',
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          ]"
-        >
+        <label for="file-upload" :class="['group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 ease-in-out overflow-hidden', isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3">
             <ArrowUpIcon class="h-5 w-5 text-gray-400 group-hover:text-gray-300 transition-all duration-300 ease-in-out" />
           </span>
@@ -38,14 +25,7 @@
           </span>
           <span v-else class="ml-4">Import Data</span>
         </label>
-        <input 
-          id="file-upload" 
-          type="file" 
-          @change="importData" 
-          class="hidden" 
-          accept=".json" 
-          :disabled="isLoading" 
-        />
+        <input id="file-upload" type="file" @change="importData" class="hidden" accept=".json" :disabled="isLoading" />
       </div>
 
       <!-- Database Size Indicator -->
@@ -55,20 +35,14 @@
           <span class="text-lg font-bold text-blue-600">{{ parseFloat(localDbSize).toFixed(2) }} KB</span>
         </div>
         <div class="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-          <div 
-            class="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
-            :style="{ width: `${Math.min((localDbSize / 1000) * 100, 100)}%` }"
-          ></div>
+          <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" :style="{ width: `${Math.min((localDbSize / 1000) * 100, 100)}%` }"></div>
         </div>
       </div>
 
       <!-- Progress Bar -->
       <div v-if="showProgress" class="mt-4 space-y-2">
         <div class="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-            :style="{ width: `${progress}%` }"
-          ></div>
+          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: `${progress}%` }"></div>
         </div>
         <p class="text-sm text-gray-600 text-center">{{ progress }}% complete</p>
       </div>
@@ -87,19 +61,8 @@
 
     <!-- Notifications -->
     <transition name="fade">
-      <div 
-        v-if="notification.show" 
-        :class="[
-          'mt-6 p-4 rounded-md',
-          notification.type === 'success' ? 'bg-green-100' : 'bg-red-100'
-        ]"
-      >
-        <p 
-          :class="[
-            'text-center',
-            notification.type === 'success' ? 'text-green-700' : 'text-red-700'
-          ]"
-        >
+      <div v-if="notification.show" :class="['mt-6 p-4 rounded-md', notification.type === 'success' ? 'bg-green-100' : 'bg-red-100']">
+        <p :class="['text-center', notification.type === 'success' ? 'text-green-700' : 'text-red-700']">
           {{ notification.message }}
         </p>
       </div>
@@ -123,7 +86,7 @@ const importSummary = ref({
   notes: 0,
   bookmarks: 0,
   passwords: 0,
-  duplicates: 0
+  duplicates: 0,
 });
 
 // Show notification helper
@@ -140,7 +103,7 @@ async function exportData() {
 
   try {
     isLoading.value = true;
-    actionType.value = 'export';
+    actionType.value = "export";
     showProgress.value = true;
     progress.value = 0;
 
@@ -149,10 +112,10 @@ async function exportData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `T3VO_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `T3VO_backup_${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     showNotification("Data exported successfully!");
     await updateLocalDbSize();
   } catch (error) {
@@ -174,17 +137,17 @@ async function importData(event) {
 
   try {
     isLoading.value = true;
-    actionType.value = 'import';
+    actionType.value = "import";
     showProgress.value = true;
     progress.value = 0;
-    
+
     // Reset import summary
     importSummary.value = {
       show: false,
       notes: 0,
       bookmarks: 0,
       passwords: 0,
-      duplicates: 0
+      duplicates: 0,
     };
 
     const data = await readFileAsJson(file);
@@ -195,24 +158,19 @@ async function importData(event) {
     const result = await importDataToIndexedDB(data);
     importSummary.value = {
       show: true,
-      ...result
+      ...result,
     };
-    
+
     showNotification(`Data imported successfully! ${result.duplicates} duplicates skipped.`);
     await updateLocalDbSize();
   } catch (error) {
     console.error("Import failed:", error);
-    showNotification(
-      error.message === "Invalid backup file format"
-        ? "Invalid backup file format"
-        : "Import failed. Please try again.",
-      "error"
-    );
+    showNotification(error.message === "Invalid backup file format" ? "Invalid backup file format" : "Import failed. Please try again.", "error");
   } finally {
     isLoading.value = false;
     actionType.value = null;
     showProgress.value = false;
-    event.target.value = ''; // Reset file input
+    event.target.value = ""; // Reset file input
   }
 }
 
@@ -235,17 +193,16 @@ function readFileAsJson(file) {
 
 // Validate backup data structure
 function validateBackupData(data) {
-  const requiredStores = ['notes', 'bookmarks', 'passwords'];
+  const requiredStores = ["notes", "bookmarks", "passwords"];
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    requiredStores.every(store => 
-      Array.isArray(data[store]) &&
-      data[store].every(item => 
-        item && 
-        typeof item.id === 'string' &&
-        !item.deleted_at // Ensure imported items don't have deleted_at set
-      )
+    requiredStores.every(
+      (store) =>
+        Array.isArray(data[store]) &&
+        data[store].every(
+          (item) => item && typeof item.id === "string" && !item.deleted_at // Ensure imported items don't have deleted_at set
+        )
     )
   );
 }
@@ -254,9 +211,9 @@ function validateBackupData(data) {
 async function exportIndexedDBData() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DataBaseName);
-    
+
     request.onerror = () => reject(new Error("Failed to open database"));
-    
+
     request.onsuccess = async (event) => {
       const db = event.target.result;
       const exportData = {};
@@ -267,12 +224,12 @@ async function exportIndexedDBData() {
         for (const storeName of storeNames) {
           const tx = db.transaction(storeName, "readonly");
           const store = tx.objectStore(storeName);
-          
+
           // Only export non-deleted items
           const items = await new Promise((resolve, reject) => {
             const request = store.getAll();
             request.onsuccess = () => {
-              const nonDeletedItems = request.result.filter(item => !item.deleted_at);
+              const nonDeletedItems = request.result.filter((item) => !item.deleted_at);
               resolve(nonDeletedItems);
             };
             request.onerror = () => reject(new Error(`Failed to read ${storeName}`));
@@ -294,10 +251,10 @@ async function exportIndexedDBData() {
 // Import data to IndexedDB with progress tracking and duplicate handling
 async function importDataToIndexedDB(data) {
   const request = indexedDB.open(DataBaseName);
-  
+
   return new Promise((resolve, reject) => {
     request.onerror = () => reject(new Error("Failed to open database"));
-    
+
     request.onsuccess = async (event) => {
       const db = event.target.result;
       const storeNames = Object.keys(data);
@@ -306,7 +263,7 @@ async function importDataToIndexedDB(data) {
         notes: 0,
         bookmarks: 0,
         passwords: 0,
-        duplicates: 0
+        duplicates: 0,
       };
 
       try {
@@ -319,9 +276,9 @@ async function importDataToIndexedDB(data) {
 
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            
+
             // Check for existing item
-            const existingItem = await new Promise(resolve => {
+            const existingItem = await new Promise((resolve) => {
               const request = store.get(item.id);
               request.onsuccess = () => resolve(request.result);
             });
@@ -340,9 +297,7 @@ async function importDataToIndexedDB(data) {
               summary.duplicates++;
             }
 
-            progress.value = Math.round(
-              ((completed + (i + 1) / items.length) / storeNames.length) * 100
-            );
+            progress.value = Math.round(((completed + (i + 1) / items.length) / storeNames.length) * 100);
           }
 
           completed++;
