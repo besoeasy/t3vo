@@ -47,7 +47,6 @@
         <p class="text-sm text-gray-600 text-center">{{ progress }}% complete</p>
       </div>
 
-      <!-- Import Summary -->
       <div v-if="importSummary.show" class="mt-6 bg-blue-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold text-blue-800 mb-2">Import Summary</h3>
         <ul class="space-y-1 text-sm text-blue-700">
@@ -59,7 +58,6 @@
       </div>
     </div>
 
-    <!-- Notifications -->
     <transition name="fade">
       <div v-if="notification.show" :class="['mt-6 p-4 rounded-md', notification.type === 'success' ? 'bg-green-100' : 'bg-red-100']">
         <p :class="['text-center', notification.type === 'success' ? 'text-green-700' : 'text-red-700']">

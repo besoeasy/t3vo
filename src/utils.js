@@ -1,7 +1,5 @@
 import CryptoJS from "crypto-js";
 
-// Purpose: This file contains utility functions for cryptographic operations.
-
 /**
  * Generates a SHA256 hash of the given password.
  * 
