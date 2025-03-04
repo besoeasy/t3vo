@@ -1,11 +1,12 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import HomeView from "../views/index.vue";
-import BookMark from "../views/bookmark.vue";
-import PassWord from "../views/password.vue";
-import Note from "../views/note.vue";
-import Backup from "../views/backup.vue";
-import Import from "../views/import.vue";
-import Sync from "../views/sync.vue";
+
+import HomeView from "@/views/index.vue";
+import BookMark from "@/views/bookmark.vue";
+import PassWord from "@/views/password.vue";
+import Note from "@/views/note.vue";
+import Backup from "@/views/backup.vue";
+import Import from "@/views/import.vue";
+import Sync from "@/views/sync.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
