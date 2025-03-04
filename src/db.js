@@ -1,15 +1,12 @@
 import Dexie from "dexie";
-import CryptoJS from "crypto-js";
-import { getSHA256 } from "@/utils";
 
-// Purpose: This file contains various functions and helpers for database operations using Dexie.js and CryptoJS.
+import { getSHA256, encryptData, decryptData } from "@/utils";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
-if (!ENCRYPTION_KEY) {
-  console.error("Encryption key is missing. Ensure it is set in sessionStorage.");
-}
+
 const hashedKey = ENCRYPTION_KEY ? getSHA256(ENCRYPTION_KEY) : null;
 
+// Define the IndexedDB database name.
 export const dbname = `T3VO-${hashedKey}`;
 
 // Define the IndexedDB schema.
@@ -29,26 +26,6 @@ const getCurrentTime = () => Date.now();
 
 // Helper: Generates a unique ID based on provided fields.
 const generateUniqueId = (...fields) => getSHA256(fields.join(""));
-
-// Helper: Encrypts data using AES.
-function encryptData(data) {
-  return CryptoJS.AES.encrypt(JSON.stringify(data), ENCRYPTION_KEY).toString();
-}
-
-// Helper: Decrypts data using AES.
-function decryptData(encryptedData) {
-  try {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-    if (!decryptedData) {
-      throw new Error("Failed to decrypt content.");
-    }
-    return JSON.parse(decryptedData);
-  } catch (e) {
-    console.error("Decryption error:", e.message);
-    return null;
-  }
-}
 
 // Helper: Encrypts the specified keys in the entry.
 function encryptEntry(entry, keys) {
