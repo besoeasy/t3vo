@@ -7,14 +7,11 @@
 
       <div v-if="passwordInput" class="mt-3 w-full flex items-center">
         <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div class="h-full transition-all duration-300 ease-in-out" :class="strengthColorClass" :style="{ width: `${strengthPercentage}%` }"></div>
+          <div class="h-full transition-all duration-300 ease-in-out" :class="strengthInfo.colorClass" :style="{ width: `${strengthPercentage}%` }"></div>
         </div>
-        <span class="ml-3 text-sm font-medium" :class="strengthTextColorClass">
-          {{ strengthLabel }}
-        </span>
       </div>
 
-      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is weak. Consider using a stronger password with a mix of uppercase, lowercase, numbers, and special characters.</p>
+      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is {{ strengthInfo.label }}.</p>
     </div>
 
     <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
@@ -74,32 +71,32 @@ const checkPasswordStrength = () => {
 
 const strengthPercentage = computed(() => passwordStrength.value);
 
-const strengthLabel = computed(() => {
+const strengthInfo = computed(() => {
   const strength = passwordStrength.value;
-  if (strength === 0) return "";
-  if (strength < 30) return "Very Weak";
-  if (strength < 50) return "Weak";
-  if (strength < 70) return "Moderate";
-  if (strength < 90) return "Strong";
-  return "Very Strong";
-});
 
-const strengthColorClass = computed(() => {
-  const strength = passwordStrength.value;
-  if (strength < 30) return "bg-red-500";
-  if (strength < 50) return "bg-orange-500";
-  if (strength < 70) return "bg-yellow-500";
-  if (strength < 90) return "bg-blue-500";
-  return "bg-green-500";
-});
+  if (strength === 0) {
+    return {
+      label: "",
+      colorClass: "",
+      textColorClass: "",
+    };
+  }
 
-const strengthTextColorClass = computed(() => {
-  const strength = passwordStrength.value;
-  if (strength < 30) return "text-red-500";
-  if (strength < 50) return "text-orange-500";
-  if (strength < 70) return "text-yellow-500";
-  if (strength < 90) return "text-blue-500";
-  return "text-green-500";
+  const thresholds = [
+    { max: 30, label: "Very Weak", color: "red" },
+    { max: 50, label: "Weak", color: "orange" },
+    { max: 70, label: "Moderate", color: "yellow" },
+    { max: 90, label: "Strong", color: "blue" },
+    { max: Infinity, label: "Very Strong", color: "green" },
+  ];
+
+  const info = thresholds.find((t) => strength < t.max) || thresholds[thresholds.length - 1];
+
+  return {
+    label: info.label,
+    colorClass: `bg-${info.color}-500`,
+    textColorClass: `text-${info.color}-500`,
+  };
 });
 
 const showWarning = computed(() => {
