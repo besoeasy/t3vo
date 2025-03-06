@@ -1,16 +1,13 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <div class="m-auto p-6">
-      <!-- Header -->
       <div class="text-center mb-16">
-        <h1 class="text-5xl font-medium tracking-tight text-gray-900 mb-4">Sync</h1>
+        <h1 class="text-5xl font-medium tracking-tight text-gray-900 mb-4">SYNC</h1>
         <p class="text-lg text-gray-500">Securely synchronize your data across devices</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        <!-- Main Controls -->
         <div class="space-y-8">
-          <!-- Configuration Card -->
           <div class="backdrop-blur-xl bg-white/80 rounded-2xl shadow-xl border border-gray-200/50 p-6 transition-all duration-500">
             <h2 class="text-xl font-medium text-gray-900 mb-6">Configuration</h2>
 
@@ -24,7 +21,6 @@
               </div>
             </div>
 
-            <!-- Crypto Seed Input -->
             <div class="space-y-4 mb-6">
               <label class="block text-sm font-medium text-gray-700">Encryption Seed</label>
               <div class="flex space-x-3">
@@ -51,7 +47,6 @@
             </div>
           </div>
 
-          <!-- Sync Button and Status -->
           <div class="backdrop-blur-xl bg-white/80 rounded-2xl shadow-xl border border-gray-200/50 p-6">
             <button @click="syncAll" :disabled="isLoading || !cryptoSeed" class="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center space-x-3">
               <SyncIcon v-if="!isLoading" class="w-5 h-5" />
@@ -61,12 +56,10 @@
               </span>
             </button>
 
-            <!-- Current Operation Display -->
             <div v-if="isLoading" class="mt-4 text-center text-sm text-gray-500">
               {{ currentItem }}
             </div>
 
-            <!-- Sync Summary -->
             <div v-if="syncSummary.show" class="mt-6 space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
@@ -93,7 +86,6 @@
           </div>
         </div>
 
-        <!-- Logs Section -->
         <div class="backdrop-blur-xl bg-white/80 rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden transition-all duration-500">
           <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
@@ -131,8 +123,7 @@
         </div>
       </div>
 
-      <!-- Notification -->
-      <transition enter-active-class="transform transition ease-out duration-300" enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" enter-to-class="translate-y-0 opacity-100 sm:translate-x-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+       <transition enter-active-class="transform transition ease-out duration-300" enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" enter-to-class="translate-y-0 opacity-100 sm:translate-x-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <div v-if="notification.show" class="fixed bottom-4 right-4 max-w-sm w-full bg-white rounded-xl shadow-lg pointer-events-auto border border-gray-200 overflow-hidden">
           <div class="p-6">
             <div class="flex items-start">

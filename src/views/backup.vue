@@ -1,4 +1,6 @@
 <template>
+    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+
   <div class="p-8 m-auto max-w-4xl">
     <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center uppercase">Backup <span class="text-blue-600">Manager</span></h1>
 
@@ -28,7 +30,6 @@
         <input id="file-upload" type="file" @change="importData" class="hidden" accept=".json" :disabled="isLoading" />
       </div>
 
-      <!-- Database Size Indicator -->
       <div class="mt-6 bg-gray-100 rounded-lg p-4">
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-gray-700">Local DB Size</span>
@@ -39,7 +40,6 @@
         </div>
       </div>
 
-      <!-- Progress Bar -->
       <div v-if="showProgress" class="mt-4 space-y-2">
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: `${progress}%` }"></div>
@@ -66,6 +66,7 @@
       </div>
     </transition>
   </div>
+</div>
 </template>
 
 <script setup>
