@@ -14,21 +14,14 @@
       <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is {{ strengthInfo.label }}.</p>
     </div>
 
-    <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
+    <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-5 py-3 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
 
-    <p class="text-sm text-blue-800 text-center pt-6 max-w-2xl mx-auto">Your master password is the primary encryption key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually verify you're using the correct master password.</p>
+    <p class="text-sm text-blue-800 text-center pt-3 max-w-xl mx-auto">Your master password is the primary encryption key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually verify you're using the correct master password.</p>
   </div>
 
   <template v-else>
     <div class="flex flex-col md:flex-row h-screen">
-      <nav class="bg-black text-yellow-400 bg-opacity-30 backdrop-blur-md w-full md:w-16 lg:w-24 h-16 md:h-screen flex md:flex-col justify-center items-center">
-        <div class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center">
-          <router-link v-for="item in navItems" :key="item.to" :to="item.to" class="block p-2 rounded-lg transition duration-200 group" :title="item.name">
-            <component :is="item.icon" class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200" />
-          </router-link>
-        </div>
-      </nav>
-
+      <AppNavbar />
       <main class="flex-1 overflow-y-auto">
         <RouterView />
       </main>
@@ -39,9 +32,9 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Home, Bookmark, Key, FileText, RefreshCw, Import, Scaling } from "lucide-vue-next";
 
 import RoboHashAvatar from "@/components/RoboHash.vue";
+import AppNavbar from "@/components/NavBar.vue";
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");
@@ -120,16 +113,6 @@ onMounted(() => {
     isUnlocked.value = true;
   }
 });
-
-const navItems = [
-  { name: "Home", icon: Home, to: "/" },
-  { name: "Bookmark", icon: Bookmark, to: "/bookmark" },
-  { name: "Password", icon: Key, to: "/password" },
-  { name: "Note", icon: FileText, to: "/note" },
-  { name: "Import", icon: Import, to: "/import" },
-  { name: "Backup", icon: Scaling, to: "/backup" },
-  { name: "Sync", icon: RefreshCw, to: "/sync" },
-];
 </script>
 
 <style>

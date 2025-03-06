@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-3 flex justify-center max-w-md mx-auto">
+  <div class="m-2 flex justify-center max-w-md mx-auto">
     <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
   </div>
 </template>
