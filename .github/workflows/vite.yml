@@ -28,9 +28,7 @@ jobs:
       - name: Check if package.json version bumped
         id: version_check
         run: |
-          # Get the previous version from package.json in the previous commit.
           old_version=$(git show HEAD^:package.json | jq -r .version)
-          # Get the current version from the package.json file.
           new_version=$(jq -r .version package.json)
           echo "Old version: $old_version"
           echo "New version: $new_version"
