@@ -1,8 +1,6 @@
 <template>
   <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
-    <div class="mb-3 flex justify-center max-w-md mx-auto">
-      <img :src="roboHashUrl" alt="Profile Avatar" class="w-full h-full transition-all duration-300" />
-    </div>
+    <RoboHashAvatar :password="passwordInput" />
 
     <div class="w-full max-w-md mx-auto">
       <input v-model="passwordInput" type="password" placeholder="Enter Master Password" class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" @input="checkPasswordStrength" />
@@ -45,17 +43,13 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { Home, Bookmark, Key, FileText, RefreshCw, Import, Scaling } from "lucide-vue-next";
-import { getSHA256 } from "@/utils";
+
+import RoboHashAvatar from "@/components/RoboHash.vue";
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");
 const passwordStrength = ref(0);
 const router = useRouter();
-
-const roboHashUrl = computed(() => {
-  const hash = getSHA256(passwordInput.value || new Date());
-  return `https://robohash.org/${hash}?set=set2&size=500x500`;
-});
 
 const checkPasswordStrength = () => {
   const password = passwordInput.value;
