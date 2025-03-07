@@ -11,14 +11,7 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",
-      manifest: {
-        name: "T3VO",
-        short_name: "T3VO",
-        start_url: "/",
-        display: "standalone",
-        background_color: "#ffffff"
-      }
+      registerType: "autoUpdate"
     })
   ],
   resolve: {
