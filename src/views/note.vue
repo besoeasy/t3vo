@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
-import { db, fetchNotes, addNoteEntry, softDeleteEntry } from "@/db";
+import { fetchEntriesByType, addEntry, softDeleteEntry } from "@/db";
 import { Search, ChevronLeft, ChevronRight, Trash, Plus, FileText, Calendar } from "lucide-vue-next";
 
 const newNote = ref({ title: "", content: "" });
@@ -14,14 +14,14 @@ const isLoading = ref(false);
 const loadNotes = async () => {
   try {
     isLoading.value = true;
-    const fetchedNotes = await fetchNotes(currentPage.value, searchQuery.value);
+    const fetchedNotes = await fetchEntriesByType("note", currentPage.value, searchQuery.value);
     notes.value = fetchedNotes.map((note) => ({
       ...note,
       expanded: false,
     }));
 
     // Update total count (only non-deleted notes)
-    totalNotes.value = await db.notes.filter((note) => !note.deleted_at).count();
+    totalNotes.value = await db.data.where("type").equals("note").and((entry) => entry.deletedAt === null).count();
   } catch (error) {
     console.error("Error loading notes:", error);
   } finally {
@@ -34,7 +34,7 @@ const addNote = async () => {
   if (!newNote.value.content) return;
 
   try {
-    await addNoteEntry({
+    await addEntry("note", {
       title: newNote.value.title || "Untitled Note",
       content: newNote.value.content,
       tags: [],
@@ -55,7 +55,7 @@ const removeNote = async (id) => {
   if (!confirm("Are you sure you want to delete this note?")) return;
 
   try {
-    await softDeleteEntry("notes", id);
+    await softDeleteEntry(id);
     await loadNotes();
   } catch (error) {
     console.error("Error removing note:", error);
@@ -158,7 +158,7 @@ onMounted(loadNotes);
               </button>
               <div class="flex items-center text-sm text-gray-500">
                 <Calendar size="16" class="mr-1" />
-                {{ formatDate(note.updated_at) }}
+                {{ formatDate(note.updatedAt) }}
               </div>
             </div>
           </div>

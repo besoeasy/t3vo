@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted, computed } from "vue";
-import { db, fetchPasswords, addPasswordEntry, softDeleteEntry } from "@/db";
+import { fetchEntriesByType, addEntry, softDeleteEntry } from "@/db";
 import { Search, ChevronLeft, ChevronRight, Eye, EyeOff, Copy, Check, Trash, Plus, Lock, Key, Mail, Globe, AlertCircle } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
 
@@ -26,6 +26,7 @@ const generateTOTP = (secret, period) => {
   if (!secret) return "";
 
   try {
+ {
     const totp = new TOTP({
       secret: Secret.fromBase32(secret),
       algorithm: "SHA1",
@@ -41,7 +42,7 @@ const generateTOTP = (secret, period) => {
 const loadPasswords = async () => {
   try {
     isLoading.value = true;
-    const fetchedPasswords = await fetchPasswords(currentPage.value, searchQuery.value);
+    const fetchedPasswords = await fetchEntriesByType("password", currentPage.value, searchQuery.value);
     passwords.value = fetchedPasswords.map((password) => ({
       ...password,
       totp30: password.totpSecret ? generateTOTP(password.totpSecret, 30) : "",
@@ -50,7 +51,7 @@ const loadPasswords = async () => {
     }));
 
     // Update total count (only non-deleted passwords)
-    totalPasswords.value = await db.passwords.filter((password) => !password.deleted_at).count();
+    totalPasswords.value = await db.data.where("type").equals("password").and((entry) => entry.deletedAt === null).count();
   } catch (error) {
     console.error("Error loading passwords:", error);
   } finally {
@@ -63,7 +64,7 @@ const addPassword = async () => {
   if (!newPassword.value.title || !newPassword.value.password) return;
 
   try {
-    await addPasswordEntry({
+    await addEntry("password", {
       title: newPassword.value.title,
       username: newPassword.value.username,
       email: newPassword.value.email,
@@ -87,7 +88,7 @@ const removePassword = async (id) => {
   if (!confirm("Are you sure you want to delete this password?")) return;
 
   try {
-    await softDeleteEntry("passwords", id);
+    await softDeleteEntry(id);
     await loadPasswords();
   } catch (error) {
     console.error("Error removing password:", error);

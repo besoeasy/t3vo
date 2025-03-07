@@ -165,7 +165,7 @@ const STORAGE_KEYS = {
   LAST_SYNC: "backup_manager_last_sync",
 };
 
-const DATA_TYPES = ["notes", "bookmarks", "passwords"];
+const DATA_TYPES = ["note", "bookmark", "password"];
 
 // State variables
 const serverUrl = ref("https://sh.t3vo.com");
@@ -184,14 +184,14 @@ const userIDHash = ref("00000000000000000000000000");
 const syncSummary = ref({
   show: false,
   uploaded: {
-    notes: 0,
-    bookmarks: 0,
-    passwords: 0,
+    note: 0,
+    bookmark: 0,
+    password: 0,
   },
   downloaded: {
-    notes: 0,
-    bookmarks: 0,
-    passwords: 0,
+    note: 0,
+    bookmark: 0,
+    password: 0,
   },
   skipped: 0,
   deleted: 0, // Added counter for deleted items
@@ -456,14 +456,14 @@ async function syncAll() {
     syncSummary.value = {
       show: false,
       uploaded: {
-        notes: 0,
-        bookmarks: 0,
-        passwords: 0,
+        note: 0,
+        bookmark: 0,
+        password: 0,
       },
       downloaded: {
-        notes: 0,
-        bookmarks: 0,
-        passwords: 0,
+        note: 0,
+        bookmark: 0,
+        password: 0,
       },
       skipped: 0,
       deleted: 0, // Added counter for deleted items
@@ -518,7 +518,7 @@ async function syncToServer(dataType, userId) {
     logMessage(`Starting upload for ${dataType}`, "info");
 
     // Get all items including deleted ones
-    const items = await db[dataType].toArray();
+    const items = await db.data.where("type").equals(dataType).toArray();
 
     // Filter valid items (both active and deleted)
     const validItems = items.filter((item) => item !== null);
@@ -536,7 +536,7 @@ async function syncToServer(dataType, userId) {
         syncSummary.value.uploaded[dataType]++;
 
         // If this is a deleted item, increment the deleted counter
-        if (item.deleted_at) {
+        if (item.deletedAt) {
           logMessage(`Uploaded deleted ${dataType} item: ${item.id}`, "info");
         }
       } catch (error) {
@@ -649,16 +649,16 @@ async function downloadItem(dataType, objectId) {
     const remoteItem = decryptFromBlob(encryptedBlob, cryptoSeed.value);
 
     // Check if the item already exists locally
-    const localItem = await db[dataType].get(remoteItem.id);
+    const localItem = await db.data.get(remoteItem.id);
 
-    // If both local and remote items have an updated_at timestamp, compare them
-    if (localItem && localItem.updated_at && remoteItem.updated_at) {
-      const localDate = new Date(localItem.updated_at);
-      const remoteDate = new Date(remoteItem.updated_at);
+    // If both local and remote items have an updatedAt timestamp, compare them
+    if (localItem && localItem.updatedAt && remoteItem.updatedAt) {
+      const localDate = new Date(localItem.updatedAt);
+      const remoteDate = new Date(remoteItem.updatedAt);
 
       if (remoteDate > localDate) {
         // Remote version is more recent—update the local record
-        await db[dataType].put(remoteItem);
+        await db.data.put(remoteItem);
         logMessage(`Replaced local ${dataType}/${objectId} with remote version (remote is newer)`, "info");
         return "downloaded";
       } else {
@@ -667,7 +667,7 @@ async function downloadItem(dataType, objectId) {
       }
     } else {
       // If no local item exists or timestamps cannot be compared, add/update the item by default
-      await db[dataType].put(remoteItem);
+      await db.data.put(remoteItem);
       logMessage(`Added or updated ${dataType}/${objectId} (no valid timestamp comparison)`, "info");
       return "downloaded";
     }

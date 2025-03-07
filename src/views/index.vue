@@ -167,7 +167,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { version } from "../../package.json";
-import { db, fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
+import { fetchEntriesByType } from "@/db";
 import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon, RefreshCwIcon, MinusIcon, PlusIcon, HashIcon, Hash, ActivityIcon, DownloadIcon } from "lucide-vue-next";
 import { format } from "timeago.js";
 
@@ -294,9 +294,9 @@ const copyToClipboard = async () => {
 
 const loadData = async () => {
   try {
-    savedPasswords.value = await db.passwords.filter((password) => !password.deleted_at).count();
-    savedBookmarks.value = await db.bookmarks.filter((bookmark) => !bookmark.deleted_at).count();
-    savedNotes.value = await db.notes.filter((note) => !note.deleted_at).count();
+    savedPasswords.value = await fetchEntriesByType("password").then((entries) => entries.length);
+    savedBookmarks.value = await fetchEntriesByType("bookmark").then((entries) => entries.length);
+    savedNotes.value = await fetchEntriesByType("note").then((entries) => entries.length);
   } catch (error) {
     console.error("Error loading counts:", error);
   }
@@ -305,7 +305,11 @@ const loadData = async () => {
 const fetchRecentActivities = async () => {
   try {
     isLoading.value = true;
-    const [notes, bookmarks, passwords] = await Promise.all([fetchNotes(currentPage.value), fetchBookmarks(currentPage.value), fetchPasswords(currentPage.value)]);
+    const [notes, bookmarks, passwords] = await Promise.all([
+      fetchEntriesByType("note", currentPage.value),
+      fetchEntriesByType("bookmark", currentPage.value),
+      fetchEntriesByType("password", currentPage.value),
+    ]);
 
     const activities = [
       ...notes.map((note) => ({
@@ -327,8 +331,8 @@ const fetchRecentActivities = async () => {
 
     // Sort by updated_at and update the activities list
     const sortedActivities = activities
-      .filter((activity) => !activity.deleted_at) // Filter out soft-deleted items
-      .sort((a, b) => b.updated_at - a.updated_at);
+      .filter((activity) => !activity.deletedAt) // Filter out soft-deleted items
+      .sort((a, b) => b.updatedAt - a.updatedAt);
 
     if (currentPage.value === 1) {
       recentActivities.value = sortedActivities;

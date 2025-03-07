@@ -341,7 +341,7 @@ function readFileAsJson(file) {
 
 // Validate backup data structure
 function validateBackupData(data) {
-  const requiredStores = ["notes", "bookmarks", "passwords"];
+  const requiredStores = ["data"];
   return (
     typeof data === "object" &&
     data !== null &&
@@ -377,7 +377,7 @@ async function exportIndexedDBData(decryptExport = false) {
           const items = await new Promise((resolve, reject) => {
             const request = store.getAll();
             request.onsuccess = () => {
-              let nonDeletedItems = request.result.filter((item) => !item.deleted_at);
+              let nonDeletedItems = request.result.filter((item) => !item.deletedAt);
               
               // Decrypt data if requested
               if (decryptExport) {
@@ -404,42 +404,18 @@ async function exportIndexedDBData(decryptExport = false) {
 
 // Decrypt items based on store type
 function decryptItems(items, storeName) {
-  const fieldsToDecrypt = {
-    notes: ["title", "content"],
-    bookmarks: ["title", "url", "note"],
-    passwords: ["title", "username", "email", "password", "totpSecret", "urls"]
-  };
-  
-  if (!fieldsToDecrypt[storeName]) return items;
-  
   return items.map(item => {
     const decryptedItem = { ...item };
-    fieldsToDecrypt[storeName].forEach(field => {
-      if (decryptedItem[field] !== undefined) {
-        decryptedItem[field] = decryptData(decryptedItem[field]);
-      }
-    });
+    decryptedItem.object = decryptData(decryptedItem.object);
     return decryptedItem;
   });
 }
 
 // Encrypt items based on store type
 function encryptItems(items, storeName) {
-  const fieldsToEncrypt = {
-    notes: ["title", "content"],
-    bookmarks: ["title", "url", "note"],
-    passwords: ["title", "username", "email", "password", "totpSecret", "urls"]
-  };
-  
-  if (!fieldsToEncrypt[storeName]) return items;
-  
   return items.map(item => {
     const encryptedItem = { ...item };
-    fieldsToEncrypt[storeName].forEach(field => {
-      if (encryptedItem[field] !== undefined) {
-        encryptedItem[field] = encryptData(encryptedItem[field]);
-      }
-    });
+    encryptedItem.object = encryptData(encryptedItem.object);
     return encryptedItem;
   });
 }
@@ -478,8 +454,8 @@ async function importDataToIndexedDB(data, isDecrypted = false) {
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
             
-            // Make sure deleted_at is null for imported items
-            item.deleted_at = null;
+            // Make sure deletedAt is null for imported items
+            item.deletedAt = null;
 
             // Check for existing item
             const existingItem = await new Promise((resolve) => {

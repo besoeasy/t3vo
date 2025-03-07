@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { addBookmarkEntry, addPasswordEntry } from "@/db.js";
+import { addEntry } from "@/db.js";
 import Papa from "papaparse";
 import { AlertCircle } from "lucide-vue-next";
 
@@ -113,14 +113,14 @@ const importData = async () => {
 
           try {
             if (activeTab.value === "bookmarks") {
-              await addBookmarkEntry({
+              await addEntry("bookmark", {
                 title: mapping.title ? row[csvHeaders.value.indexOf(mapping.title)] : "",
                 url: row[csvHeaders.value.indexOf(mapping.url)],
                 note: mapping.note ? row[csvHeaders.value.indexOf(mapping.note)] : "",
               });
               importedCount++;
             } else {
-              await addPasswordEntry({
+              await addEntry("password", {
                 title: mapping.title ? row[csvHeaders.value.indexOf(mapping.title)] : "",
                 username: mapping.username ? row[csvHeaders.value.indexOf(mapping.username)] : "",
                 email: mapping.email ? row[csvHeaders.value.indexOf(mapping.email)] : "",
