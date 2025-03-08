@@ -555,7 +555,7 @@ async function downloadItem(dataType, objectId) {
 
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-    <div class="p-8 m-auto max-w-4xl">
+    <div class="p-8 m-auto container">
       <div class="text-center mb-16">
         <h1 class="text-5xl font-medium tracking-tight text-gray-900 mb-4">SYNC</h1>
         <p class="text-lg text-gray-500">Securely synchronize your data across devices</p>

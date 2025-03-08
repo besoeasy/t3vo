@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
-import { fetchBookmarks, addBookmarkEntry, softDeleteEntry } from "@/db";
-import { Search, Plus, X, FileText, ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { fetchBookmarks, addBookmarkEntry, softDeleteEntry, updateBookmarkEntry } from "@/db";
+import { Search, Plus, X, FileText, ChevronLeft, ChevronRight, Edit } from "lucide-vue-next";
+import EditModal from "@/components/edit-modal.vue";
 
 const newBookmark = ref({ title: "", url: "", note: "" });
 const searchQuery = ref("");
@@ -10,6 +11,9 @@ const bookmarks = ref([]);
 const totalBookmarks = ref(0);
 const showAddForm = ref(false);
 const isLoading = ref(false);
+
+const editingBookmark = ref(null);
+const showEditModal = ref(false);
 
 // Generate a random gradient for bookmark cards
 const getRandomGradient = () => {
@@ -68,6 +72,26 @@ const removeBookmark = async (id) => {
     await loadBookmarks();
   } catch (error) {
     console.error("Error removing bookmark:", error);
+  }
+};
+
+const editBookmark = (bookmark) => {
+  editingBookmark.value = { ...bookmark };
+  showEditModal.value = true;
+};
+
+const saveBookmarkEdit = async () => {
+  try {
+    await updateBookmarkEntry(editingBookmark.value.id, {
+      title: editingBookmark.value.title,
+      url: editingBookmark.value.url,
+      note: editingBookmark.value.note,
+    });
+    
+    showEditModal.value = false;
+    await loadBookmarks();
+  } catch (error) {
+    console.error("Error updating bookmark:", error);
   }
 };
 
@@ -158,9 +182,14 @@ onMounted(loadBookmarks);
               <a :href="bookmark.url" target="_blank" class="text-xl font-semibold text-gray-800 hover:text-blue-600 transition-colors break-words flex items-center">
                 {{ bookmark.title || extractDomain(bookmark.url) }}
               </a>
-              <button @click="removeBookmark(bookmark.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
-                <X size="20" />
-              </button>
+              <div class="flex">
+                <button @click="editBookmark(bookmark)" class="text-gray-500 hover:text-blue-500 p-1 rounded-full hover:bg-blue-100 transition-colors mr-1">
+                  <Edit size="20" />
+                </button>
+                <button @click="removeBookmark(bookmark.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
+                  <X size="20" />
+                </button>
+              </div>
             </div>
             <p class="text-sm text-gray-600 mb-2 break-words">{{ bookmark.url }}</p>
             <p v-if="bookmark.note" class="text-sm break-words mt-2 bg-opacity-50 p-2 rounded">{{ bookmark.note }}</p>
@@ -181,4 +210,36 @@ onMounted(loadBookmarks);
       </div>
     </div>
   </div>
+  <EditModal 
+    :show="showEditModal" 
+    title="Edit Bookmark" 
+    @close="showEditModal = false" 
+    @save="saveBookmarkEdit"
+  >
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <input 
+          v-model="editingBookmark.title" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+        <input 
+          v-model="editingBookmark.url" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+        <textarea 
+          v-model="editingBookmark.note" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+  </EditModal>
 </template>
+

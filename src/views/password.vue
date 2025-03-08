@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted, computed } from "vue";
-import { fetchPasswords, addPasswordEntry, softDeleteEntry } from "@/db";
-import { Search, ChevronLeft, ChevronRight, Eye, EyeOff, Copy, Check, Trash, Plus, Lock, Key, Mail, Globe, AlertCircle } from "lucide-vue-next";
+import { fetchPasswords, addPasswordEntry, softDeleteEntry, updatePasswordEntry } from "@/db";
+import { Search, ChevronLeft, ChevronRight, Eye, EyeOff, Copy, Check, Trash, Plus, Lock, Key, Mail, Globe, AlertCircle, Edit } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
+import EditModal from "@/components/edit-modal.vue";
 
 const newPassword = ref({
   title: "",
@@ -20,6 +21,10 @@ const showAddForm = ref(false);
 const copiedField = ref(null);
 const isLoading = ref(false);
 let totpInterval;
+
+// Add these refs after the existing refs
+const editingPassword = ref(null);
+const showEditModal = ref(false);
 
 // TOTP Generation
 const generateTOTP = (secret, period) => {
@@ -99,6 +104,31 @@ const removePassword = async (id) => {
     await loadPasswords();
   } catch (error) {
     console.error("Error removing password:", error);
+  }
+};
+
+// Add this function after removePassword
+const editPassword = (password) => {
+  editingPassword.value = { ...password };
+  showEditModal.value = true;
+};
+
+// Add this function after editPassword
+const savePasswordEdit = async () => {
+  try {
+    await updatePasswordEntry(editingPassword.value.id, {
+      title: editingPassword.value.title,
+      username: editingPassword.value.username,
+      email: editingPassword.value.email,
+      password: editingPassword.value.password,
+      totpSecret: editingPassword.value.totpSecret,
+      urls: editingPassword.value.urls,
+    });
+    
+    showEditModal.value = false;
+    await loadPasswords();
+  } catch (error) {
+    console.error("Error updating password:", error);
   }
 };
 
@@ -244,9 +274,14 @@ onUnmounted(() => {
           <div class="p-6">
             <div class="flex justify-between items-start mb-4">
               <h3 class="text-2xl font-semibold text-gray-800">{{ password.title }}</h3>
-              <button @click="removePassword(password.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
-                <Trash size="20" />
-              </button>
+              <div class="flex">
+                <button @click="editPassword(password)" class="text-gray-500 hover:text-blue-500 p-1 rounded-full hover:bg-blue-100 transition-colors mr-1">
+                  <Edit size="20" />
+                </button>
+                <button @click="removePassword(password.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
+                  <Trash size="20" />
+                </button>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -328,5 +363,60 @@ onUnmounted(() => {
         </button>
       </div>
     </div>
+  
+  <EditModal 
+    :show="showEditModal" 
+    title="Edit Password" 
+    @close="showEditModal = false" 
+    @save="savePasswordEdit"
+  >
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <input 
+          v-model="editingPassword.title" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+        <input 
+          v-model="editingPassword.urls" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <input 
+            v-model="editingPassword.username" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input 
+            v-model="editingPassword.email" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+          />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input 
+          v-model="editingPassword.password" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">TOTP Secret</label>
+        <input 
+          v-model="editingPassword.totpSecret" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+    </div>
+  </EditModal>
   </div>
 </template>
+

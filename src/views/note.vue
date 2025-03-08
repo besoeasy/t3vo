@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { fetchNotes, addNoteEntry, softDeleteEntry, updateNoteEntry } from "@/db";
-import { Search, ChevronLeft, ChevronRight, Trash, Plus, FileText, Calendar } from "lucide-vue-next";
+import { Search, ChevronLeft, ChevronRight, Trash, Plus, FileText, Calendar, Edit } from "lucide-vue-next";
+import EditModal from "@/components/edit-modal.vue";
 
 const newNote = ref({ title: "", content: "" });
 const notes = ref([]);
@@ -10,6 +11,9 @@ const currentPage = ref(1);
 const totalNotes = ref(0);
 const showAddForm = ref(false);
 const isLoading = ref(false);
+
+const editingNote = ref(null);
+const showEditModal = ref(false);
 
 const loadNotes = async () => {
   try {
@@ -64,6 +68,26 @@ const removeNote = async (id) => {
     await loadNotes();
   } catch (error) {
     console.error("Error removing note:", error);
+  }
+};
+
+const editNote = (note) => {
+  editingNote.value = { ...note };
+  showEditModal.value = true;
+};
+
+const saveNoteEdit = async () => {
+  try {
+    await updateNoteEntry(editingNote.value.id, {
+      title: editingNote.value.title,
+      content: editingNote.value.content,
+      tags: editingNote.value.tags || [],
+    });
+    
+    showEditModal.value = false;
+    await loadNotes();
+  } catch (error) {
+    console.error("Error updating note:", error);
   }
 };
 
@@ -150,9 +174,14 @@ onMounted(loadNotes);
           <div class="p-6">
             <div class="flex justify-between items-start mb-4">
               <h3 class="text-2xl font-semibold text-gray-800">{{ note.title || "Untitled Note" }}</h3>
-              <button @click="removeNote(note.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
-                <Trash size="20" />
-              </button>
+              <div class="flex">
+                <button @click="editNote(note)" class="text-gray-500 hover:text-blue-500 p-1 rounded-full hover:bg-blue-100 transition-colors mr-1">
+                  <Edit size="20" />
+                </button>
+                <button @click="removeNote(note.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
+                  <Trash size="20" />
+                </button>
+              </div>
             </div>
             <p class="text-gray-600 break-words mb-4">
               {{ note.expanded ? note.content : truncateContent(note.content) }}
@@ -188,4 +217,30 @@ onMounted(loadNotes);
       </div>
     </div>
   </div>
+
+  <EditModal 
+    :show="showEditModal" 
+    title="Edit Note" 
+    @close="showEditModal = false" 
+    @save="saveNoteEdit"
+  >
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <input 
+          v-model="editingNote.title" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+        <textarea 
+          v-model="editingNote.content" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+          rows="6"
+        ></textarea>
+      </div>
+    </div>
+  </EditModal>
 </template>
+
