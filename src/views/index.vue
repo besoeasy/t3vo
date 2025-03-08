@@ -294,6 +294,16 @@ onMounted(() => {
           </div>
         </div>
 
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
+          <div class="flex items-center mb-5">
+            <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mr-3">
+              <ShieldIcon class="w-5 h-5 text-purple-600" />
+            </div>
+            <h2 class="text-xl font-bold text-gray-900">App Version</h2>
+          </div>
+          <p class="text-gray-600">Current version: {{ version }}</p>
+        </div>
+
         <!-- Activity Logs Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
           <div class="flex items-center justify-between mb-6">
