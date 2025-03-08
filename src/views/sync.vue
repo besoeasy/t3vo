@@ -329,10 +329,10 @@ async function syncAll() {
 
     // Get all entries
     const allEntries = await exportAllEntries();
-    
+
     for (let i = 0; i < DATA_TYPES.length; i++) {
       const dataType = DATA_TYPES[i];
-      const entriesOfType = allEntries.filter(entry => entry.type === dataType);
+      const entriesOfType = allEntries.filter((entry) => entry.type === dataType);
       await syncToServer(dataType, userId, entriesOfType);
     }
 
@@ -500,9 +500,9 @@ async function downloadItem(dataType, objectId) {
 
     // Get all entries
     const allEntries = await exportAllEntries();
-    
+
     // Check if the item already exists locally
-    const localItem = allEntries.find(entry => entry.id === remoteItem.id && entry.type === dataType);
+    const localItem = allEntries.find((entry) => entry.id === remoteItem.id && entry.type === dataType);
 
     // If both local and remote items have an updated_at timestamp, compare them
     if (localItem && localItem.updatedAt && remoteItem.updatedAt) {
@@ -511,13 +511,13 @@ async function downloadItem(dataType, objectId) {
 
       if (remoteDate > localDate) {
         // Remote version is more recent—update the local record
-        const entriesToImport = allEntries.map(entry => {
+        const entriesToImport = allEntries.map((entry) => {
           if (entry.id === remoteItem.id && entry.type === dataType) {
             return remoteItem;
           }
           return entry;
         });
-        
+
         await importEntries(entriesToImport);
         logMessage(`Replaced local ${dataType}/${objectId} with remote version (remote is newer)`, "info");
         return "downloaded";
@@ -529,20 +529,20 @@ async function downloadItem(dataType, objectId) {
       // If no local item exists or timestamps cannot be compared, add/update the item by default
       if (localItem) {
         // Update existing item
-        const entriesToImport = allEntries.map(entry => {
+        const entriesToImport = allEntries.map((entry) => {
           if (entry.id === remoteItem.id && entry.type === dataType) {
             return remoteItem;
           }
           return entry;
         });
-        
+
         await importEntries(entriesToImport);
       } else {
         // Add new item
         allEntries.push(remoteItem);
         await importEntries(allEntries);
       }
-      
+
       logMessage(`Added or updated ${dataType}/${objectId} (no valid timestamp comparison)`, "info");
       return "downloaded";
     }
@@ -556,11 +556,6 @@ async function downloadItem(dataType, objectId) {
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <div class="p-8 m-auto container">
-      <div class="text-center mb-16">
-        <h1 class="text-5xl font-medium tracking-tight text-gray-900 mb-4">SYNC</h1>
-        <p class="text-lg text-gray-500">Securely synchronize your data across devices</p>
-      </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
         <div class="space-y-8">
           <div class="backdrop-blur-xl bg-white/80 rounded-2xl shadow-xl border border-gray-200/50 p-6 transition-all duration-500">
@@ -678,7 +673,7 @@ async function downloadItem(dataType, objectId) {
         </div>
       </div>
 
-       <transition enter-active-class="transform transition ease-out duration-300" enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" enter-to-class="translate-y-0 opacity-100 sm:translate-x-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <transition enter-active-class="transform transition ease-out duration-300" enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" enter-to-class="translate-y-0 opacity-100 sm:translate-x-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <div v-if="notification.show" class="fixed bottom-4 right-4 max-w-sm w-full bg-white rounded-xl shadow-lg pointer-events-auto border border-gray-200 overflow-hidden">
           <div class="p-6">
             <div class="flex items-start">
