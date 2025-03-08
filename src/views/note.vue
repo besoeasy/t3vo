@@ -1,40 +1,57 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { fetchNotes, addNoteEntry, softDeleteEntry, updateNoteEntry } from "@/db";
-import { Search, ChevronLeft, ChevronRight, Trash, Plus, FileText, Calendar, Edit } from "lucide-vue-next";
+import { Search, Trash, Plus, FileText, Calendar, Edit } from "lucide-vue-next";
 import EditModal from "@/components/edit-modal.vue";
+import { useInfiniteScroll } from "@/mixins.js";
 
 const newNote = ref({ title: "", content: "" });
 const notes = ref([]);
 const searchQuery = ref("");
 const currentPage = ref(1);
-const totalNotes = ref(0);
+const hasMoreNotes = ref(true);
 const showAddForm = ref(false);
 const isLoading = ref(false);
+const loadingMore = ref(false);
+const loaderRef = ref(null);
 
 const editingNote = ref(null);
 const showEditModal = ref(false);
 
-const loadNotes = async () => {
+const loadNotes = async (reset = false) => {
+  if (isLoading.value || (loadingMore.value && !reset)) return;
+  
   try {
-    isLoading.value = true;
+    if (reset) {
+      isLoading.value = true;
+      currentPage.value = 1;
+      notes.value = [];
+    } else {
+      loadingMore.value = true;
+    }
+    
     const fetchedNotes = await fetchNotes(currentPage.value, searchQuery.value);
-    notes.value = fetchedNotes.map((note) => ({
-      id: note.id,
-      title: note.data.title,
-      content: note.data.content,
-      tags: note.data.tags || [],
-      updated_at: note.updatedAt,
-      expanded: false,
-    }));
-
-    // Get total count of non-deleted notes
-    const allNotes = await fetchNotes(1, "");
-    totalNotes.value = allNotes.length;
+    
+    if (fetchedNotes.length === 0) {
+      hasMoreNotes.value = false;
+    } else {
+      const newNotes = fetchedNotes.map((note) => ({
+        id: note.id,
+        title: note.data.title,
+        content: note.data.content,
+        tags: note.data.tags || [],
+        updated_at: note.updatedAt,
+        expanded: false,
+      }));
+      
+      notes.value = [...notes.value, ...newNotes];
+      currentPage.value++;
+    }
   } catch (error) {
     console.error("Error loading notes:", error);
   } finally {
     isLoading.value = false;
+    loadingMore.value = false;
   }
 };
 
@@ -49,11 +66,10 @@ const addNote = async () => {
       tags: [],
     });
 
-    // Reset form and reload first page
+    // Reset form and reload notes
     newNote.value = { title: "", content: "" };
     showAddForm.value = false;
-    currentPage.value = 1;
-    await loadNotes();
+    await loadNotes(true);
   } catch (error) {
     console.error("Error adding note:", error);
   }
@@ -65,7 +81,7 @@ const removeNote = async (id) => {
 
   try {
     await softDeleteEntry(id);
-    await loadNotes();
+    await loadNotes(true);
   } catch (error) {
     console.error("Error removing note:", error);
   }
@@ -85,26 +101,9 @@ const saveNoteEdit = async () => {
     });
     
     showEditModal.value = false;
-    await loadNotes();
+    await loadNotes(true);
   } catch (error) {
     console.error("Error updating note:", error);
-  }
-};
-
-// Navigation functions
-const totalPages = computed(() => Math.ceil(totalNotes.value / 10)); // Using the itemsPerPage constant from db.js
-
-const nextPage = async () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    await loadNotes();
-  }
-};
-
-const prevPage = async () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    await loadNotes();
   }
 };
 
@@ -127,14 +126,29 @@ const formatDate = (timestamp) => {
   });
 };
 
+// Infinite scroll implementation
+const { observeElement, unobserveElement } = useInfiniteScroll(() => {
+  if (!isLoading.value && !loadingMore.value && hasMoreNotes.value) {
+    loadNotes();
+  }
+});
+
 // Watch for search query changes
 watch(searchQuery, async () => {
-  currentPage.value = 1;
-  await loadNotes();
+  hasMoreNotes.value = true;
+  await loadNotes(true);
 });
 
 // Initialize
-onMounted(loadNotes);
+onMounted(() => {
+  loadNotes();
+});
+
+// Update observer when loaderRef changes
+watch(loaderRef, (newRef, oldRef) => {
+  if (oldRef) unobserveElement(oldRef);
+  if (newRef) observeElement(newRef);
+});
 </script>
 
 <template>
@@ -165,7 +179,7 @@ onMounted(loadNotes);
         </button>
       </div>
 
-      <div v-if="isLoading" class="text-center py-8">
+      <div v-if="isLoading && notes.length === 0" class="text-center py-8">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
       </div>
 
@@ -205,15 +219,10 @@ onMounted(loadNotes);
         No notes found matching your search.
       </p>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex justify-center items-center space-x-4">
-        <button @click="prevPage" :disabled="currentPage === 1 || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronLeft size="24" />
-        </button>
-        <span class="text-lg font-medium">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronRight size="24" />
-        </button>
+      <!-- Infinite Scroll Loader -->
+      <div v-if="hasMoreNotes && notes.length > 0" ref="loaderRef" class="flex justify-center py-4">
+        <div v-if="loadingMore" class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+        <div v-else class="h-8"></div>
       </div>
     </div>
   </div>
@@ -243,4 +252,3 @@ onMounted(loadNotes);
     </div>
   </EditModal>
 </template>
-

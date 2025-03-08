@@ -1,16 +1,20 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { fetchBookmarks, addBookmarkEntry, softDeleteEntry, updateBookmarkEntry } from "@/db";
-import { Search, Plus, X, FileText, ChevronLeft, ChevronRight, Edit } from "lucide-vue-next";
+import { Search, Plus, X, FileText, Edit } from "lucide-vue-next";
+
 import EditModal from "@/components/edit-modal.vue";
+import { useInfiniteScroll } from "@/mixins.js";
 
 const newBookmark = ref({ title: "", url: "", note: "" });
 const searchQuery = ref("");
 const currentPage = ref(1);
 const bookmarks = ref([]);
-const totalBookmarks = ref(0);
+const hasMoreBookmarks = ref(true);
 const showAddForm = ref(false);
 const isLoading = ref(false);
+const loadingMore = ref(false);
+const loaderRef = ref(null);
 
 const editingBookmark = ref(null);
 const showEditModal = ref(false);
@@ -22,25 +26,39 @@ const getRandomGradient = () => {
   return `linear-gradient(135deg, hsl(${hue1}, 40%, 90%), hsl(${hue2}, 30%, 100%))`;
 };
 
-const loadBookmarks = async () => {
+const loadBookmarks = async (reset = false) => {
+  if (isLoading.value || (loadingMore.value && !reset)) return;
+  
   try {
-    isLoading.value = true;
+    if (reset) {
+      isLoading.value = true;
+      currentPage.value = 1;
+      bookmarks.value = [];
+    } else {
+      loadingMore.value = true;
+    }
+    
     const fetchedBookmarks = await fetchBookmarks(currentPage.value, searchQuery.value);
-    bookmarks.value = fetchedBookmarks.map(bookmark => ({
-      id: bookmark.id,
-      title: bookmark.data.title,
-      url: bookmark.data.url,
-      note: bookmark.data.note,
-      updated_at: bookmark.updatedAt
-    }));
-
-    // Get total count of non-deleted bookmarks
-    const allBookmarks = await fetchBookmarks(1, "");
-    totalBookmarks.value = allBookmarks.length;
+    
+    if (fetchedBookmarks.length === 0) {
+      hasMoreBookmarks.value = false;
+    } else {
+      const newBookmarks = fetchedBookmarks.map(bookmark => ({
+        id: bookmark.id,
+        title: bookmark.data.title,
+        url: bookmark.data.url,
+        note: bookmark.data.note,
+        updated_at: bookmark.updatedAt
+      }));
+      
+      bookmarks.value = [...bookmarks.value, ...newBookmarks];
+      currentPage.value++;
+    }
   } catch (error) {
     console.error("Error loading bookmarks:", error);
   } finally {
     isLoading.value = false;
+    loadingMore.value = false;
   }
 };
 
@@ -55,11 +73,10 @@ const addBookmark = async () => {
       note: newBookmark.value.note,
     });
 
-    // Reset form and reload first page
+    // Reset form and reload bookmarks
     newBookmark.value = { title: "", url: "", note: "" };
     showAddForm.value = false;
-    currentPage.value = 1;
-    await loadBookmarks();
+    await loadBookmarks(true);
   } catch (error) {
     console.error("Error adding bookmark:", error);
   }
@@ -69,7 +86,7 @@ const addBookmark = async () => {
 const removeBookmark = async (id) => {
   try {
     await softDeleteEntry(id);
-    await loadBookmarks();
+    await loadBookmarks(true);
   } catch (error) {
     console.error("Error removing bookmark:", error);
   }
@@ -89,16 +106,11 @@ const saveBookmarkEdit = async () => {
     });
     
     showEditModal.value = false;
-    await loadBookmarks();
+    await loadBookmarks(true);
   } catch (error) {
     console.error("Error updating bookmark:", error);
   }
 };
-
-// Computed properties
-const totalPages = computed(() => {
-  return Math.ceil(totalBookmarks.value / 10); // Using the itemsPerPage constant from db.js
-});
 
 const extractDomain = (url) => {
   try {
@@ -109,20 +121,12 @@ const extractDomain = (url) => {
   }
 };
 
-// Navigation functions
-const nextPage = async () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    await loadBookmarks();
+// Infinite scroll implementation
+const { observeElement, unobserveElement } = useInfiniteScroll(() => {
+  if (!isLoading.value && !loadingMore.value && hasMoreBookmarks.value) {
+    loadBookmarks();
   }
-};
-
-const prevPage = async () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    await loadBookmarks();
-  }
-};
+});
 
 // Watchers
 watch(
@@ -135,8 +139,14 @@ watch(
 );
 
 watch(searchQuery, async (newVal) => {
-  currentPage.value = 1;
-  await loadBookmarks();
+  hasMoreBookmarks.value = true;
+  await loadBookmarks(true);
+});
+
+// Update observer when loaderRef changes
+watch(loaderRef, (newRef, oldRef) => {
+  if (oldRef) unobserveElement(oldRef);
+  if (newRef) observeElement(newRef);
 });
 
 // Lifecycle hooks
@@ -171,7 +181,7 @@ onMounted(loadBookmarks);
         </button>
       </div>
 
-      <div v-if="isLoading" class="text-center py-8">
+      <div v-if="isLoading && bookmarks.length === 0" class="text-center py-8">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
       </div>
 
@@ -199,14 +209,10 @@ onMounted(loadBookmarks);
 
       <p v-if="bookmarks.length === 0 && !isLoading" class="text-center text-gray-500 mt-8 text-lg">No bookmarks found matching your search.</p>
 
-      <div v-if="totalPages > 1" class="flex justify-center items-center space-x-4">
-        <button @click="prevPage" :disabled="currentPage === 1 || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronLeft size="24" />
-        </button>
-        <span class="text-lg font-medium">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronRight size="24" />
-        </button>
+      <!-- Infinite Scroll Loader -->
+      <div v-if="hasMoreBookmarks && bookmarks.length > 0" ref="loaderRef" class="flex justify-center py-4">
+        <div v-if="loadingMore" class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div v-else class="h-8"></div>
       </div>
     </div>
   </div>
@@ -242,4 +248,3 @@ onMounted(loadBookmarks);
     </div>
   </EditModal>
 </template>
-

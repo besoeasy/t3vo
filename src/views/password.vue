@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted, computed } from "vue";
 import { fetchPasswords, addPasswordEntry, softDeleteEntry, updatePasswordEntry } from "@/db";
-import { Search, ChevronLeft, ChevronRight, Eye, EyeOff, Copy, Check, Trash, Plus, Lock, Key, Mail, Globe, AlertCircle, Edit } from "lucide-vue-next";
+import { Search, Eye, EyeOff, Copy, Check, Trash, Plus, Lock, Key, Mail, Globe, AlertCircle, Edit } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
 import EditModal from "@/components/edit-modal.vue";
+import { useInfiniteScroll } from "@/mixins.js";
 
 const newPassword = ref({
   title: "",
@@ -16,10 +17,12 @@ const newPassword = ref({
 const passwords = ref([]);
 const searchQuery = ref("");
 const currentPage = ref(1);
-const totalPasswords = ref(0);
+const hasMorePasswords = ref(true);
 const showAddForm = ref(false);
 const copiedField = ref(null);
 const isLoading = ref(false);
+const loadingMore = ref(false);
+const loaderRef = ref(null);
 let totpInterval;
 
 // Add these refs after the existing refs
@@ -43,31 +46,45 @@ const generateTOTP = (secret, period) => {
   }
 };
 
-const loadPasswords = async () => {
+const loadPasswords = async (reset = false) => {
+  if (isLoading.value || (loadingMore.value && !reset)) return;
+  
   try {
-    isLoading.value = true;
+    if (reset) {
+      isLoading.value = true;
+      currentPage.value = 1;
+      passwords.value = [];
+    } else {
+      loadingMore.value = true;
+    }
+    
     const fetchedPasswords = await fetchPasswords(currentPage.value, searchQuery.value);
-    passwords.value = fetchedPasswords.map((password) => ({
-      id: password.id,
-      title: password.data.title,
-      username: password.data.username,
-      email: password.data.email,
-      password: password.data.password,
-      totpSecret: password.data.totpSecret,
-      urls: password.data.urls,
-      updated_at: password.updatedAt,
-      totp30: password.data.totpSecret ? generateTOTP(password.data.totpSecret, 30) : "",
-      totp60: password.data.totpSecret ? generateTOTP(password.data.totpSecret, 60) : "",
-      visible: false,
-    }));
-
-    // Get total count of non-deleted passwords
-    const allPasswords = await fetchPasswords(1, "");
-    totalPasswords.value = allPasswords.length;
+    
+    if (fetchedPasswords.length === 0) {
+      hasMorePasswords.value = false;
+    } else {
+      const newPasswords = fetchedPasswords.map((password) => ({
+        id: password.id,
+        title: password.data.title,
+        username: password.data.username,
+        email: password.data.email,
+        password: password.data.password,
+        totpSecret: password.data.totpSecret,
+        urls: password.data.urls,
+        updated_at: password.updatedAt,
+        totp30: password.data.totpSecret ? generateTOTP(password.data.totpSecret, 30) : "",
+        totp60: password.data.totpSecret ? generateTOTP(password.data.totpSecret, 60) : "",
+        visible: false,
+      }));
+      
+      passwords.value = [...passwords.value, ...newPasswords];
+      currentPage.value++;
+    }
   } catch (error) {
     console.error("Error loading passwords:", error);
   } finally {
     isLoading.value = false;
+    loadingMore.value = false;
   }
 };
 
@@ -85,11 +102,10 @@ const addPassword = async () => {
       urls: newPassword.value.urls,
     });
 
-    // Reset form and reload first page
+    // Reset form and reload passwords
     newPassword.value = { title: "", username: "", email: "", password: "", totpSecret: "", urls: "" };
     showAddForm.value = false;
-    currentPage.value = 1;
-    await loadPasswords();
+    await loadPasswords(true);
   } catch (error) {
     console.error("Error adding password:", error);
   }
@@ -101,7 +117,7 @@ const removePassword = async (id) => {
 
   try {
     await softDeleteEntry(id);
-    await loadPasswords();
+    await loadPasswords(true);
   } catch (error) {
     console.error("Error removing password:", error);
   }
@@ -126,7 +142,7 @@ const savePasswordEdit = async () => {
     });
     
     showEditModal.value = false;
-    await loadPasswords();
+    await loadPasswords(true);
   } catch (error) {
     console.error("Error updating password:", error);
   }
@@ -149,22 +165,12 @@ const copyToClipboard = async (text, field) => {
   }
 };
 
-// Navigation
-const totalPages = computed(() => Math.ceil(totalPasswords.value / 10)); // Using the itemsPerPage constant from db.js
-
-const nextPage = async () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    await loadPasswords();
+// Infinite scroll implementation
+const { observeElement, unobserveElement } = useInfiniteScroll(() => {
+  if (!isLoading.value && !loadingMore.value && hasMorePasswords.value) {
+    loadPasswords();
   }
-};
-
-const prevPage = async () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    await loadPasswords();
-  }
-};
+});
 
 // URL Watcher
 watch(
@@ -180,8 +186,8 @@ watch(
 
 // Search Watcher
 watch(searchQuery, async () => {
-  currentPage.value = 1;
-  await loadPasswords();
+  hasMorePasswords.value = true;
+  await loadPasswords(true);
 });
 
 // TOTP Update Interval
@@ -198,6 +204,12 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (totpInterval) clearInterval(totpInterval);
+});
+
+// Update observer when loaderRef changes
+watch(loaderRef, (newRef, oldRef) => {
+  if (oldRef) unobserveElement(oldRef);
+  if (newRef) observeElement(newRef);
 });
 </script>
 
@@ -264,7 +276,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="text-center py-8">
+      <div v-if="isLoading && passwords.length === 0" class="text-center py-8">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
       </div>
 
@@ -352,18 +364,14 @@ onUnmounted(() => {
         No passwords found matching your search.
       </p>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex justify-center items-center space-x-4">
-        <button @click="prevPage" :disabled="currentPage === 1 || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronLeft size="24" />
-        </button>
-        <span class="text-lg font-medium">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages || isLoading" class="p-2 rounded-full bg-white shadow disabled:opacity-50 hover:bg-gray-100 transition-colors">
-          <ChevronRight size="24" />
-        </button>
+      <!-- Infinite Scroll Loader -->
+      <div v-if="hasMorePasswords && passwords.length > 0" ref="loaderRef" class="flex justify-center py-4">
+        <div v-if="loadingMore" class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div v-else class="h-8"></div>
       </div>
     </div>
-  
+  </div>
+
   <EditModal 
     :show="showEditModal" 
     title="Edit Password" 
@@ -417,6 +425,4 @@ onUnmounted(() => {
       </div>
     </div>
   </EditModal>
-  </div>
 </template>
-
