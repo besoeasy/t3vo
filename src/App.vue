@@ -1,4 +1,5 @@
 <template>
+  <PwaUpdate />
   <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
     <RoboHashAvatar :password="passwordInput" />
 
@@ -35,8 +36,7 @@ import { useRouter } from "vue-router";
 
 import RoboHashAvatar from "@/components/RoboHash.vue";
 import AppNavbar from "@/components/NavBar.vue";
-import PwaUpdate from '@/components/pwa-update.vue';
-
+import PwaUpdate from "@/components/pwa-update.vue";
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");
