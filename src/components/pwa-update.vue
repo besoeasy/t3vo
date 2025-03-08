@@ -22,13 +22,11 @@ const goToBackup = () => {
 };
 
 onMounted(() => {
-  // Watch for needRefresh changes
   if (needRefresh.value) {
     showUpdateAlert.value = true;
   }
 });
 
-// Watch for changes in needRefresh
 watch(needRefresh, (newValue) => {
   if (newValue) {
     showUpdateAlert.value = true;
