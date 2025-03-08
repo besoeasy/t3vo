@@ -11,21 +11,21 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
-      registerType: "prompt", // Changed back to prompt for more control
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      registerType: "prompt",
       manifest: {
-        name: "Your App Name",
-        short_name: "App",
-        description: "Your app description",
+        name: "T3VO",
+        short_name: "T3VO",
+        description: "T3VO",
         theme_color: "#ffffff",
+
         icons: [
           {
-            src: "/pwa-192x192.png",
+            src: "/icon-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/pwa-512x512.png",
+            src: "/icon-512x512.png",
             sizes: "512x512",
             type: "image/png",
           },
@@ -33,10 +33,10 @@ export default defineConfig({
       },
       workbox: {
         clientsClaim: true,
-        skipWaiting: false, // Keep as false to allow user to choose when to update
+        skipWaiting: false,
       },
       devOptions: {
-        enabled: true, // Enable in development for testing
+        enabled: true,
       },
     }),
   ],
