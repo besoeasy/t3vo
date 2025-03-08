@@ -35,6 +35,8 @@ import { useRouter } from "vue-router";
 
 import RoboHashAvatar from "@/components/RoboHash.vue";
 import AppNavbar from "@/components/NavBar.vue";
+import PwaUpdate from '@/components/pwa-update.vue';
+
 
 const isUnlocked = ref(false);
 const passwordInput = ref("");

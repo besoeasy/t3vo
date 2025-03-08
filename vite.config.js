@@ -11,7 +11,14 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate"
+      registerType: 'prompt',
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: false
+      },
+      devOptions: {
+        enabled: true
+      }
     })
   ],
   resolve: {
