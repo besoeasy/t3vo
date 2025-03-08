@@ -140,30 +140,26 @@ const loadData = async () => {
 const fetchRecentActivities = async () => {
   try {
     isLoading.value = true;
-    const [notes, bookmarks, passwords] = await Promise.all([
-      fetchNotes(currentPage.value), 
-      fetchBookmarks(currentPage.value), 
-      fetchPasswords(currentPage.value)
-    ]);
+    const [notes, bookmarks, passwords] = await Promise.all([fetchNotes(currentPage.value), fetchBookmarks(currentPage.value), fetchPasswords(currentPage.value)]);
 
     const activities = [
       ...notes.map((note) => ({
         id: note.id,
         type: "note",
         message: note.data.title,
-        updated_at: note.updatedAt
+        updated_at: note.updatedAt,
       })),
       ...bookmarks.map((bookmark) => ({
         id: bookmark.id,
         type: "bookmark",
         message: bookmark.data.title,
-        updated_at: bookmark.updatedAt
+        updated_at: bookmark.updatedAt,
       })),
       ...passwords.map((password) => ({
         id: password.id,
         type: "password",
         message: password.data.title,
-        updated_at: password.updatedAt
+        updated_at: password.updatedAt,
       })),
     ];
 
@@ -268,28 +264,6 @@ onMounted(() => {
                   <div class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-200" :class="includeNumbers ? 'bg-blue-600' : 'bg-gray-300'" @click="includeNumbers = !includeNumbers">
                     <div class="absolute w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 top-0.5" :class="includeNumbers ? 'translate-x-6' : 'translate-x-0.5'"></div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Vault Stats Card -->
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-6">
-            <div class="flex items-center mb-5">
-              <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mr-3">
-                <ShieldIcon class="w-5 h-5 text-purple-600" />
-              </div>
-              <h2 class="text-xl font-bold text-gray-900">Your Vault</h2>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div v-for="(stat, index) in stats" :key="index" class="flex items-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-gray-200 hover:bg-gray-100 transition-all duration-200">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="getStatBgColor(stat.title)">
-                  <component :is="getStatIcon(stat.title)" class="w-5 h-5 text-white" />
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm text-gray-500">{{ stat.title }}</p>
-                  <p class="text-lg font-semibold text-gray-900">{{ stat.count }}</p>
                 </div>
               </div>
             </div>
