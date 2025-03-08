@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useRegisterSW } from 'virtual:pwa-register/vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from "vue";
+import { useRegisterSW } from "virtual:pwa-register/vue";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 const { needRefresh, updateServiceWorker } = useRegisterSW();
@@ -17,7 +17,7 @@ const update = () => {
 };
 
 const goToBackup = () => {
-  router.push('/backup');
+  router.push("/backup");
   showUpdateAlert.value = false;
 };
 
@@ -44,7 +44,7 @@ watch(needRefresh, (newValue) => {
       </div>
       <div class="mb-6 space-y-3">
         <p class="text-gray-700">A new version of the app is available.</p>
-        
+
         <div class="bg-amber-50 border-l-4 border-amber-500 p-4">
           <div class="flex">
             <div class="flex-shrink-0">
@@ -53,37 +53,22 @@ watch(needRefresh, (newValue) => {
               </svg>
             </div>
             <div class="ml-3">
-              <p class="text-sm text-amber-700">
-                <strong>Warning:</strong> This app is in development. Please backup all your entries before updating to avoid potential data loss.
-              </p>
+              <p class="text-sm text-amber-700"><strong>Warning:</strong> This app is in development. Please backup all your entries before updating to avoid potential data loss.</p>
             </div>
           </div>
         </div>
       </div>
       <div class="flex flex-col space-y-3">
-        <button 
-          @click="goToBackup" 
-          class="w-full px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center"
-        >
+        <button @click="goToBackup" class="w-full px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
           </svg>
           Backup My Data First
         </button>
-        
+
         <div class="flex justify-between space-x-3">
-          <button 
-            @click="close" 
-            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Later
-          </button>
-          <button 
-            @click="update" 
-            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Update Now
-          </button>
+          <button @click="close" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Later</button>
+          <button @click="update" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">Update Now</button>
         </div>
       </div>
     </div>

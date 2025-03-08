@@ -1,5 +1,4 @@
 <template>
-  <PwaUpdate />
   <div v-if="!isUnlocked" class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
     <RoboHashAvatar :password="passwordInput" />
 
@@ -23,6 +22,8 @@
   <template v-else>
     <div class="flex flex-col md:flex-row h-screen">
       <AppNavbar />
+      <PwaUpdate />
+
       <main class="flex-1 overflow-y-auto">
         <RouterView />
       </main>
