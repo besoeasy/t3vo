@@ -35,7 +35,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import RoboHashAvatar from "@/components/RoboHash.vue";
+import RoboHashAvatar from "@/components/robohash.vue";
 import AppNavbar from "@/components/NavBar.vue";
 import PwaUpdate from "@/components/pwa-update.vue";
 
