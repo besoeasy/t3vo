@@ -6,7 +6,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { getSHA256 } from "@/utils";
+import CryptoJS from "crypto-js";
 
 const props = defineProps({
   password: {
@@ -16,7 +16,7 @@ const props = defineProps({
 });
 
 const roboHashUrl = computed(() => {
-  const hash = getSHA256(props.password || new Date());
+  const hash = CryptoJS.SHA256(props.password || new Date()).toString(CryptoJS.enc.Hex);
   return `https://robohash.org/${hash}?set=set2&size=500x500`;
 });
 </script>

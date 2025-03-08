@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { addBookmarkEntry, addPasswordEntry } from "@/db.js";
+import { addBookmarkEntry, addPasswordEntry, addNoteEntry } from "@/db";
 import Papa from "papaparse";
 import { AlertCircle } from "lucide-vue-next";
 
@@ -28,6 +28,11 @@ const columnMapping = ref({
     totpSecret: "",
     urls: "",
   },
+  notes: {
+    title: "",
+    content: "",
+    tags: "",
+  }
 });
 
 // File handling
@@ -73,10 +78,14 @@ const validateRow = (row, mapping, type) => {
   if (type === "bookmarks") {
     const url = row[csvHeaders.value.indexOf(mapping.url)];
     return url && url.trim();
-  } else {
+  } else if (type === "passwords") {
     const password = row[csvHeaders.value.indexOf(mapping.password)];
     return password && password.trim();
+  } else if (type === "notes") {
+    const content = row[csvHeaders.value.indexOf(mapping.content)];
+    return content && content.trim();
   }
+  return false;
 };
 
 // Import process
@@ -87,7 +96,15 @@ const importData = async () => {
   }
 
   const mapping = columnMapping.value[activeTab.value];
-  const requiredField = activeTab.value === "bookmarks" ? "url" : "password";
+  let requiredField = "";
+  
+  if (activeTab.value === "bookmarks") {
+    requiredField = "url";
+  } else if (activeTab.value === "passwords") {
+    requiredField = "password";
+  } else if (activeTab.value === "notes") {
+    requiredField = "content";
+  }
 
   if (!mapping[requiredField]) {
     error.value = `Please map the ${requiredField} column before importing.`;
@@ -119,7 +136,7 @@ const importData = async () => {
                 note: mapping.note ? row[csvHeaders.value.indexOf(mapping.note)] : "",
               });
               importedCount++;
-            } else {
+            } else if (activeTab.value === "passwords") {
               await addPasswordEntry({
                 title: mapping.title ? row[csvHeaders.value.indexOf(mapping.title)] : "",
                 username: mapping.username ? row[csvHeaders.value.indexOf(mapping.username)] : "",
@@ -127,6 +144,13 @@ const importData = async () => {
                 password: row[csvHeaders.value.indexOf(mapping.password)],
                 totpSecret: mapping.totpSecret ? row[csvHeaders.value.indexOf(mapping.totpSecret)] : "",
                 urls: mapping.urls ? row[csvHeaders.value.indexOf(mapping.urls)] : "",
+              });
+              importedCount++;
+            } else if (activeTab.value === "notes") {
+              await addNoteEntry({
+                title: mapping.title ? row[csvHeaders.value.indexOf(mapping.title)] : "Imported Note",
+                content: row[csvHeaders.value.indexOf(mapping.content)],
+                tags: mapping.tags ? row[csvHeaders.value.indexOf(mapping.tags)].split(',').map(tag => tag.trim()) : [],
               });
               importedCount++;
             }
@@ -149,7 +173,14 @@ const importData = async () => {
 
 // Computed properties
 const isReadyToImport = computed(() => {
-  return file.value && !isLoading.value && ((activeTab.value === "bookmarks" && columnMapping.value.bookmarks.url) || (activeTab.value === "passwords" && columnMapping.value.passwords.password));
+  if (activeTab.value === "bookmarks") {
+    return file.value && !isLoading.value && columnMapping.value.bookmarks.url;
+  } else if (activeTab.value === "passwords") {
+    return file.value && !isLoading.value && columnMapping.value.passwords.password;
+  } else if (activeTab.value === "notes") {
+    return file.value && !isLoading.value && columnMapping.value.notes.content;
+  }
+  return false;
 });
 </script>
 
@@ -160,7 +191,7 @@ const isReadyToImport = computed(() => {
 
       <div class="mb-8 p-6 bg-white rounded-xl shadow-lg">
         <div class="mb-4 border-b border-gray-200">
-          <button v-for="tab in ['bookmarks', 'passwords']" :key="tab" @click="activeTab = tab" :class="['px-4 py-2 -mb-px', activeTab === tab ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700']">
+          <button v-for="tab in ['bookmarks', 'passwords', 'notes']" :key="tab" @click="activeTab = tab" :class="['px-4 py-2 -mb-px', activeTab === tab ? 'border-b-2 border-blue-500 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700']">
             {{ tab.charAt(0).toUpperCase() + tab.slice(1) }}
           </button>
         </div>
@@ -193,13 +224,28 @@ const isReadyToImport = computed(() => {
               </div>
             </template>
 
-            <template v-else>
+            <template v-else-if="activeTab === 'passwords'">
               <div v-for="field in ['title', 'username', 'email', 'password', 'totpSecret', 'urls']" :key="field">
                 <label :for="field" class="block text-sm font-medium text-gray-700 mb-1">
                   {{ field.charAt(0).toUpperCase() + field.slice(1) }}
                   <span v-if="field === 'password'" class="text-red-500">*</span>
                 </label>
                 <select :id="field" v-model="columnMapping.passwords[field]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" :disabled="isLoading">
+                  <option value="">Select column</option>
+                  <option v-for="header in csvHeaders" :key="header" :value="header">
+                    {{ header }}
+                  </option>
+                </select>
+              </div>
+            </template>
+
+            <template v-else>
+              <div v-for="field in ['title', 'content', 'tags']" :key="field">
+                <label :for="field" class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ field.charAt(0).toUpperCase() + field.slice(1) }}
+                  <span v-if="field === 'content'" class="text-red-500">*</span>
+                </label>
+                <select :id="field" v-model="columnMapping.notes[field]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" :disabled="isLoading">
                   <option value="">Select column</option>
                   <option v-for="header in csvHeaders" :key="header" :value="header">
                     {{ header }}

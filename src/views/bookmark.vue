@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
-import { db, fetchBookmarks, addBookmarkEntry, softDeleteEntry } from "@/db.js";
+import { fetchBookmarks, addBookmarkEntry, softDeleteEntry } from "@/db";
 import { Search, Plus, X, FileText, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const newBookmark = ref({ title: "", url: "", note: "" });
@@ -22,10 +22,17 @@ const loadBookmarks = async () => {
   try {
     isLoading.value = true;
     const fetchedBookmarks = await fetchBookmarks(currentPage.value, searchQuery.value);
-    bookmarks.value = fetchedBookmarks;
+    bookmarks.value = fetchedBookmarks.map(bookmark => ({
+      id: bookmark.id,
+      title: bookmark.data.title,
+      url: bookmark.data.url,
+      note: bookmark.data.note,
+      updated_at: bookmark.updatedAt
+    }));
 
-    // Update total count (only non-deleted bookmarks)
-    totalBookmarks.value = await db.bookmarks.filter((bookmark) => !bookmark.deleted_at).count();
+    // Get total count of non-deleted bookmarks
+    const allBookmarks = await fetchBookmarks(1, "");
+    totalBookmarks.value = allBookmarks.length;
   } catch (error) {
     console.error("Error loading bookmarks:", error);
   } finally {
@@ -54,10 +61,10 @@ const addBookmark = async () => {
   }
 };
 
-// Soft delete bookmark instead of permanent deletion
+// Soft delete bookmark
 const removeBookmark = async (id) => {
   try {
-    await softDeleteEntry("bookmarks", id);
+    await softDeleteEntry(id);
     await loadBookmarks();
   } catch (error) {
     console.error("Error removing bookmark:", error);

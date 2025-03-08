@@ -1,3 +1,203 @@
+<script setup>
+import { ref, onMounted, computed } from "vue";
+import { version } from "../../package.json";
+import { getCounts, fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
+import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon, RefreshCwIcon, MinusIcon, PlusIcon, HashIcon, Hash, ActivityIcon, DownloadIcon } from "lucide-vue-next";
+import { format } from "timeago.js";
+
+// Stats
+const savedPasswords = ref(0);
+const savedBookmarks = ref(0);
+const savedNotes = ref(0);
+const isLoading = ref(false);
+
+const stats = computed(() => [
+  { title: "Passwords", count: savedPasswords.value, icon: KeyIcon },
+  { title: "Bookmarks", count: savedBookmarks.value, icon: BookmarkIcon },
+  { title: "Notes", count: savedNotes.value, icon: FileTextIcon },
+  { title: "Version", count: version, icon: ShieldIcon },
+]);
+
+// Recent Activities
+const recentActivities = ref([]);
+const currentPage = ref(1);
+const hasMoreActivities = ref(true);
+
+const getIcon = (type) => {
+  const icons = { password: KeyIcon, bookmark: BookmarkIcon, note: FileTextIcon };
+  return icons[type] || FileTextIcon;
+};
+
+const getActivityBgColor = (type) => {
+  const colors = {
+    password: "bg-blue-600",
+    bookmark: "bg-green-600",
+    note: "bg-amber-600",
+  };
+  return colors[type] || "bg-gray-600";
+};
+
+const getStatIcon = (title) => {
+  const icons = {
+    Passwords: KeyIcon,
+    Bookmarks: BookmarkIcon,
+    Notes: FileTextIcon,
+    Version: ShieldIcon,
+  };
+  return icons[title] || ShieldIcon;
+};
+
+const getStatBgColor = (title) => {
+  const colors = {
+    Passwords: "bg-blue-600",
+    Bookmarks: "bg-green-600",
+    Notes: "bg-amber-600",
+    Version: "bg-purple-600",
+  };
+  return colors[title] || "bg-gray-600";
+};
+
+const suggestedPassword = ref("");
+const passwordCopied = ref(false);
+const showPasswordOptions = ref(false);
+const passwordLength = ref(16);
+const includeSymbols = ref(true);
+const includeNumbers = ref(true);
+
+const togglePasswordOptions = () => {
+  showPasswordOptions.value = !showPasswordOptions.value;
+};
+
+const increaseLength = () => {
+  if (passwordLength.value < 32) {
+    passwordLength.value++;
+    generatePassword();
+  }
+};
+
+const decreaseLength = () => {
+  if (passwordLength.value > 8) {
+    passwordLength.value--;
+    generatePassword();
+  }
+};
+
+const generatePassword = () => {
+  let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  if (includeNumbers.value) {
+    charset += "0123456789";
+  }
+
+  if (includeSymbols.value) {
+    charset += "!@#$%^&*()_+{}[]|:;<>,.?~";
+  }
+
+  const charsetLength = charset.length;
+  const randomValues = new Uint32Array(passwordLength.value);
+  crypto.getRandomValues(randomValues);
+
+  let password = "";
+
+  for (let i = 0; i < randomValues.length; i++) {
+    let randomValue = randomValues[i];
+
+    // Reject values that would cause modulo bias
+    while (randomValue >= 2 ** 32 - (2 ** 32 % charsetLength)) {
+      randomValue = crypto.getRandomValues(new Uint32Array(1))[0];
+    }
+
+    password += charset[randomValue % charsetLength];
+  }
+
+  suggestedPassword.value = password;
+  passwordCopied.value = false;
+};
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(suggestedPassword.value);
+    passwordCopied.value = true;
+    setTimeout(() => {
+      passwordCopied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error("Failed to copy password: ", err);
+  }
+};
+
+const loadData = async () => {
+  try {
+    const counts = await getCounts();
+    savedPasswords.value = counts.passwords;
+    savedBookmarks.value = counts.bookmarks;
+    savedNotes.value = counts.notes;
+  } catch (error) {
+    console.error("Error loading counts:", error);
+  }
+};
+
+const fetchRecentActivities = async () => {
+  try {
+    isLoading.value = true;
+    const [notes, bookmarks, passwords] = await Promise.all([
+      fetchNotes(currentPage.value), 
+      fetchBookmarks(currentPage.value), 
+      fetchPasswords(currentPage.value)
+    ]);
+
+    const activities = [
+      ...notes.map((note) => ({
+        id: note.id,
+        type: "note",
+        message: note.data.title,
+        updated_at: note.updatedAt
+      })),
+      ...bookmarks.map((bookmark) => ({
+        id: bookmark.id,
+        type: "bookmark",
+        message: bookmark.data.title,
+        updated_at: bookmark.updatedAt
+      })),
+      ...passwords.map((password) => ({
+        id: password.id,
+        type: "password",
+        message: password.data.title,
+        updated_at: password.updatedAt
+      })),
+    ];
+
+    // Sort by updated_at and update the activities list
+    const sortedActivities = activities.sort((a, b) => b.updated_at - a.updated_at);
+
+    if (currentPage.value === 1) {
+      recentActivities.value = sortedActivities;
+    } else {
+      recentActivities.value = [...recentActivities.value, ...sortedActivities];
+    }
+
+    // Update hasMore flag based on received items
+    hasMoreActivities.value = sortedActivities.length > 0;
+  } catch (error) {
+    console.error("Error fetching recent activities:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const loadMoreActivities = () => {
+  currentPage.value++;
+  fetchRecentActivities();
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  loadData();
+  fetchRecentActivities();
+  generatePassword();
+});
+</script>
+
 <template>
   <div class="min-h-screen bg-white p-4 md:p-8">
     <div class="m-auto">
@@ -163,197 +363,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, computed } from "vue";
-import { version } from "../../package.json";
-import { db, fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
-import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon, RefreshCwIcon, MinusIcon, PlusIcon, HashIcon, Hash, ActivityIcon, DownloadIcon } from "lucide-vue-next";
-import { format } from "timeago.js";
-
-// Stats
-const savedPasswords = ref(0);
-const savedBookmarks = ref(0);
-const savedNotes = ref(0);
-const isLoading = ref(false);
-
-const stats = computed(() => [
-  { title: "Passwords", count: savedPasswords.value, icon: KeyIcon },
-  { title: "Bookmarks", count: savedBookmarks.value, icon: BookmarkIcon },
-  { title: "Notes", count: savedNotes.value, icon: FileTextIcon },
-  { title: "Version", count: version, icon: ShieldIcon },
-]);
-
-// Recent Activities
-const recentActivities = ref([]);
-const currentPage = ref(1);
-const hasMoreActivities = ref(true);
-
-const getIcon = (type) => {
-  const icons = { password: KeyIcon, bookmark: BookmarkIcon, note: FileTextIcon };
-  return icons[type] || FileTextIcon;
-};
-
-const getActivityBgColor = (type) => {
-  const colors = {
-    password: "bg-blue-600",
-    bookmark: "bg-green-600",
-    note: "bg-amber-600",
-  };
-  return colors[type] || "bg-gray-600";
-};
-
-const getStatIcon = (title) => {
-  const icons = {
-    Passwords: KeyIcon,
-    Bookmarks: BookmarkIcon,
-    Notes: FileTextIcon,
-    Version: ShieldIcon,
-  };
-  return icons[title] || ShieldIcon;
-};
-
-const getStatBgColor = (title) => {
-  const colors = {
-    Passwords: "bg-blue-600",
-    Bookmarks: "bg-green-600",
-    Notes: "bg-amber-600",
-    Version: "bg-purple-600",
-  };
-  return colors[title] || "bg-gray-600";
-};
-
-const suggestedPassword = ref("");
-const passwordCopied = ref(false);
-const showPasswordOptions = ref(false);
-const passwordLength = ref(16);
-const includeSymbols = ref(true);
-const includeNumbers = ref(true);
-
-const togglePasswordOptions = () => {
-  showPasswordOptions.value = !showPasswordOptions.value;
-};
-
-const increaseLength = () => {
-  if (passwordLength.value < 32) {
-    passwordLength.value++;
-    generatePassword();
-  }
-};
-
-const decreaseLength = () => {
-  if (passwordLength.value > 8) {
-    passwordLength.value--;
-    generatePassword();
-  }
-};
-
-const generatePassword = () => {
-  let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  if (includeNumbers.value) {
-    charset += "0123456789";
-  }
-
-  if (includeSymbols.value) {
-    charset += "!@#$%^&*()_+{}[]|:;<>,.?~";
-  }
-
-  const charsetLength = charset.length;
-  const randomValues = new Uint32Array(passwordLength.value);
-  crypto.getRandomValues(randomValues);
-
-  let password = "";
-
-  for (let i = 0; i < randomValues.length; i++) {
-    let randomValue = randomValues[i];
-
-    // Reject values that would cause modulo bias
-    while (randomValue >= 2 ** 32 - (2 ** 32 % charsetLength)) {
-      randomValue = crypto.getRandomValues(new Uint32Array(1))[0];
-    }
-
-    password += charset[randomValue % charsetLength];
-  }
-
-  suggestedPassword.value = password;
-  passwordCopied.value = false;
-};
-
-const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText(suggestedPassword.value);
-    passwordCopied.value = true;
-    setTimeout(() => {
-      passwordCopied.value = false;
-    }, 2000);
-  } catch (err) {
-    console.error("Failed to copy password: ", err);
-  }
-};
-
-const loadData = async () => {
-  try {
-    savedPasswords.value = await db.passwords.filter((password) => !password.deleted_at).count();
-    savedBookmarks.value = await db.bookmarks.filter((bookmark) => !bookmark.deleted_at).count();
-    savedNotes.value = await db.notes.filter((note) => !note.deleted_at).count();
-  } catch (error) {
-    console.error("Error loading counts:", error);
-  }
-};
-
-const fetchRecentActivities = async () => {
-  try {
-    isLoading.value = true;
-    const [notes, bookmarks, passwords] = await Promise.all([fetchNotes(currentPage.value), fetchBookmarks(currentPage.value), fetchPasswords(currentPage.value)]);
-
-    const activities = [
-      ...notes.map((note) => ({
-        ...note,
-        type: "note",
-        message: `${note.title}`,
-      })),
-      ...bookmarks.map((bookmark) => ({
-        ...bookmark,
-        type: "bookmark",
-        message: `${bookmark.title}`,
-      })),
-      ...passwords.map((password) => ({
-        ...password,
-        type: "password",
-        message: `${password.title}`,
-      })),
-    ];
-
-    // Sort by updated_at and update the activities list
-    const sortedActivities = activities
-      .filter((activity) => !activity.deleted_at) // Filter out soft-deleted items
-      .sort((a, b) => b.updated_at - a.updated_at);
-
-    if (currentPage.value === 1) {
-      recentActivities.value = sortedActivities;
-    } else {
-      recentActivities.value = [...recentActivities.value, ...sortedActivities];
-    }
-
-    // Update hasMore flag based on received items
-    hasMoreActivities.value = sortedActivities.length > 0;
-  } catch (error) {
-    console.error("Error fetching recent activities:", error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const loadMoreActivities = () => {
-  currentPage.value++;
-  fetchRecentActivities();
-};
-
-// Lifecycle hooks
-onMounted(() => {
-  loadData();
-  fetchRecentActivities();
-  generatePassword();
-});
-</script>

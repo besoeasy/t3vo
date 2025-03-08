@@ -1,21 +1,14 @@
 import Dexie from "dexie";
-
-import { getSHA256, encryptData, decryptData } from "@/utils";
-
-const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
-
-const hashedKey = ENCRYPTION_KEY ? getSHA256(ENCRYPTION_KEY) : null;
+import CryptoJS from "crypto-js";
 
 // Define the IndexedDB database name.
-export const dbname = `T3VO-${hashedKey}`;
+const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
 
-// Define the IndexedDB schema.
-export const db = new Dexie(dbname);
+// Define the IndexedDB schema with a single table.
+export const db = new Dexie("T3VO-Database");
 
 db.version(1).stores({
-  notes: "id, title, content, tags, updated_at, deleted_at",
-  bookmarks: "id, title, note, url, updated_at, deleted_at",
-  passwords: "id, title, username, email, password, totpSecret, urls, updated_at, deleted_at",
+  entries: "++id, type, data, updatedAt, deletedAt",
 });
 
 // Common constant for pagination.
@@ -24,127 +17,235 @@ const itemsPerPage = 10;
 // Helper: Returns current timestamp.
 const getCurrentTime = () => Date.now();
 
-// Helper: Generates a unique ID based on provided fields.
-const generateUniqueId = (...fields) => getSHA256(fields.join(""));
+// Helper: Encrypts data using AES
+export function encryptData(data) {
+  if (!ENCRYPTION_KEY) return data;
 
-// Helper: Encrypts the specified keys in the entry.
-function encryptEntry(entry, keys) {
-  keys.forEach((key) => {
-    if (entry[key] !== undefined) {
-      entry[key] = encryptData(entry[key]);
-    }
-  });
-  return entry;
+  const stringData = typeof data === "object" ? JSON.stringify(data) : String(data);
+  return CryptoJS.AES.encrypt(stringData, ENCRYPTION_KEY).toString();
 }
 
-// Helper: Decrypts the specified keys in the entry.
-function decryptEntry(entry, keys) {
-  const decrypted = { ...entry };
-  keys.forEach((key) => {
-    if (entry[key] !== undefined) {
-      decrypted[key] = decryptData(entry[key]);
+// Helper: Decrypts data using AES
+export function decryptData(encryptedData) {
+  if (!ENCRYPTION_KEY || !encryptedData) return encryptedData;
+
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
+    const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+
+    // Try to parse as JSON, if it fails return as string
+    try {
+      return JSON.parse(decryptedString);
+    } catch (e) {
+      return decryptedString;
     }
-  });
-  return decrypted;
+  } catch (e) {
+    console.error("Decryption failed:", e);
+    return null;
+  }
 }
 
 // Helper: Checks if any decrypted field contains the search query.
-function matchesSearch(entry, keys, searchQuery) {
+function matchesSearch(entry, searchQuery) {
   const lowerQuery = searchQuery.toLowerCase();
-  return keys.some((key) => {
-    const decrypted = decryptData(entry[key]);
-    return decrypted && decrypted.toString().toLowerCase().includes(lowerQuery);
+  const decryptedData = decryptData(entry.data);
+
+  if (typeof decryptedData !== "object") {
+    return String(decryptedData).toLowerCase().includes(lowerQuery);
+  }
+
+  return Object.values(decryptedData).some((value) => {
+    return value && String(value).toLowerCase().includes(lowerQuery);
   });
 }
 
 // CRUD Functions
 
-// Adds a new note entry to the database.
-export async function addNoteEntry(entry) {
-  entry.id = generateUniqueId(entry.title, entry.content);
-  encryptEntry(entry, ["title", "content"]);
-  entry.updated_at = getCurrentTime();
-  entry.deleted_at = null;
-  await db.notes.add(entry);
+// Adds a new entry to the database.
+export async function addEntry(type, data) {
+  const entry = {
+    type,
+    data: encryptData(data),
+    updatedAt: getCurrentTime(),
+    deletedAt: null,
+  };
+
+  const id = await db.entries.add(entry);
+  return id;
 }
 
-// Adds a new bookmark entry to the database.
-export async function addBookmarkEntry(entry) {
-  entry.id = generateUniqueId(entry.title, entry.url, entry.note);
-  encryptEntry(entry, ["title", "url", "note"]);
-  entry.updated_at = getCurrentTime();
-  entry.deleted_at = null;
-  await db.bookmarks.add(entry);
+// Convenience functions for specific types
+export async function addNoteEntry(noteData) {
+  return addEntry("note", {
+    title: noteData.title,
+    content: noteData.content,
+    tags: noteData.tags || [],
+  });
 }
 
-// Adds a new password entry to the database.
-export async function addPasswordEntry(entry) {
-  entry.id = generateUniqueId(entry.title, entry.username, entry.email);
-  encryptEntry(entry, ["title", "username", "email", "password", "totpSecret", "urls"]);
-  entry.updated_at = getCurrentTime();
-  entry.deleted_at = null;
-  await db.passwords.add(entry);
+export async function addBookmarkEntry(bookmarkData) {
+  return addEntry("bookmark", {
+    title: bookmarkData.title,
+    url: bookmarkData.url,
+    note: bookmarkData.note || "",
+  });
+}
+
+export async function addPasswordEntry(passwordData) {
+  return addEntry("password", {
+    title: passwordData.title,
+    username: passwordData.username,
+    email: passwordData.email,
+    password: passwordData.password,
+    totpSecret: passwordData.totpSecret || "",
+    urls: passwordData.urls || [],
+  });
 }
 
 // Generic function for fetching entries with pagination and search.
-// Now only returns entries where deleted_at is null.
-async function fetchEntries(table, fieldsToDecrypt, searchFields, page, searchQuery) {
+async function fetchEntries(type, page = 1, searchQuery = "") {
   // Only include entries that haven't been soft-deleted.
-  let query = db[table]
-    .orderBy("updated_at")
-    .reverse()
-    .filter((entry) => entry.deleted_at === null);
+  let query = db.entries
+    .where("type")
+    .equals(type)
+    .and((entry) => entry.deletedAt === null)
+    .reverse();
+
+  let entries = await query.toArray();
 
   if (searchQuery) {
-    query = query.filter((entry) => matchesSearch(entry, searchFields, searchQuery));
+    entries = entries.filter((entry) => matchesSearch(entry, searchQuery));
   }
+
+  // Sort by updatedAt (newest first)
+  entries.sort((a, b) => b.updatedAt - a.updatedAt);
+
+  // Apply pagination
   const offset = (page - 1) * itemsPerPage;
-  const entries = await query.offset(offset).limit(itemsPerPage).toArray();
-  return entries.map((entry) => decryptEntry(entry, fieldsToDecrypt));
+  const paginatedEntries = entries.slice(offset, offset + itemsPerPage);
+
+  // Decrypt data for each entry
+  return paginatedEntries.map((entry) => ({
+    ...entry,
+    data: decryptData(entry.data),
+  }));
 }
 
-// Fetches notes from the database with pagination and search.
+// Convenience functions for fetching specific types
 export function fetchNotes(page = 1, searchQuery = "") {
-  return fetchEntries("notes", ["title", "content"], ["title", "content"], page, searchQuery);
+  return fetchEntries("note", page, searchQuery);
 }
 
-// Fetches bookmarks from the database with pagination and search.
 export function fetchBookmarks(page = 1, searchQuery = "") {
-  return fetchEntries("bookmarks", ["title", "note", "url"], ["title", "note", "url"], page, searchQuery);
+  return fetchEntries("bookmark", page, searchQuery);
 }
 
-// Fetches passwords from the database with pagination and search.
 export function fetchPasswords(page = 1, searchQuery = "") {
-  return fetchEntries("passwords", ["title", "username", "email", "password", "totpSecret", "urls"], ["title", "username", "email"], page, searchQuery);
+  return fetchEntries("password", page, searchQuery);
 }
 
-// Soft deletes an entry by setting its deleted_at timestamp.
-export async function softDeleteEntry(table, id) {
+// Soft deletes an entry by setting its deletedAt timestamp.
+export async function softDeleteEntry(id) {
   const currentTime = getCurrentTime();
-  await db[table].update(id, { deleted_at: currentTime, updated_at: currentTime });
+  await db.entries.update(id, {
+    deletedAt: currentTime,
+    updatedAt: currentTime,
+  });
 }
 
-// Soft deletes a note entry.
-export async function deleteNoteEntry(id) {
-  return softDeleteEntry("notes", id);
+// Update an entry
+export async function updateEntry(id, data) {
+  const entry = await db.entries.get(id);
+  if (!entry) throw new Error("Entry not found");
+
+  await db.entries.update(id, {
+    data: encryptData(data),
+    updatedAt: getCurrentTime(),
+  });
 }
 
-// Soft deletes a bookmark entry.
-export async function deleteBookmarkEntry(id) {
-  return softDeleteEntry("bookmarks", id);
+export async function updateNoteEntry(id, noteData) {
+  const entry = await db.entries.get(id);
+  if (!entry || entry.type !== "note") throw new Error("Note not found");
+
+  const currentData = decryptData(entry.data);
+  const updatedData = {
+    ...currentData,
+    title: noteData.title !== undefined ? noteData.title : currentData.title,
+    content: noteData.content !== undefined ? noteData.content : currentData.content,
+    tags: noteData.tags !== undefined ? noteData.tags : currentData.tags,
+  };
+
+  return updateEntry(id, updatedData);
 }
 
-// Soft deletes a password entry.
-export async function deletePasswordEntry(id) {
-  return softDeleteEntry("passwords", id);
+export async function updateBookmarkEntry(id, bookmarkData) {
+  const entry = await db.entries.get(id);
+  if (!entry || entry.type !== "bookmark") throw new Error("Bookmark not found");
+
+  const currentData = decryptData(entry.data);
+  const updatedData = {
+    ...currentData,
+    title: bookmarkData.title !== undefined ? bookmarkData.title : currentData.title,
+    url: bookmarkData.url !== undefined ? bookmarkData.url : currentData.url,
+    note: bookmarkData.note !== undefined ? bookmarkData.note : currentData.note,
+  };
+
+  return updateEntry(id, updatedData);
+}
+
+export async function updatePasswordEntry(id, passwordData) {
+  const entry = await db.entries.get(id);
+  if (!entry || entry.type !== "password") throw new Error("Password not found");
+
+  const currentData = decryptData(entry.data);
+  const updatedData = {
+    ...currentData,
+    title: passwordData.title !== undefined ? passwordData.title : currentData.title,
+    username: passwordData.username !== undefined ? passwordData.username : currentData.username,
+    email: passwordData.email !== undefined ? passwordData.email : currentData.email,
+    password: passwordData.password !== undefined ? passwordData.password : currentData.password,
+    totpSecret: passwordData.totpSecret !== undefined ? passwordData.totpSecret : currentData.totpSecret,
+    urls: passwordData.urls !== undefined ? passwordData.urls : currentData.urls,
+  };
+
+  return updateEntry(id, updatedData);
+}
+
+export async function getEntryById(id) {
+  const entry = await db.entries.get(id);
+  if (!entry || entry.deletedAt !== null) return null;
+
+  return {
+    ...entry,
+    data: decryptData(entry.data),
+  };
+}
+
+export async function getCounts() {
+  const notes = await db.entries.where({ type: "note", deletedAt: null }).count();
+  const bookmarks = await db.entries.where({ type: "bookmark", deletedAt: null }).count();
+  const passwords = await db.entries.where({ type: "password", deletedAt: null }).count();
+
+  return { notes, bookmarks, passwords };
+}
+
+// Export all entries (for backup purposes)
+export async function exportAllEntries() {
+  const entries = await db.entries.toArray();
+  return entries;
+}
+
+// Import entries (for restore purposes)
+export async function importEntries(entries) {
+  await db.entries.clear();
+  await db.entries.bulkAdd(entries);
 }
 
 // Periodically cleans up old entries that have been soft-deleted for more than 90 days.
-if (Math.random() > 0.9) {
+if (Math.random() > 0.8) {
   console.log("Cleaning up old entries...");
 
   const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
-  db.notes.where("deleted_at").below(ninetyDaysAgo).delete();
-  db.bookmarks.where("deleted_at").below(ninetyDaysAgo).delete();
-  db.passwords.where("deleted_at").below(ninetyDaysAgo).delete();
+  db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
 }
