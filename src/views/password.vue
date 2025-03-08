@@ -26,7 +26,6 @@ const generateTOTP = (secret, period) => {
   if (!secret) return "";
 
   try {
- {
     const totp = new TOTP({
       secret: Secret.fromBase32(secret),
       algorithm: "SHA1",
