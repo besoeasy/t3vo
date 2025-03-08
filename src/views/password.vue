@@ -14,6 +14,7 @@ const newPassword = ref({
   totpSecret: "",
   urls: "",
 });
+
 const passwords = ref([]);
 const searchQuery = ref("");
 const currentPage = ref(1);
