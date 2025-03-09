@@ -33,33 +33,39 @@ const backupDatabase = async () => {
   await saveToServer(entries);
 };
 
-const restoreDatabase = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+const fetchFromServer = async () => {
+  if (!userID.value) {
+    alert("Please set a user ID before restoring.");
+    return;
+  }
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const jsonData = JSON.parse(e.target.result);
+  try {
+    let page = 1;
+    let hasNextPage = true;
 
-      for (const entry of jsonData) {
+    while (hasNextPage) {
+      const response = await axios.get(`${SERVER_URL}/fetch/${userID.value}/${page}`);
+      const { data, hasNextPage: nextPage } = response.data;
+
+      for (const entry of data) {
         const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt, type: entry.type }).first();
-
-        if (existingEntry) {
-          console.log("Entry already exists, skipping...");
-        } else {
+        if (!existingEntry) {
           console.log("Adding new entry...");
           await db.entries.add(entry);
+        } else {
+          console.log("Entry already exists, skipping...");
         }
       }
 
-      alert("Database restored successfully!");
-    } catch (error) {
-      alert("Failed to restore database.");
-      console.error(error);
+      hasNextPage = nextPage;
+      page++;
     }
-  };
-  reader.readAsText(file);
+
+    alert("Database restored successfully!");
+  } catch (error) {
+    alert("Failed to restore database.");
+    console.error(error);
+  }
 };
 </script>
 
@@ -71,9 +77,7 @@ const restoreDatabase = async (event) => {
       <input v-model="userID" type="text" placeholder="Enter User ID" class="w-full px-4 py-2 border rounded-lg mb-4" />
 
       <button @click="backupDatabase" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
-
-      <input type="file" ref="fileInput" @change="restoreDatabase" class="hidden" />
-      <button @click="fileInput.click()" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore Database</button>
+      <button @click="fetchFromServer" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore from Server</button>
     </div>
   </div>
 </template>
