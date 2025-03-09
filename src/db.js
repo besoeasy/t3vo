@@ -1,11 +1,10 @@
 import Dexie from "dexie";
 import CryptoJS from "crypto-js";
 
-const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
+const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
+const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
 
-const hashedKey = ENCRYPTION_KEY ?  CryptoJS(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
-
-export const db = new Dexie("T3VO-" + hashedKey);
+export const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
   entries: "++id, type, data, updatedAt, deletedAt",
