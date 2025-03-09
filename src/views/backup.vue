@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { ArrowDownIcon, ArrowUpIcon, LoaderIcon } from "lucide-vue-next";
-import { exportAllEntries, importEntries } from "@/db";
-import { encryptData, decryptData } from "@/db";
+import { db } from "@/db";
 
 const localDbSize = ref(0);
 const isLoading = ref(false);
@@ -20,12 +19,10 @@ const importSummary = ref({
 
 // Export and import options
 const exportOptions = ref({
-  format: "encrypted", // encrypted or decrypted
   location: "download", // download or clipboard
 });
 
 const importOptions = ref({
-  format: "encrypted", // encrypted or decrypted
   source: "file", // file or clipboard
 });
 
@@ -47,24 +44,17 @@ async function exportData() {
     showProgress.value = true;
     progress.value = 0;
 
-    const entries = await exportAllEntries();
+    // Export all entries from the database
+    const notes = await db.table("notes").toArray();
+    const bookmarks = await db.table("bookmarks").toArray();
+    const passwords = await db.table("passwords").toArray();
 
     // Group entries by type
     const data = {
-      notes: entries.filter((entry) => entry.type === "note" && !entry.deletedAt),
-      bookmarks: entries.filter((entry) => entry.type === "bookmark" && !entry.deletedAt),
-      passwords: entries.filter((entry) => entry.type === "password" && !entry.deletedAt),
+      notes: notes.filter((entry) => !entry.deletedAt),
+      bookmarks: bookmarks.filter((entry) => !entry.deletedAt),
+      passwords: passwords.filter((entry) => !entry.deletedAt),
     };
-
-    // Decrypt data if requested
-    if (exportOptions.value.format === "decrypted") {
-      for (const type in data) {
-        data[type] = data[type].map((entry) => ({
-          ...entry,
-          data: decryptData(entry.data),
-        }));
-      }
-    }
 
     if (exportOptions.value.location === "download") {
       // Download as file
@@ -72,7 +62,7 @@ async function exportData() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `T3VO_backup_${exportOptions.value.format}_${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `T3VO_backup_${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showNotification("Data exported successfully to file!");
@@ -120,37 +110,25 @@ async function importData(event) {
       throw new Error("Invalid backup file format");
     }
 
-    // Convert data to entries format
-    const entries = [];
     let duplicates = 0;
 
-    for (const type in data) {
-      if (Array.isArray(data[type])) {
-        for (const item of data[type]) {
-          // If importing decrypted data, encrypt it
-          if (importOptions.value.format === "decrypted") {
-            entries.push({
-              type,
-              data: encryptData(item.data),
-              updatedAt: item.updatedAt || Date.now(),
-              deletedAt: null,
-            });
-          } else {
-            entries.push({
-              type,
-              data: item.data,
-              updatedAt: item.updatedAt || Date.now(),
-              deletedAt: null,
-            });
-          }
-        }
-
-        importSummary.value[type] = data[type].length;
-      }
+    // Import notes
+    if (Array.isArray(data.notes)) {
+      importSummary.value.notes = data.notes.length;
+      await importCollection("notes", data.notes);
     }
 
-    // Import entries
-    await importEntries(entries);
+    // Import bookmarks
+    if (Array.isArray(data.bookmarks)) {
+      importSummary.value.bookmarks = data.bookmarks.length;
+      await importCollection("bookmarks", data.bookmarks);
+    }
+
+    // Import passwords
+    if (Array.isArray(data.passwords)) {
+      importSummary.value.passwords = data.passwords.length;
+      await importCollection("passwords", data.passwords);
+    }
 
     importSummary.value = {
       show: true,
@@ -169,6 +147,23 @@ async function importData(event) {
     showProgress.value = false;
     event.target.value = ""; // Reset file input
   }
+}
+
+// Helper function to import a collection
+async function importCollection(tableName, items) {
+  const table = db.table(tableName);
+
+  // Get existing IDs to check for duplicates
+  const existingIds = new Set((await table.toArray()).map((item) => item.id));
+
+  // Filter out items that already exist and add the rest
+  const newItems = items.filter((item) => !existingIds.has(item.id));
+
+  if (newItems.length > 0) {
+    await table.bulkAdd(newItems);
+  }
+
+  return items.length - newItems.length; // Return number of duplicates
 }
 
 // Import from clipboard
@@ -204,37 +199,25 @@ async function importFromClipboard() {
       throw new Error("Invalid backup data format in clipboard");
     }
 
-    // Convert data to entries format
-    const entries = [];
     let duplicates = 0;
 
-    for (const type in data) {
-      if (Array.isArray(data[type])) {
-        for (const item of data[type]) {
-          // If importing decrypted data, encrypt it
-          if (importOptions.value.format === "decrypted") {
-            entries.push({
-              type,
-              data: encryptData(item.data),
-              updatedAt: item.updatedAt || Date.now(),
-              deletedAt: null,
-            });
-          } else {
-            entries.push({
-              type,
-              data: item.data,
-              updatedAt: item.updatedAt || Date.now(),
-              deletedAt: null,
-            });
-          }
-        }
-
-        importSummary.value[type] = data[type].length;
-      }
+    // Import notes
+    if (Array.isArray(data.notes)) {
+      importSummary.value.notes = data.notes.length;
+      duplicates += await importCollection("notes", data.notes);
     }
 
-    // Import entries
-    await importEntries(entries);
+    // Import bookmarks
+    if (Array.isArray(data.bookmarks)) {
+      importSummary.value.bookmarks = data.bookmarks.length;
+      duplicates += await importCollection("bookmarks", data.bookmarks);
+    }
+
+    // Import passwords
+    if (Array.isArray(data.passwords)) {
+      importSummary.value.passwords = data.passwords.length;
+      duplicates += await importCollection("passwords", data.passwords);
+    }
 
     importSummary.value = {
       show: true,
@@ -280,8 +263,12 @@ function validateBackupData(data) {
 // Update local database size
 async function updateLocalDbSize() {
   try {
-    const entries = await exportAllEntries();
-    localDbSize.value = new Blob([JSON.stringify(entries)]).size / 1024; // Convert to KB
+    const notes = await db.table("notes").toArray();
+    const bookmarks = await db.table("bookmarks").toArray();
+    const passwords = await db.table("passwords").toArray();
+
+    const allData = [...notes, ...bookmarks, ...passwords];
+    localDbSize.value = new Blob([JSON.stringify(allData)]).size / 1024; // Convert to KB
   } catch (error) {
     console.error("Failed to calculate database size:", error);
   }
@@ -300,20 +287,6 @@ updateLocalDbSize();
         <!-- Export Options -->
         <div class="bg-white p-6 rounded-lg shadow-md">
           <h2 class="text-xl font-bold text-gray-800 mb-4">Export Data</h2>
-
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
-            <div class="flex space-x-4">
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="exportOptions.format" value="encrypted" class="form-radio h-4 w-4 text-blue-600" />
-                <span class="ml-2 text-gray-700">Encrypted</span>
-              </label>
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="exportOptions.format" value="decrypted" class="form-radio h-4 w-4 text-blue-600" />
-                <span class="ml-2 text-gray-700">Decrypted</span>
-              </label>
-            </div>
-          </div>
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Export Location</label>
@@ -344,20 +317,6 @@ updateLocalDbSize();
         <!-- Import Options -->
         <div class="bg-white p-6 rounded-lg shadow-md">
           <h2 class="text-xl font-bold text-gray-800 mb-4">Import Data</h2>
-
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Import Format</label>
-            <div class="flex space-x-4">
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="importOptions.format" value="encrypted" class="form-radio h-4 w-4 text-blue-600" />
-                <span class="ml-2 text-gray-700">Encrypted</span>
-              </label>
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="importOptions.format" value="decrypted" class="form-radio h-4 w-4 text-blue-600" />
-                <span class="ml-2 text-gray-700">Decrypted</span>
-              </label>
-            </div>
-          </div>
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Import Source</label>

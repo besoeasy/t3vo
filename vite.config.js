@@ -11,7 +11,7 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       manifest: {
         name: "T3VO",
         short_name: "T3VO",
@@ -30,13 +30,6 @@ export default defineConfig({
             type: "image/png",
           },
         ],
-      },
-      workbox: {
-        clientsClaim: true,
-        skipWaiting: false,
-      },
-      devOptions: {
-        enabled: true,
       },
     }),
   ],

@@ -2,9 +2,10 @@ import Dexie from "dexie";
 import CryptoJS from "crypto-js";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
+
 const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
 
-export const db = new Dexie(`T3VO-${hashedKey}`);
+const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
   entries: "++id, type, data, updatedAt, deletedAt",
@@ -229,82 +230,16 @@ export async function getCounts() {
   return { notes, bookmarks, passwords };
 }
 
-// Export all entries (for backup purposes)
-export async function exportAllEntries() {
-  const entries = await db.entries.toArray();
-  return entries;
+export async function getAllEntries(page = 1) {
+  const offset = (page - 1) * itemsPerPage;
+  const entries = await db.entries.where("deletedAt").equals(null).reverse().offset(offset).limit(itemsPerPage).toArray();
+
+  return entries.map((entry) => ({
+    ...entry,
+    data: decryptData(entry.data),
+  }));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Helper function to calculate SHA256 hash of data
-function calculateDataHash(data) {
-  const stringData = typeof data === "object" ? JSON.stringify(data) : String(data);
-  return CryptoJS.SHA256(stringData).toString(CryptoJS.enc.Hex);
-}
-
-// Import entries (for restore purposes) without clearing existing data
-export async function importEntries(entries) {
-  // Loop through each entry to be imported
-  for (const entry of entries) {
-    // Decrypt the data if it's encrypted
-    const decryptedData = decryptData(entry.data);
-
-    // Calculate the SHA256 hash of the decrypted data
-    const dataHash = calculateDataHash(decryptedData);
-
-    // Check if an entry with the same data hash already exists
-    const existingEntry = await db.entries.where("type").equals(entry.type).and((e) => {
-      const existingDecryptedData = decryptData(e.data);
-      return calculateDataHash(existingDecryptedData) === dataHash;
-    }).first();
-
-    if (!existingEntry) {
-      // If no duplicate is found, add the entry to the database
-      await db.entries.add({
-        type: entry.type,
-        data: encryptData(decryptedData),
-        updatedAt: getCurrentTime(),
-        deletedAt: null,
-      });
-    } else {
-      console.log(`Entry with type ${entry.type} and data hash ${dataHash} already exists. Skipping...`);
-    }
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Periodically cleans up old entries that have been soft-deleted for more than 90 days.
 if (Math.random() > 0.8) {
   console.log("Cleaning up old entries...");
 
