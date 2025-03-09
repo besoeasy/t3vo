@@ -6,6 +6,7 @@ import PassWord from "@/views/password.vue";
 import Note from "@/views/note.vue";
 import Backup from "@/views/backup.vue";
 import Import from "@/views/import.vue";
+import Sync from "@/views/sync.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -39,6 +40,11 @@ const router = createRouter({
       path: "/import",
       name: "import",
       component: Import,
+    },
+    {
+      path: "/sync",
+      name: "sync",
+      component: Sync,
     },
   ],
 });
