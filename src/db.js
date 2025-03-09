@@ -235,11 +235,74 @@ export async function exportAllEntries() {
   return entries;
 }
 
-// Import entries (for restore purposes)
-export async function importEntries(entries) {
-  await db.entries.clear();
-  await db.entries.bulkAdd(entries);
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Helper function to calculate SHA256 hash of data
+function calculateDataHash(data) {
+  const stringData = typeof data === "object" ? JSON.stringify(data) : String(data);
+  return CryptoJS.SHA256(stringData).toString(CryptoJS.enc.Hex);
 }
+
+// Import entries (for restore purposes) without clearing existing data
+export async function importEntries(entries) {
+  // Loop through each entry to be imported
+  for (const entry of entries) {
+    // Decrypt the data if it's encrypted
+    const decryptedData = decryptData(entry.data);
+
+    // Calculate the SHA256 hash of the decrypted data
+    const dataHash = calculateDataHash(decryptedData);
+
+    // Check if an entry with the same data hash already exists
+    const existingEntry = await db.entries.where("type").equals(entry.type).and((e) => {
+      const existingDecryptedData = decryptData(e.data);
+      return calculateDataHash(existingDecryptedData) === dataHash;
+    }).first();
+
+    if (!existingEntry) {
+      // If no duplicate is found, add the entry to the database
+      await db.entries.add({
+        type: entry.type,
+        data: encryptData(decryptedData),
+        updatedAt: getCurrentTime(),
+        deletedAt: null,
+      });
+    } else {
+      console.log(`Entry with type ${entry.type} and data hash ${dataHash} already exists. Skipping...`);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Periodically cleans up old entries that have been soft-deleted for more than 90 days.
 if (Math.random() > 0.8) {
