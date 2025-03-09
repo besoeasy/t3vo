@@ -16,7 +16,7 @@ const backupDatabase = async () => {
 
   const jsonData = JSON.stringify(decryptedEntries, null, 2);
   const blob = new Blob([jsonData], { type: "application/json" });
-  saveAs(blob, "backup.json");
+  saveAs(blob, "t3vo.json");
 };
 
 const restoreDatabase = async (event) => {
