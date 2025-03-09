@@ -9,7 +9,7 @@ const SERVER_URL = ref(localStorage.getItem("server_url") || "https://sh.t3vo.co
 const userID = ref(localStorage.getItem("user_id") || "");
 
 const generateRandomID = () => {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@&$#";
   return Array.from({ length: 16 }, () => characters[Math.floor(Math.random() * characters.length)]).join("");
 };
 
