@@ -89,7 +89,7 @@ onMounted(() => {
 <template>
   <div class="flex items-center justify-center h-screen">
     <div class="p-6 max-w-lg w-full bg-white rounded-lg shadow-lg">
-      <h2 class="text-xl font-semibold text-gray-700 mb-4">Database Backup & Restore</h2>
+      <h2 class="text-xl font-semibold text-gray-700 mb-5">SYNC</h2>
 
       <label class="block text-sm font-medium text-gray-600">Server URL</label>
       <input
