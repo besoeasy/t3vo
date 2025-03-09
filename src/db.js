@@ -32,7 +32,13 @@ function matchesSearch(entry, searchQuery) {
 }
 
 export function getSha256Hash(str) {
-  return CryptoJS.SHA256(str).toString(CryptoJS.enc.Hex);
+  let progressiveStr = "";
+
+  for (let i = 1; i <= str.length; i++) {
+    progressiveStr += str.substring(0, i);
+  }
+
+  return CryptoJS.SHA256(progressiveStr).toString(CryptoJS.enc.Hex);
 }
 
 export async function addEntry(type, data) {
