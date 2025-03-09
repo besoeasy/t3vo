@@ -59,12 +59,14 @@ const restoreDatabase = async (event) => {
 </script>
 
 <template>
-  <div class="p-6 max-w-lg mx-auto bg-white rounded-lg shadow-lg">
-    <h2 class="text-xl font-semibold text-gray-700 mb-4">Database Backup & Restore</h2>
+  <div class="flex items-center justify-center h-screen">
+    <div class="p-6 max-w-lg w-full bg-white rounded-lg shadow-lg">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Database Backup & Restore</h2>
 
-    <button @click="backupDatabase" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
+      <button @click="backupDatabase" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
 
-    <input type="file" ref="fileInput" @change="restoreDatabase" class="hidden" />
-    <button @click="fileInput.click()" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore Database</button>
+      <input type="file" ref="fileInput" @change="restoreDatabase" class="hidden" />
+      <button @click="fileInput.click()" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore Database</button>
+    </div>
   </div>
 </template>
