@@ -240,24 +240,12 @@ export async function getAllEntries(page = 1) {
   }));
 }
 
-export async function addEntry(type, data) {
-  const entry = {
-    type,
-    data: encryptData(data),
-    updatedAt: getCurrentTime(),
-    deletedAt: null,
-  };
-
-  const id = await db.entries.add(entry);
-  return id;
-}
-
 if (Math.random() > 0.8) {
   console.log("Cleaning up old entries...");
 
   const entries = await db.entries.toArray();
   entries.forEach((entry) => {
-    const checksum = CryptoJS.SHA256(entry.data).toString(CryptoJS.enc.Hex);
+    const checksum = CryptoJS.SHA256(entry.data + entry.type).toString(CryptoJS.enc.Hex);
     db.entries.update(entry.id, { checksum });
   });
 
