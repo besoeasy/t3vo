@@ -18,6 +18,5 @@ const navItems = [
   { name: "Note", icon: FileText, to: "/note" },
   { name: "Import", icon: Import, to: "/import" },
   { name: "Backup", icon: Scaling, to: "/backup" },
-  { name: "Sync", icon: RefreshCw, to: "/sync" },
 ];
 </script>

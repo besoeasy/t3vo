@@ -2,29 +2,61 @@
 import { ref } from "vue";
 import { db } from "@/db.js";
 
-const SERVER_URL = "http://localhost:57303";  
-const USER_ID = "your-unique-user-id"; // Replace this with a persistent user ID
+const SERVER_URL = "http://localhost:57303";
+const USER_ID = "your-unique-user-id"; 
 
 // Pagination state
 const currentPage = ref(1);
 const totalPages = ref(1);
 const entries = ref([]);
 
+// Fetch entries from the server
 const fetchEntries = async () => {
   try {
-    const response = await fetch(`${SERVER_URL}/fetch/${USER_ID}?page=${currentPage.value}`);
+    const response = await fetch(`${SERVER_URL}/fetch/${USER_ID}/${currentPage.value}`);
     if (!response.ok) throw new Error("Failed to fetch entries");
 
     const data = await response.json();
     entries.value = data.data;
-    // Calculate total pages (total entries divided by entries per page)
-    totalPages.value = Math.ceil(data.limit / 30); // Adjust this depending on your response data structure
+
+    // Calculate total pages based on the total entries
+    totalPages.value = Math.ceil(data.totalCount / 30); // Assuming 30 entries per page
   } catch (error) {
     console.error("Error fetching entries:", error);
     alert("Failed to fetch entries.");
   }
 };
 
+// Backup entries to the server (in batches)
+const backupDatabase = async () => {
+  try {
+    const entriesData = await db.entries.filter((entry) => !entry.deletedAt).toArray();
+    const batchSize = 20; // Adjust this based on the server's capacity
+
+    for (let i = 0; i < entriesData.length; i += batchSize) {
+      const batch = entriesData.slice(i, i + batchSize);
+      
+      // Send entries in batches
+      const response = await fetch(`${SERVER_URL}/save/${USER_ID}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(batch), // Send an array of entries in one request
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error("Backup failed for entries batch");
+      }
+    }
+
+    alert("Backup successful!");
+  } catch (error) {
+    console.error("Backup failed:", error);
+    alert("Failed to backup data.");
+  }
+};
+
+// Restore entries from the server
 const restoreDatabase = async () => {
   try {
     let page = 1;
@@ -32,7 +64,7 @@ const restoreDatabase = async () => {
     let isMoreData = true;
 
     while (isMoreData) {
-      const response = await fetch(`${SERVER_URL}/fetch/${USER_ID}?page=${page}`);
+      const response = await fetch(`${SERVER_URL}/fetch/${USER_ID}/${page}`);
       if (!response.ok) throw new Error("No data found or failed to fetch data");
 
       const jsonData = await response.json();
@@ -45,7 +77,7 @@ const restoreDatabase = async () => {
 
       // Loop through and add entries to the local DB
       for (const entry of jsonData.data) {
-        // Check if the entry already exists in the DB
+        // Check if the entry already exists in the DB using unique identifier (e.g., `updatedAt`)
         const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt }).first();
         if (!existingEntry) {
           await db.entries.add(entry); // Add to DB directly
@@ -63,6 +95,7 @@ const restoreDatabase = async () => {
   }
 };
 
+// Go to the next page
 const goToNextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
@@ -70,6 +103,7 @@ const goToNextPage = () => {
   }
 };
 
+// Go to the previous page
 const goToPrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
