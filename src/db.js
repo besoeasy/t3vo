@@ -17,34 +17,6 @@ const itemsPerPage = 10;
 // Helper: Returns current timestamp.
 const getCurrentTime = () => Date.now();
 
-// Helper: Encrypts data using AES
-export function encryptData(data) {
-  if (!ENCRYPTION_KEY) return data;
-
-  const stringData = typeof data === "object" ? JSON.stringify(data) : String(data);
-  return CryptoJS.AES.encrypt(stringData, ENCRYPTION_KEY).toString();
-}
-
-// Helper: Decrypts data using AES
-export function decryptData(encryptedData) {
-  if (!ENCRYPTION_KEY || !encryptedData) return encryptedData;
-
-  try {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-    const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-
-    // Try to parse as JSON, if it fails return as string
-    try {
-      return JSON.parse(decryptedString);
-    } catch (e) {
-      return decryptedString;
-    }
-  } catch (e) {
-    console.error("Decryption failed:", e);
-    return null;
-  }
-}
-
 // Helper: Checks if any decrypted field contains the search query.
 function matchesSearch(entry, searchQuery) {
   const lowerQuery = searchQuery.toLowerCase();
@@ -222,9 +194,23 @@ export async function getEntryById(id) {
   };
 }
 
-if (Math.random() > 0.8) {
-  console.log("Cleaning up old entries...");
+export function encryptData(data) {
+  if (!ENCRYPTION_KEY) return data;
+  const stringData = typeof data === "object" ? JSON.stringify(data) : String(data);
+  return CryptoJS.AES.encrypt(stringData, ENCRYPTION_KEY).toString();
+}
 
+export function decryptData(encryptedData) {
+  if (!ENCRYPTION_KEY || !encryptedData) return encryptedData;
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
+    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+  } catch {
+    return null;
+  }
+}
+
+if (Math.random() > 0.1) {
   const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
   db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
 }
