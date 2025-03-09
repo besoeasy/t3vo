@@ -1,11 +1,11 @@
 import Dexie from "dexie";
 import CryptoJS from "crypto-js";
 
-// Define the IndexedDB database name.
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY");
 
-// Define the IndexedDB schema with a single table.
-export const db = new Dexie("T3VO-Database");
+const hashedKey = ENCRYPTION_KEY ?  CryptoJS(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
+
+export const db = new Dexie("T3VO-" + hashedKey);
 
 db.version(1).stores({
   entries: "++id, type, data, updatedAt, deletedAt",
