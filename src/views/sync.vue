@@ -48,13 +48,7 @@ const fetchFromServer = async () => {
       const { data, hasNextPage: nextPage } = response.data;
 
       for (const entry of data) {
-        const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt, type: entry.type }).first();
-        if (!existingEntry) {
-          console.log("Adding new entry...");
-          await db.entries.add(entry);
-        } else {
-          console.log("Entry already exists, skipping...");
-        }
+        await db.entries.add(entry);
       }
 
       hasNextPage = nextPage;
