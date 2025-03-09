@@ -8,7 +8,7 @@ const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(Cryp
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
-  entries: "++id, type, data, updatedAt, deletedAt",
+  entries: "id, type, data, updatedAt, deletedAt",
 });
 
 // Common constant for pagination.
@@ -31,11 +31,13 @@ function matchesSearch(entry, searchQuery) {
   });
 }
 
-// CRUD Functions
+export function getSha256Hash(str) {
+  return CryptoJS.SHA256(str).toString(CryptoJS.enc.Hex);
+}
 
-// Adds a new entry to the database.
 export async function addEntry(type, data) {
   const entry = {
+    id: getSha256Hash(type + encryptData(data) + getCurrentTime()),
     type,
     data: encryptData(data),
     updatedAt: getCurrentTime(),
@@ -211,6 +213,19 @@ export function decryptData(encryptedData) {
 }
 
 if (Math.random() > 0.1) {
+  console.log("Cleaning up database...");
+
+  // Remove duplicate entries
+  const entries = db.entries.toArray();
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      if (entries[i].data === entries[j].data && entries[i].type === entries[j].type) {
+        db.entries.delete(entries[j].id);
+      }
+    }
+  }
+
+  // Remove entries older than 90 days
   const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
   db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
 }

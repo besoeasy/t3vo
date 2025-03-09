@@ -4,8 +4,8 @@ import axios from "axios";
 import { db } from "@/db.js";
 
 const fileInput = ref(null);
-const SERVER_URL = "http://localhost:57303"; // Change this to your actual server URL
-const userID = ref(""); // User can set this value
+const SERVER_URL = "http://localhost:57303";
+const userID = ref("");
 
 const saveToServer = async (data) => {
   if (!userID.value) {
@@ -48,7 +48,14 @@ const fetchFromServer = async () => {
       const { data, hasNextPage: nextPage } = response.data;
 
       for (const entry of data) {
-        await db.entries.add(entry);
+        const existingEntry = await db.entries.get(entry.id);
+        if (existingEntry) {
+          if (existingEntry.updatedAt < entry.updatedAt) {
+            await db.entries.update(entry.id, entry);
+          }
+        } else {
+          await db.entries.add(entry);
+        }
       }
 
       hasNextPage = nextPage;
