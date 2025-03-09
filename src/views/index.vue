@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { version } from "../../package.json";
-import { getCounts, fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
+import { fetchNotes, fetchBookmarks, fetchPasswords } from "@/db";
 import { KeyIcon, BookmarkIcon, FileTextIcon, GithubIcon, AlertCircleIcon, UsersRound, ClipboardCopyIcon, CheckIcon, SettingsIcon, ShieldIcon, LockIcon, RefreshCwIcon, MinusIcon, PlusIcon, HashIcon, Hash, ActivityIcon, DownloadIcon } from "lucide-vue-next";
 import { format } from "timeago.js";
 
@@ -128,10 +128,7 @@ const copyToClipboard = async () => {
 
 const loadData = async () => {
   try {
-    const counts = await getCounts();
-    savedPasswords.value = counts.passwords;
-    savedBookmarks.value = counts.bookmarks;
-    savedNotes.value = counts.notes;
+    //
   } catch (error) {
     console.error("Error loading counts:", error);
   }

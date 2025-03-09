@@ -5,7 +5,7 @@ const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
 
 const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
 
-const db = new Dexie(`T3VO-${hashedKey}`);
+export const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
   entries: "++id, type, data, updatedAt, deletedAt, checksum",
@@ -220,14 +220,6 @@ export async function getEntryById(id) {
     ...entry,
     data: decryptData(entry.data),
   };
-}
-
-export async function getCounts() {
-  const notes = await db.entries.where({ type: "note", deletedAt: null }).count();
-  const bookmarks = await db.entries.where({ type: "bookmark", deletedAt: null }).count();
-  const passwords = await db.entries.where({ type: "password", deletedAt: null }).count();
-
-  return { notes, bookmarks, passwords };
 }
 
 export async function getAllEntries(page = 1) {
