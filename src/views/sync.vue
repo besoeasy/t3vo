@@ -7,6 +7,21 @@ import CryptoJS from "crypto-js";
 const fileInput = ref(null);
 const SERVER_URL = ref(localStorage.getItem("server_url") || "https://sh.t3vo.com");
 const userID = ref(localStorage.getItem("user_id") || "");
+const logMessages = ref([]);
+const serverStats = ref({ status: "", totalEntries: 0, totalUsers: 0, totalSize: 0 });
+
+const log = (message) => {
+  logMessages.value.push(message);
+};
+
+const fetchServerStats = async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL.value}/`);
+    serverStats.value = response.data;
+  } catch (error) {
+    log("Failed to fetch server stats: " + error.message);
+  }
+};
 
 const generateRandomID = () => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@&$#";
@@ -20,7 +35,7 @@ const setUserID = () => {
 
 const getUserAndKey = () => {
   if (!userID.value.includes("-")) {
-    alert("Invalid User ID format");
+    log("Invalid User ID format");
     return {};
   }
   const [uid, key] = userID.value.split("-");
@@ -39,6 +54,7 @@ const decryptData = (ciphertext, key) => {
 const saveToServer = async (data) => {
   const { uid, key } = getUserAndKey();
   if (!uid || !key) return;
+  log("Starting backup...");
 
   try {
     for (const entry of data) {
@@ -47,10 +63,9 @@ const saveToServer = async (data) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    alert("Database backed up successfully!");
+    log("Backup completed successfully!");
   } catch (error) {
-    console.error("Backup failed:", error);
-    alert("Backup failed. Please try again.");
+    log("Backup failed: " + error.message);
   }
 };
 
@@ -62,6 +77,7 @@ const backupDatabase = async () => {
 const fetchFromServer = async () => {
   const { uid, key } = getUserAndKey();
   if (!uid || !key) return;
+  log("Starting restore...");
 
   try {
     let page = 1;
@@ -83,17 +99,15 @@ const fetchFromServer = async () => {
             await db.entries.add(decryptedData);
           }
         } catch (error) {
-          console.warn("Failed to decrypt an entry", error);
+          log("Failed to decrypt an entry: " + error.message);
         }
       }
-
       hasNextPage = nextPage;
       page++;
     }
-    alert("Database restored successfully!");
+    log("Restore completed successfully!");
   } catch (error) {
-    alert("Failed to restore database.");
-    console.error(error);
+    log("Restore failed: " + error.message);
   }
 };
 
@@ -101,9 +115,10 @@ onMounted(() => {
   if (!userID.value) {
     setUserID();
   }
+  fetchServerStats();
+  setInterval(fetchServerStats, 10000);
 });
 </script>
-
 
 <template>
   <div class="flex items-center justify-center h-screen">
@@ -121,6 +136,17 @@ onMounted(() => {
 
       <button @click="backupDatabase" class="w-full mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
       <button @click="fetchFromServer" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore from Server</button>
+
+      <div class="mt-4 p-2 bg-gray-100 rounded-lg text-sm">
+        <p v-for="(msg, index) in logMessages" :key="index" class="text-gray-700">{{ msg }}</p>
+      </div>
+
+      <div class="mt-4 p-2 bg-gray-200 rounded-lg text-sm">
+        <p class="text-gray-700">Server Status: {{ serverStats.status }}</p>
+        <p class="text-gray-700">Total Entries: {{ serverStats.totalEntries }}</p>
+        <p class="text-gray-700">Total Users: {{ serverStats.totalUsers }}</p>
+        <p class="text-gray-700">Total Size: {{ serverStats.totalSize }} bytes</p>
+      </div>
     </div>
   </div>
 </template>
