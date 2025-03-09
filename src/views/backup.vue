@@ -6,9 +6,8 @@ import { saveAs } from "file-saver";
 const fileInput = ref(null);
 
 const backupDatabase = async () => {
-  const entries = await db.entries.toArray();
+  const entries = await db.entries.filter((entry) => !entry.deletedAt).toArray();
 
-  // Decrypt each entry before exporting
   const decryptedEntries = entries.map((entry) => ({
     ...entry,
     data: decryptData(entry.data),
@@ -33,12 +32,11 @@ const restoreDatabase = async (event) => {
 
         const encryptedData = encryptData(entry.data);
 
-        const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt }).first();
+        const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt, type: entry.type }).first();
 
         if (existingEntry) {
           console.log("Entry already exists, skipping...");
         } else {
-
           console.log("Adding new entry...");
 
           await db.entries.add({
