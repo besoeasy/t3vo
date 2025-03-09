@@ -1,9 +1,10 @@
 import Dexie from "dexie";
+
 import CryptoJS from "crypto-js";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
 
-const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(CryptoJS.enc.Hex) : null;
+const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY) : null;
 
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
@@ -11,13 +12,10 @@ db.version(1).stores({
   entries: "id, type, data, updatedAt, deletedAt",
 });
 
-// Common constant for pagination.
 const itemsPerPage = 10;
 
-// Helper: Returns current timestamp.
 const getCurrentTime = () => Date.now();
 
-// Helper: Checks if any decrypted field contains the search query.
 function matchesSearch(entry, searchQuery) {
   const lowerQuery = searchQuery.toLowerCase();
   const decryptedData = decryptData(entry.data);
@@ -31,7 +29,7 @@ function matchesSearch(entry, searchQuery) {
   });
 }
 
-export function getSha256Hash(str) {
+function getSha256Hash(str) {
   let progressiveStr = "";
 
   for (let i = 1; i <= str.length; i++) {
