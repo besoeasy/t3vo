@@ -8,7 +8,7 @@ const hashedKey = ENCRYPTION_KEY ? CryptoJS.SHA256(ENCRYPTION_KEY).toString(Cryp
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
-  entries: "++id, type, data, updatedAt, deletedAt, checksum",
+  entries: "++id, type, data, updatedAt, deletedAt",
 });
 
 // Common constant for pagination.
@@ -222,24 +222,8 @@ export async function getEntryById(id) {
   };
 }
 
-export async function getAllEntries(page = 1) {
-  const offset = (page - 1) * itemsPerPage;
-  const entries = await db.entries.where("deletedAt").equals(null).reverse().offset(offset).limit(itemsPerPage).toArray();
-
-  return entries.map((entry) => ({
-    ...entry,
-    data: decryptData(entry.data),
-  }));
-}
-
 if (Math.random() > 0.8) {
   console.log("Cleaning up old entries...");
-
-  const entries = await db.entries.toArray();
-  entries.forEach((entry) => {
-    const checksum = CryptoJS.SHA256(entry.data + entry.type).toString(CryptoJS.enc.Hex);
-    db.entries.update(entry.id, { checksum });
-  });
 
   const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
   db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
