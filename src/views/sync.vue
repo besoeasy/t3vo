@@ -16,7 +16,7 @@ const log = (message) => {
 
 const fetchServerStats = async () => {
   try {
-    const response = await axios.get(`${SERVER_URL.value}/`);
+    const response = await axios.get(`${SERVER_URL.value}/api/`);
     serverStats.value = response.data;
   } catch (error) {
     log("Failed to fetch server stats: " + error.message);
@@ -59,7 +59,7 @@ const saveToServer = async (data) => {
   try {
     for (const entry of data) {
       const encryptedEntry = { id: entry.id, data: encryptData(entry, key) };
-      await axios.post(`${SERVER_URL.value}/save/${uid}`, encryptedEntry, {
+      await axios.post(`${SERVER_URL.value}/api/save/${uid}`, encryptedEntry, {
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -84,7 +84,7 @@ const fetchFromServer = async () => {
     let hasNextPage = true;
 
     while (hasNextPage) {
-      const response = await axios.get(`${SERVER_URL.value}/fetch/${uid}/${page}`);
+      const response = await axios.get(`${SERVER_URL.value}/api/fetch/${uid}/${page}`);
       const { data, hasNextPage: nextPage } = response.data;
 
       for (const entry of data) {
