@@ -50,11 +50,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create tag
+      - name: Create tags
         run: |
           new_version=${{ needs.check-version.outputs.newVersion }}
           git tag "v$new_version"
+          git tag -f "latest"
           git push origin "v$new_version"
+          git push origin -f "latest"
 
   deploy:
     needs: tag-release
