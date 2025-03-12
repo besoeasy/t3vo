@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       versionBumped: ${{ steps.version_check.outputs.bumped }}
-      newVersion: ${{ steps.version_check.outputs.new_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +32,6 @@ jobs:
           new_version=$(jq -r .version package.json)
           echo "Old version: $old_version"
           echo "New version: $new_version"
-          echo "::set-output name=new_version::$new_version"
           if [ "$old_version" != "$new_version" ]; then
             echo "Version has been bumped."
             echo "::set-output name=bumped::true"
@@ -50,12 +48,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create tags
+      - name: Create latest tag
         run: |
-          new_version=${{ needs.check-version.outputs.newVersion }}
-          git tag "v$new_version"
           git tag -f "latest"
-          git push origin "v$new_version"
           git push origin -f "latest"
 
   deploy:
