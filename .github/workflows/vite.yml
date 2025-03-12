@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # Needed to create a tag
+  contents: write 
   pages: write
   id-token: write
 
@@ -48,10 +48,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create latest tag
+      - name: Create stable tag
         run: |
-          git tag -f "latest"
-          git push origin -f "latest"
+          git tag -f "stable"
+          git push origin -f "stable"
 
   deploy:
     needs: tag-release
