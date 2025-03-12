@@ -1,3 +1,6 @@
+
+
+
 name: vite
 
 on:
@@ -83,3 +86,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Create dist tag
+        run: |
+          git tag -f "dist"
+          git push origin -f "dist"
