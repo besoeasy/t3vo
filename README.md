@@ -1,5 +1,3 @@
- ## Overview
-
 T3VO APP is designed to be a secure and efficient tool for managing your passwords, bookmarks, and private notes. It ensures your data is encrypted and accessible offline, providing a seamless experience without compromising security.
 
 ## Live Versions
