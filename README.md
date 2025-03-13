@@ -24,4 +24,4 @@ Use these free services to deploy the app with a single click:
 
 ## Contribute
 
-Feel free to fork the repository and submit your edits and improvements. We aim to incorporate new updates as soon as possible.
+Feel free to fork the repository and submit your edits and improvements.
