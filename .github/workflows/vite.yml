@@ -50,6 +50,12 @@ jobs:
           git tag -f "stable"
           git push origin -f "stable"
 
+      - name: Create version tag
+        run: |
+          version=$(jq -r .version package.json)
+          git tag -a "v$version" -m "Release v$version"
+          git push origin "v$version"
+
   deploy:
     needs: tag-release
     runs-on: ubuntu-latest
