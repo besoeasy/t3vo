@@ -1,8 +1,6 @@
 name: vite
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Runs once a day at midnight UTC
   push:
     branches: ['latest']
   workflow_dispatch:
