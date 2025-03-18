@@ -1,4 +1,4 @@
-name: vite
+9name: vite
 
 on:
   push:
@@ -9,10 +9,6 @@ permissions:
   contents: write # Needed to create a tag
   pages: write
   id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
   check-version:
