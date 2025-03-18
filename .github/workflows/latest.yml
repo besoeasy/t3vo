@@ -1,0 +1,42 @@
+name: Update Latest Branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      versionBumped: ${{ steps.version_check.outputs.bumped }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if package.json version bumped
+        id: version_check
+        run: |
+          old_version=$(git show HEAD^:package.json | jq -r .version)
+          new_version=$(jq -r .version package.json)
+          if [ "$old_version" != "$new_version" ]; then
+            echo "version: $old_version / $new_version"
+            echo "bumped=true" >> $GITHUB_ENV
+          else
+            echo "bumped=false" >> $GITHUB_ENV
+          fi
+
+  update-latest:
+    needs: check-version
+    if: env.bumped == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Push to latest branch
+        run: |
+          git checkout -B latest
+          git push -f origin latest
