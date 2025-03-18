@@ -16,9 +16,9 @@ T3VO APP is designed to be a secure and efficient tool for managing your passwor
 
 Use these free services to deploy the app with a single click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/t3volabs/t3vo-app/tree/stable)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/t3volabs/t3vo-app/tree/latest)
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/t3volabs/t3vo-app&branch=stable)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/t3volabs/t3vo-app&branch=latest)
 
 ## Contribute
 
