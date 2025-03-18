@@ -19,6 +19,7 @@ jobs:
       - name: Check if package.json version bumped
         id: version_check
         run: |
+          set -e
           old_version=$(git show HEAD^:package.json | jq -r .version)
           new_version=$(jq -r .version package.json)
           if [ "$old_version" != "$new_version" ]; then
@@ -36,6 +37,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Push to latest branch
-        run: |
-          git checkout -B latest
-          git push -f origin latest
+        run: git push -f origin HEAD:latest
