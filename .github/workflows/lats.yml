@@ -30,22 +30,20 @@ jobs:
           echo "New version: $new_version"
           if [ "$old_version" != "$new_version" ]; then
             echo "Version has been bumped."
-            echo "bumped=true" >> $GITHUB_ENV
+            echo "::set-output name=bumped::true"
           else
             echo "Version has not changed."
-            echo "bumped=false" >> $GITHUB_ENV
+            echo "::set-output name=bumped::false"
           fi
-        shell: bash
-          
+
   push_latest:
     needs: check-version
-    if: env.bumped == 'true'
+    if: needs.check-version.outputs.versionBumped == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # ensures full commit history is available
-          
       - name: Push HEAD to latest branch
         run: git push origin HEAD:refs/heads/latest
