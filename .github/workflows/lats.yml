@@ -30,10 +30,10 @@ jobs:
           echo "New version: $new_version"
           if [ "$old_version" != "$new_version" ]; then
             echo "Version has been bumped."
-            echo "bumped=true" >> $GITHUB_ENV
+            echo "bumped=true" >> $GITHUB_OUTPUT
           else
             echo "Version has not changed."
-            echo "bumped=false" >> $GITHUB_ENV
+            echo "bumped=false" >> $GITHUB_OUTPUT
           fi
 
   push_latest:
