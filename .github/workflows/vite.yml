@@ -1,6 +1,8 @@
 name: vite
 
 on:
+  schedule:
+    - cron: '*/10 * * * *' # Runs every 10 minutes
   push:
     branches: ['latest']
   workflow_dispatch:
