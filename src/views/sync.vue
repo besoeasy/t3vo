@@ -16,7 +16,7 @@ const log = (message) => {
 
 const fetchServerStats = async () => {
   try {
-    const response = await axios.get(`${SERVER_URL.value}/api/`);
+    const response = await axios.get(`${SERVER_URL.value}/server/`);
     serverStats.value = response.data;
   } catch (error) {
     log("Failed to fetch server stats: " + error.message);
@@ -59,7 +59,7 @@ const saveToServer = async (data) => {
   try {
     for (const entry of data) {
       const encryptedEntry = { id: entry.id, data: encryptData(entry, key) };
-      await axios.post(`${SERVER_URL.value}/api/save/${uid}`, encryptedEntry, {
+      await axios.post(`${SERVER_URL.value}/save/${uid}`, encryptedEntry, {
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -84,7 +84,7 @@ const fetchFromServer = async () => {
     let hasNextPage = true;
 
     while (hasNextPage) {
-      const response = await axios.get(`${SERVER_URL.value}/api/fetch/${uid}/${page}`);
+      const response = await axios.get(`${SERVER_URL.value}/fetch/${uid}/${page}`);
       const { data, hasNextPage: nextPage } = response.data;
 
       for (const entry of data) {
@@ -143,9 +143,11 @@ onMounted(() => {
 
       <div class="mt-4 p-2 bg-gray-200 rounded-lg text-sm">
         <p class="text-gray-700">Server Status: {{ serverStats.status }}</p>
-        <p class="text-gray-700">Total Entries: {{ serverStats.totalEntries }}</p>
-        <p class="text-gray-700">Total Users: {{ serverStats.totalUsers }}</p>
-        <p class="text-gray-700">Total Size: {{ serverStats.totalSize }} bytes</p>
+        <p class="text-gray-700">Total Entries: {{ serverStats.records }}</p>
+        <p class="text-gray-700">Total Users: {{ serverStats.users }}</p>
+        <p class="text-gray-700">Total Size: {{ serverStats.dataSizeBytes }} bytes</p>
+        <p class="text-gray-700">retentionDays: {{ serverStats.retentionDays }} Days</p>
+        <p class="text-gray-700">lastUpdatedAt: {{ serverStats.lastUpdatedAt }} Days</p>
       </div>
     </div>
   </div>
