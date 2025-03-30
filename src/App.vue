@@ -3,20 +3,28 @@
     <RoboHashAvatar :password="passwordInput" />
 
     <div class="w-full max-w-md mx-auto">
-      <input v-model="passwordInput" type="password" placeholder="Enter Master Password" class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200" @input="checkPasswordStrength" />
+      <input v-model="passwordInput" type="password" placeholder="Enter Master Password"
+        class="w-full p-4 text-lg border-0 rounded-lg bg-yellow-100 bg-opacity-50 focus:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200"
+        @input="checkPasswordStrength" />
 
       <div v-if="passwordInput" class="mt-3 w-full flex items-center">
         <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div class="h-full transition-all duration-300 ease-in-out" :class="strengthInfo.colorClass" :style="{ width: `${strengthPercentage}%` }"></div>
+          <div class="h-full transition-all duration-300 ease-in-out" :class="strengthInfo.colorClass"
+            :style="{ width: `${strengthPercentage}%` }"></div>
         </div>
       </div>
 
-      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is {{ strengthInfo.label }}.</p>
+      <p v-if="showWarning" class="mt-2 text-red-600 text-sm">Warning: Your master password is {{ strengthInfo.label }}.
+      </p>
     </div>
 
-    <button @click="unlockApp" class="max-w-md mx-auto mt-6 px-5 py-3 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2" :disabled="passwordInput.length === 0">UNLOCK</button>
+    <button @click="unlockApp"
+      class="max-w-md mx-auto mt-6 px-5 py-3 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+      :disabled="passwordInput.length === 0">UNLOCK</button>
 
-    <p class="text-sm text-blue-800 text-center pt-3 max-w-xl mx-auto">Your master password is the primary encryption key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually verify you're using the correct master password.</p>
+    <p class="text-sm text-blue-800 text-center pt-3 max-w-xl mx-auto">Your master password is the primary encryption
+      key for securing all of your data. The robot avatar above will be unique to your password - it helps you visually
+      verify you're using the correct master password.</p>
   </div>
 
   <template v-else>
