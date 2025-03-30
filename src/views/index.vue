@@ -12,15 +12,13 @@ import {
 import { format } from "timeago.js";
 
 // Stats
-const savedPasswords = ref(0);
-const savedBookmarks = ref(0);
-const savedNotes = ref(0);
+
 const isLoading = ref(false);
 
 const stats = computed(() => [
-  { title: "Passwords", count: savedPasswords.value, icon: KeyIcon },
-  { title: "Bookmarks", count: savedBookmarks.value, icon: BookmarkIcon },
-  { title: "Notes", count: savedNotes.value, icon: FileTextIcon },
+  { title: "Passwords", icon: KeyIcon },
+  { title: "Bookmarks", icon: BookmarkIcon },
+  { title: "Notes", icon: FileTextIcon },
   { title: "Version", count: version, icon: ShieldIcon },
 ]);
 
@@ -204,7 +202,7 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
-    <div class="max-w-7xl mx-auto">
+    <div class="m-auto">
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column -->
@@ -411,18 +409,7 @@ onMounted(() => {
                 <span class="text-sm text-gray-600">Version</span>
                 <span class="text-sm font-medium text-gray-900">{{ version }}</span>
               </div>
-              <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-600">Passwords</span>
-                <span class="text-sm font-medium text-gray-900">{{ savedPasswords }}</span>
-              </div>
-              <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-600">Bookmarks</span>
-                <span class="text-sm font-medium text-gray-900">{{ savedBookmarks }}</span>
-              </div>
-              <div class="flex items-center justify-between py-2">
-                <span class="text-sm text-gray-600">Notes</span>
-                <span class="text-sm font-medium text-gray-900">{{ savedNotes }}</span>
-              </div>
+
             </div>
           </div>
         </div>
