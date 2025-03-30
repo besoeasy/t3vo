@@ -216,7 +216,7 @@ export function decryptData(encryptedData) {
   }
 }
 
-if (Math.random() > 0.1) {
+if (Math.random() > 0.5) {
   console.log("Cleaning up database...");
 
   // Remove duplicate entries
