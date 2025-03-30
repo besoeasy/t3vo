@@ -126,16 +126,21 @@ onMounted(() => {
       <h2 class="text-xl font-semibold text-gray-700 mb-5">SYNC</h2>
 
       <label class="block text-sm font-medium text-gray-600">Server URL</label>
-      <input v-model="SERVER_URL" type="text" placeholder="Enter Server URL" class="w-full px-4 py-2 border rounded-lg mb-4" @change="localStorage.setItem('server_url', SERVER_URL)" />
+      <input v-model="SERVER_URL" type="text" placeholder="Enter Server URL"
+        class="w-full px-4 py-2 border rounded-lg mb-4" @change="localStorage.setItem('server_url', SERVER_URL)" />
 
       <label class="block text-sm font-medium text-gray-600">User ID</label>
       <div class="flex items-center gap-2">
-        <input v-model="userID" type="text" placeholder="Enter User ID" class="flex-1 px-4 py-2 border rounded-lg" @input="localStorage.setItem('user_id', userID)" />
-        <button @click="setUserID" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Generate</button>
+        <input v-model="userID" type="text" placeholder="Enter User ID" class="flex-1 px-4 py-2 border rounded-lg"
+          @input="localStorage.setItem('user_id', userID)" />
+        <button @click="setUserID"
+          class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Generate</button>
       </div>
 
-      <button @click="backupDatabase" class="w-full mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
-      <button @click="fetchFromServer" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore from Server</button>
+      <button @click="backupDatabase"
+        class="w-full mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
+      <button @click="fetchFromServer"
+        class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore from Server</button>
 
       <div class="mt-4 p-2 bg-gray-100 rounded-lg text-sm">
         <p v-for="(msg, index) in logMessages" :key="index" class="text-gray-700">{{ msg }}</p>

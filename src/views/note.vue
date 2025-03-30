@@ -152,8 +152,8 @@ watch(loaderRef, (newRef, oldRef) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 p-8">
-    <div class="m-auto">
+  <div>
+    <div>
       <h1 class="text-4xl font-bold mb-8 text-gray-800 flex items-center">
         <FileText class="mr-4" size="36" />
         Notes Manager

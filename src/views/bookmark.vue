@@ -28,7 +28,7 @@ const getRandomGradient = () => {
 
 const loadBookmarks = async (reset = false) => {
   if (isLoading.value || (loadingMore.value && !reset)) return;
-  
+
   try {
     if (reset) {
       isLoading.value = true;
@@ -37,9 +37,9 @@ const loadBookmarks = async (reset = false) => {
     } else {
       loadingMore.value = true;
     }
-    
+
     const fetchedBookmarks = await fetchBookmarks(currentPage.value, searchQuery.value);
-    
+
     if (fetchedBookmarks.length === 0) {
       hasMoreBookmarks.value = false;
     } else {
@@ -50,7 +50,7 @@ const loadBookmarks = async (reset = false) => {
         note: bookmark.data.note,
         updated_at: bookmark.updatedAt
       }));
-      
+
       bookmarks.value = [...bookmarks.value, ...newBookmarks];
       currentPage.value++;
     }
@@ -104,7 +104,7 @@ const saveBookmarkEdit = async () => {
       url: editingBookmark.value.url,
       note: editingBookmark.value.note,
     });
-    
+
     showEditModal.value = false;
     await loadBookmarks(true);
   } catch (error) {
@@ -154,8 +154,8 @@ onMounted(loadBookmarks);
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 p-8">
-    <div class="m-auto">
+  <div>
+    <div>
       <h1 class="text-4xl font-bold mb-8 text-gray-800 flex items-center">
         <FileText class="mr-4" size="36" />
         Bookmarks
@@ -163,21 +163,28 @@ onMounted(loadBookmarks);
 
       <div class="mb-8 flex items-center justify-between">
         <div class="relative flex-grow mr-4">
-          <input v-model="searchQuery" placeholder="Search bookmarks..." class="w-full pl-10 pr-4 py-2 rounded-full border-2 border-gray-300 focus:border-blue-500 focus:outline-none transition-colors" />
+          <input v-model="searchQuery" placeholder="Search bookmarks..."
+            class="w-full pl-10 pr-4 py-2 rounded-full border-2 border-gray-300 focus:border-blue-500 focus:outline-none transition-colors" />
           <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size="20" />
         </div>
-        <button @click="showAddForm = !showAddForm" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors flex items-center">
-          <Plus size="20"  />
+        <button @click="showAddForm = !showAddForm"
+          class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors flex items-center">
+          <Plus size="20" />
         </button>
       </div>
 
       <div v-if="showAddForm" class="mb-8 p-6 bg-white rounded-xl shadow-lg transition-all duration-300 ease-in-out">
         <h2 class="text-2xl font-bold mb-4">Add New Bookmark</h2>
-        <input v-model="newBookmark.title" placeholder="Title" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-        <input v-model="newBookmark.url" placeholder="URL" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-        <textarea v-model="newBookmark.note" placeholder="Note" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3"></textarea>
-        <button @click="addBookmark" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center">
-          <Plus size="20"  />
+        <input v-model="newBookmark.title" placeholder="Title"
+          class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+        <input v-model="newBookmark.url" placeholder="URL"
+          class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+        <textarea v-model="newBookmark.note" placeholder="Note"
+          class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"></textarea>
+        <button @click="addBookmark"
+          class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center">
+          <Plus size="20" />
         </button>
       </div>
 
@@ -186,17 +193,22 @@ onMounted(loadBookmarks);
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div v-for="bookmark in bookmarks" :key="bookmark.id" class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" :style="{ background: getRandomGradient() }">
+        <div v-for="bookmark in bookmarks" :key="bookmark.id"
+          class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+          :style="{ background: getRandomGradient() }">
           <div class="p-6">
             <div class="flex justify-between items-start mb-4">
-              <a :href="bookmark.url" target="_blank" class="text-xl font-semibold text-gray-800 hover:text-blue-600 transition-colors break-words flex items-center">
+              <a :href="bookmark.url" target="_blank"
+                class="text-xl font-semibold text-gray-800 hover:text-blue-600 transition-colors break-words flex items-center">
                 {{ bookmark.title || extractDomain(bookmark.url) }}
               </a>
               <div class="flex">
-                <button @click="editBookmark(bookmark)" class="text-gray-500 hover:text-blue-500 p-1 rounded-full hover:bg-blue-100 transition-colors mr-1">
+                <button @click="editBookmark(bookmark)"
+                  class="text-gray-500 hover:text-blue-500 p-1 rounded-full hover:bg-blue-100 transition-colors mr-1">
                   <Edit size="20" />
                 </button>
-                <button @click="removeBookmark(bookmark.id)" class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
+                <button @click="removeBookmark(bookmark.id)"
+                  class="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
                   <X size="20" />
                 </button>
               </div>
@@ -207,7 +219,8 @@ onMounted(loadBookmarks);
         </div>
       </div>
 
-      <p v-if="bookmarks.length === 0 && !isLoading" class="text-center text-gray-500 mt-8 text-lg">No bookmarks found matching your search.</p>
+      <p v-if="bookmarks.length === 0 && !isLoading" class="text-center text-gray-500 mt-8 text-lg">No bookmarks found
+        matching your search.</p>
 
       <!-- Infinite Scroll Loader -->
       <div v-if="hasMoreBookmarks && bookmarks.length > 0" ref="loaderRef" class="flex justify-center py-4">
@@ -216,34 +229,23 @@ onMounted(loadBookmarks);
       </div>
     </div>
   </div>
-  <EditModal 
-    :show="showEditModal" 
-    title="Edit Bookmark" 
-    @close="showEditModal = false" 
-    @save="saveBookmarkEdit"
-  >
+  <EditModal :show="showEditModal" title="Edit Bookmark" @close="showEditModal = false" @save="saveBookmarkEdit">
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-        <input 
-          v-model="editingBookmark.title" 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-        />
+        <input v-model="editingBookmark.title"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
-        <input 
-          v-model="editingBookmark.url" 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-        />
+        <input v-model="editingBookmark.url"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
-        <textarea 
-          v-model="editingBookmark.note" 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-          rows="3"
-        ></textarea>
+        <textarea v-model="editingBookmark.note"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"></textarea>
       </div>
     </div>
   </EditModal>

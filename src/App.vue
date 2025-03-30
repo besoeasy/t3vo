@@ -2,31 +2,25 @@
   <LockScreen v-if="!isUnlocked" @unlock="handleUnlock" />
 
   <template v-else>
-    <div class="flex flex-col md:flex-row h-screen">
-      <nav
-        class="bg-black text-yellow-400 bg-opacity-30 backdrop-blur-md w-full md:w-16 lg:w-24 h-16 md:h-screen flex md:flex-col justify-center items-center"
-      >
-        <div
-          class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center"
-        >
-          <router-link
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            class="block p-2 rounded-lg transition duration-200 group"
-            :title="item.name"
-          >
-            <component
-              :is="item.icon"
-              class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200"
-            />
-          </router-link>
-        </div>
-      </nav>
+    <div class="container mx-auto">
+      <div class="flex flex-col md:flex-row h-screen">
+        <nav
+          class=" text-dark bg-opacity-30 backdrop-blur-md w-full md:w-16 lg:w-24 h-16 md:h-screen flex md:flex-col justify-center items-center">
+          <div class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center">
+            <router-link v-for="item in navItems" :key="item.to" :to="item.to"
+              class="block p-2 rounded-lg transition duration-200 group" :title="item.name">
+              <component :is="item.icon"
+                class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200" />
+            </router-link>
+          </div>
+        </nav>
 
-      <main class="flex-1 overflow-y-auto">
-        <RouterView />
-      </main>
+        <main class="flex-1 overflow-y-auto">
+          <div class="min-h-screen p-8">
+            <RouterView class="m-auto" />
+          </div>
+        </main>
+      </div>
     </div>
   </template>
 </template>
