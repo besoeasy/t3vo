@@ -43,7 +43,7 @@ import { GithubIcon, Key } from "lucide-vue-next";
         style="animation-delay: 600ms"
       >
         <router-link
-          to="/password"
+          to="/dashboard"
           class="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Key class="w-5 h-5 mr-2" />

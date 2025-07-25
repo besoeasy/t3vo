@@ -30,9 +30,7 @@ import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
 import {
   Home,
-  Bookmark,
-  Key,
-  FileText,
+  Layers,
   RefreshCw,
   Import,
   Scaling,
@@ -40,9 +38,7 @@ import {
 
 const navItems = [
   { name: "Home", icon: Home, to: "/" },
-  { name: "Bookmark", icon: Bookmark, to: "/bookmark" },
-  { name: "Password", icon: Key, to: "/password" },
-  { name: "Note", icon: FileText, to: "/note" },
+  { name: "Dashboard", icon: Layers, to: "/dashboard" },
   { name: "Import", icon: Import, to: "/import" },
   { name: "Backup", icon: Scaling, to: "/backup" },
   { name: "Sync", icon: RefreshCw, to: "/sync" },
