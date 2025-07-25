@@ -273,12 +273,12 @@ onMounted(() => {
             for anyone to contribute.
           </p>
           <div class="flex flex-col space-y-3">
-            <a href="https://github.com/t3volabs/t3vo-app" target="_blank"
+            <a href="https://github.com/besoeasy/t3vo" target="_blank"
               class="inline-flex items-center px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors">
               <GithubIcon class="h-4 w-4 mr-2 text-gray-700" />
               View on GitHub
             </a>
-            <a href="https://github.com/t3volabs/t3vo-app/issues" target="_blank"
+            <a href="https://github.com/besoeasy/t3vo/issues" target="_blank"
               class="inline-flex items-center px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors">
               <AlertCircleIcon class="h-4 w-4 mr-2 text-gray-700" />
               Report Issue
