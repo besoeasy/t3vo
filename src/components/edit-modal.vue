@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed } from "vue";
-import { X, Key, Bookmark, FileText, Eye, EyeOff } from "lucide-vue-next";
+import { X, Key, Bookmark, FileText, Eye, EyeOff, Copy, Trash } from "lucide-vue-next";
 import PasswordGenerator from "@/components/PasswordGenerator.vue";
 
 const props = defineProps({
@@ -12,10 +12,14 @@ const props = defineProps({
     type: String,
     required: true,
     validator: (value) => ['password', 'bookmark', 'note'].includes(value)
+  },
+  readOnly: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(["save", "cancel"]);
+const emit = defineEmits(["save", "cancel", "edit", "delete", "copy"]);
 
 // Form data
 const formData = ref({});
@@ -56,6 +60,10 @@ const initializeForm = () => {
 
 // Computed properties
 const modalTitle = computed(() => {
+  if (props.readOnly) {
+    const typeTitle = props.type.charAt(0).toUpperCase() + props.type.slice(1);
+    return `${typeTitle} Details`;
+  }
   const action = formData.value.id ? 'Edit' : 'Add';
   const typeTitle = props.type.charAt(0).toUpperCase() + props.type.slice(1);
   return `${action} ${typeTitle}`;
@@ -71,6 +79,30 @@ const typeIcon = computed(() => {
 });
 
 // Methods
+const handleEdit = () => {
+  emit("edit", { ...formData.value });
+};
+
+const handleDelete = () => {
+  emit("delete", { ...formData.value });
+};
+
+const handleCopy = () => {
+  let textToCopy = "";
+  switch (props.type) {
+    case 'password':
+      textToCopy = formData.value.password;
+      break;
+    case 'bookmark':
+      textToCopy = formData.value.url;
+      break;
+    case 'note':
+      textToCopy = formData.value.content;
+      break;
+  }
+  emit("copy", textToCopy);
+};
+
 const handleSave = () => {
   // Validate required fields
   if (!isValid()) return;
@@ -146,7 +178,8 @@ onBeforeUnmount(cleanup);
             <input
               v-model="formData.title"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter title"
             />
           </div>
@@ -157,7 +190,8 @@ onBeforeUnmount(cleanup);
               <input
                 v-model="formData.username"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                :disabled="readOnly"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="Enter username"
               />
             </div>
@@ -167,7 +201,8 @@ onBeforeUnmount(cleanup);
               <input
                 v-model="formData.email"
                 type="email"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                :disabled="readOnly"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="Enter email"
               />
             </div>
@@ -180,7 +215,8 @@ onBeforeUnmount(cleanup);
                 <input
                   v-model="formData.password"
                   :type="showPassword ? 'text' : 'password'"
-                  class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  :disabled="readOnly"
+                  class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="Enter password"
                 />
                 <button
@@ -192,6 +228,7 @@ onBeforeUnmount(cleanup);
                 </button>
               </div>
               <button
+                v-if="!readOnly"
                 type="button"
                 @click="showPasswordGenerator = !showPasswordGenerator"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -201,7 +238,7 @@ onBeforeUnmount(cleanup);
             </div>
             
             <!-- Password Generator -->
-            <div v-if="showPasswordGenerator" class="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div v-if="showPasswordGenerator && !readOnly" class="mt-4 p-4 bg-gray-50 rounded-lg">
               <PasswordGenerator @generated="handlePasswordGenerated" />
             </div>
           </div>
@@ -211,7 +248,8 @@ onBeforeUnmount(cleanup);
             <input
               v-model="formData.totpSecret"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter TOTP secret (optional)"
             />
           </div>
@@ -221,7 +259,8 @@ onBeforeUnmount(cleanup);
             <textarea
               v-model="formData.urls"
               rows="2"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter URLs (one per line)"
             ></textarea>
           </div>
@@ -234,7 +273,8 @@ onBeforeUnmount(cleanup);
             <input
               v-model="formData.url"
               type="url"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="https://example.com"
             />
           </div>
@@ -244,7 +284,8 @@ onBeforeUnmount(cleanup);
             <input
               v-model="formData.title"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter title (auto-generated if empty)"
             />
           </div>
@@ -254,7 +295,8 @@ onBeforeUnmount(cleanup);
             <textarea
               v-model="formData.note"
               rows="4"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Add a note about this bookmark"
             ></textarea>
           </div>
@@ -267,7 +309,8 @@ onBeforeUnmount(cleanup);
             <input
               v-model="formData.title"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter note title"
             />
           </div>
@@ -277,7 +320,8 @@ onBeforeUnmount(cleanup);
             <textarea
               v-model="formData.content"
               rows="8"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :disabled="readOnly"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Write your note content here..."
             ></textarea>
           </div>
@@ -285,20 +329,51 @@ onBeforeUnmount(cleanup);
       </div>
       
       <!-- Footer -->
-      <div class="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-        <button 
-          @click="handleCancel" 
-          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button 
-          @click="handleSave" 
-          :disabled="!isValid()"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {{ formData.id ? 'Update' : 'Create' }}
-        </button>
+      <div class="flex justify-between p-6 border-t border-gray-200 bg-gray-50">
+        <!-- Left side - Action buttons for read-only mode -->
+        <div v-if="readOnly" class="flex gap-2">
+          <button 
+            @click="handleCopy" 
+            class="flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            :title="`Copy ${type === 'password' ? 'Password' : type === 'bookmark' ? 'URL' : 'Content'}`"
+          >
+            <Copy class="w-4 h-4 mr-2" />
+            Copy
+          </button>
+          <button 
+            @click="handleDelete" 
+            class="flex items-center px-3 py-2 text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            <Trash class="w-4 h-4 mr-2" />
+            Delete
+          </button>
+        </div>
+        <div v-else></div>
+
+        <!-- Right side - Close/Cancel and Edit/Save buttons -->
+        <div class="flex gap-3">
+          <button 
+            @click="handleCancel" 
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            {{ readOnly ? 'Close' : 'Cancel' }}
+          </button>
+          <button 
+            v-if="readOnly"
+            @click="handleEdit" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Edit
+          </button>
+          <button 
+            v-else
+            @click="handleSave" 
+            :disabled="!isValid()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {{ formData.id ? 'Update' : 'Create' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

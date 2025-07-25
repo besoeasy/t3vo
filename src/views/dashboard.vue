@@ -1,17 +1,13 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p class="text-gray-600">Manage all your passwords, bookmarks, and notes in one place</p>
-    </div>
-
+  <div class="p-6">
     <!-- Search & Filter Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1">
           <div class="relative">
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
+            />
             <input
               v-model="searchQuery"
               type="text"
@@ -20,7 +16,7 @@
             />
           </div>
         </div>
-        
+
         <!-- Filter Tabs -->
         <div class="flex bg-gray-100 rounded-lg p-1">
           <button
@@ -31,7 +27,7 @@
               'px-4 py-2 rounded-md text-sm font-medium transition-colors',
               activeFilter === filter.key
                 ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 hover:text-gray-900',
             ]"
           >
             <component :is="filter.icon" class="w-4 h-4 inline mr-2" />
@@ -48,16 +44,22 @@
             <Plus class="w-4 h-4 mr-2" />
             Add New
           </button>
-          
+
           <!-- Add Menu Dropdown -->
-          <div v-if="showAddMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+          <div
+            v-if="showAddMenu"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+          >
             <button
               v-for="addOption in addOptions"
               :key="addOption.type"
               @click="startAdding(addOption.type)"
               class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
             >
-              <component :is="addOption.icon" class="w-4 h-4 mr-3 text-gray-400" />
+              <component
+                :is="addOption.icon"
+                class="w-4 h-4 mr-3 text-gray-400"
+              />
               {{ addOption.name }}
             </button>
           </div>
@@ -71,115 +73,101 @@
       <div
         v-for="item in filteredItems"
         :key="`${item.type}-${item.id}`"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
       >
-        <!-- Password Card -->
-        <div v-if="item.type === 'password'" class="space-y-3">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center space-x-2">
-              <Key class="w-5 h-5 text-blue-600" />
-              <h3 class="font-semibold text-gray-900 truncate">{{ item.title }}</h3>
+        <!-- Clickable card content -->
+        <div
+          @click="viewItemDetails(item)"
+          class="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <!-- Password Card -->
+          <div v-if="item.type === 'password'" class="space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <Key class="w-5 h-5 text-blue-600" />
+                <h3 class="font-semibold text-gray-900 truncate">
+                  {{ item.title }}
+                </h3>
+              </div>
             </div>
-            <div class="flex space-x-1">
-              <button @click="editItem(item)" class="p-1 text-gray-400 hover:text-gray-600">
-                <Edit class="w-4 h-4" />
-              </button>
-              <button @click="deleteItem(item)" class="p-1 text-gray-400 hover:text-red-600">
-                <Trash class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          
-          <div class="space-y-2 text-sm">
-            <div v-if="item.username" class="flex items-center space-x-2">
-              <span class="text-gray-500">Username:</span>
-              <span class="font-mono">{{ item.username }}</span>
-              <button @click="copyToClipboard(item.username)" class="text-blue-600 hover:text-blue-800">
-                <Copy class="w-3 h-3" />
-              </button>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-              <span class="text-gray-500">Password:</span>
-              <span class="font-mono">{{ item.visible ? item.password : '••••••••' }}</span>
-              <button @click="item.visible = !item.visible" class="text-gray-400 hover:text-gray-600">
-                <component :is="item.visible ? EyeOff : Eye" class="w-3 h-3" />
-              </button>
-              <button @click="copyToClipboard(item.password)" class="text-blue-600 hover:text-blue-800">
-                <Copy class="w-3 h-3" />
-              </button>
-            </div>
-            
-            <div v-if="item.totp30" class="flex items-center space-x-2">
-              <span class="text-gray-500">2FA:</span>
-              <span class="font-mono text-green-600">{{ item.totp30 }}</span>
-              <button @click="copyToClipboard(item.totp30)" class="text-blue-600 hover:text-blue-800">
-                <Copy class="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        </div>
 
-        <!-- Bookmark Card -->
-        <div v-if="item.type === 'bookmark'" class="space-y-3">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center space-x-2">
-              <Bookmark class="w-5 h-5 text-amber-600" />
-              <h3 class="font-semibold text-gray-900 truncate">{{ item.title }}</h3>
-            </div>
-            <div class="flex space-x-1">
-              <button @click="editItem(item)" class="p-1 text-gray-400 hover:text-gray-600">
-                <Edit class="w-4 h-4" />
-              </button>
-              <button @click="deleteItem(item)" class="p-1 text-gray-400 hover:text-red-600">
-                <Trash class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          
-          <div class="space-y-2 text-sm">
-            <a :href="item.url" target="_blank" class="text-blue-600 hover:text-blue-800 flex items-center space-x-1">
-              <Globe class="w-3 h-3" />
-              <span class="truncate">{{ item.url }}</span>
-            </a>
-            
-            <p v-if="item.note" class="text-gray-600 line-clamp-2">{{ item.note }}</p>
-          </div>
-        </div>
+            <div class="space-y-2 text-sm">
+              <div v-if="item.username" class="flex items-center space-x-2">
+                <span class="text-gray-500">Username:</span>
+                <span class="font-mono">{{ item.username }}</span>
+              </div>
 
-        <!-- Note Card -->
-        <div v-if="item.type === 'note'" class="space-y-3">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center space-x-2">
-              <FileText class="w-5 h-5 text-green-600" />
-              <h3 class="font-semibold text-gray-900 truncate">{{ item.title }}</h3>
-            </div>
-            <div class="flex space-x-1">
-              <button @click="editItem(item)" class="p-1 text-gray-400 hover:text-gray-600">
-                <Edit class="w-4 h-4" />
-              </button>
-              <button @click="deleteItem(item)" class="p-1 text-gray-400 hover:text-red-600">
-                <Trash class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          
-          <div class="text-sm">
-            <p class="text-gray-600 line-clamp-3">{{ item.content }}</p>
-          </div>
-        </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-gray-500">Password:</span>
+                <span class="font-mono">{{
+                  item.visible ? item.password : "••••••••"
+                }}</span>
+              </div>
 
-        <!-- Updated timestamp -->
-        <div class="flex items-center justify-between text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
-          <span>{{ formatDate(item.updated_at) }}</span>
-          <span class="px-2 py-1 bg-gray-100 rounded-full capitalize">{{ item.type }}</span>
+              <div v-if="item.totp30" class="flex items-center space-x-2">
+                <span class="text-gray-500">2FA:</span>
+                <span class="font-mono text-green-600">{{ item.totp30 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bookmark Card -->
+          <div v-if="item.type === 'bookmark'" class="space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <Bookmark class="w-5 h-5 text-amber-600" />
+                <h3 class="font-semibold text-gray-900 truncate">
+                  {{ item.title }}
+                </h3>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div class="text-blue-600 flex items-center space-x-1">
+                <Globe class="w-3 h-3" />
+                <span class="truncate">{{ item.url }}</span>
+              </div>
+
+              <p v-if="item.note" class="text-gray-600 line-clamp-2">
+                {{ item.note }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Note Card -->
+          <div v-if="item.type === 'note'" class="space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <FileText class="w-5 h-5 text-green-600" />
+                <h3 class="font-semibold text-gray-900 truncate">
+                  {{ item.title }}
+                </h3>
+              </div>
+            </div>
+
+            <div class="text-sm">
+              <p class="text-gray-600 line-clamp-3">{{ item.content }}</p>
+            </div>
+          </div>
+
+          <!-- Updated timestamp -->
+          <div
+            class="flex items-center justify-between text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100"
+          >
+            <span>{{ formatDate(item.updated_at) }}</span>
+            <span class="px-2 py-1 bg-gray-100 rounded-full capitalize">{{
+              item.type
+            }}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Loading indicator -->
     <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div
+        class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+      ></div>
     </div>
 
     <!-- Load more trigger -->
@@ -190,22 +178,43 @@
       v-if="showEditModal"
       :item="editingItem"
       :type="editingType"
+      :readOnly="isReadOnlyMode"
       @save="saveItem"
       @cancel="cancelEdit"
+      @edit="handleEditFromReadOnly"
+      @delete="handleDeleteFromModal"
+      @copy="handleCopyFromModal"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { 
-  fetchPasswords, fetchBookmarks, fetchNotes,
-  addPasswordEntry, addBookmarkEntry, addNoteEntry,
-  updatePasswordEntry, updateBookmarkEntry, updateNoteEntry,
-  softDeleteEntry
+import {
+  fetchPasswords,
+  fetchBookmarks,
+  fetchNotes,
+  addPasswordEntry,
+  addBookmarkEntry,
+  addNoteEntry,
+  updatePasswordEntry,
+  updateBookmarkEntry,
+  updateNoteEntry,
+  softDeleteEntry,
 } from "@/db";
-import { 
-  Search, Plus, Key, Bookmark, FileText, Globe, Eye, EyeOff, Copy, Edit, Trash, RotateCcw
+import {
+  Search,
+  Plus,
+  Key,
+  Bookmark,
+  FileText,
+  Globe,
+  Eye,
+  EyeOff,
+  Copy,
+  Edit,
+  Trash,
+  RotateCcw,
 } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
 import EditModal from "@/components/edit-modal.vue";
@@ -227,6 +236,7 @@ const notes = ref([]);
 const showEditModal = ref(false);
 const editingItem = ref(null);
 const editingType = ref("");
+const isReadOnlyMode = ref(false);
 
 // Filter options
 const filters = [
@@ -262,49 +272,49 @@ const generateTOTP = (secret, period = 30) => {
 // Computed properties
 const allItems = computed(() => {
   const items = [];
-  
+
   // Add passwords
-  passwords.value.forEach(p => {
+  passwords.value.forEach((p) => {
     items.push({
       ...p,
-      type: 'password',
+      type: "password",
       visible: false,
       totp30: p.totpSecret ? generateTOTP(p.totpSecret, 30) : "",
     });
   });
-  
+
   // Add bookmarks
-  bookmarks.value.forEach(b => {
+  bookmarks.value.forEach((b) => {
     items.push({
       ...b,
-      type: 'bookmark'
+      type: "bookmark",
     });
   });
-  
+
   // Add notes
-  notes.value.forEach(n => {
+  notes.value.forEach((n) => {
     items.push({
       ...n,
-      type: 'note'
+      type: "note",
     });
   });
-  
+
   // Sort by updated date
   return items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 });
 
 const filteredItems = computed(() => {
   let items = allItems.value;
-  
+
   // Filter by type
   if (activeFilter.value !== "all") {
-    items = items.filter(item => item.type === activeFilter.value);
+    items = items.filter((item) => item.type === activeFilter.value);
   }
-  
+
   // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    items = items.filter(item => {
+    items = items.filter((item) => {
       return (
         item.title?.toLowerCase().includes(query) ||
         item.username?.toLowerCase().includes(query) ||
@@ -315,7 +325,7 @@ const filteredItems = computed(() => {
       );
     });
   }
-  
+
   return items;
 });
 
@@ -326,10 +336,10 @@ const loadAllData = async () => {
     const [passwordsData, bookmarksData, notesData] = await Promise.all([
       fetchPasswords(1, ""),
       fetchBookmarks(1, ""),
-      fetchNotes(1, "")
+      fetchNotes(1, ""),
     ]);
-    
-    passwords.value = passwordsData.map(p => ({
+
+    passwords.value = passwordsData.map((p) => ({
       id: p.id,
       title: p.data.title,
       username: p.data.username,
@@ -339,16 +349,16 @@ const loadAllData = async () => {
       urls: p.data.urls,
       updated_at: p.updatedAt,
     }));
-    
-    bookmarks.value = bookmarksData.map(b => ({
+
+    bookmarks.value = bookmarksData.map((b) => ({
       id: b.id,
       title: b.data.title,
       url: b.data.url,
       note: b.data.note,
       updated_at: b.updatedAt,
     }));
-    
-    notes.value = notesData.map(n => ({
+
+    notes.value = notesData.map((n) => ({
       id: n.id,
       title: n.data.title,
       content: n.data.content,
@@ -370,11 +380,18 @@ const startAdding = (type) => {
 
 const getEmptyItem = (type) => {
   switch (type) {
-    case 'password':
-      return { title: "", username: "", email: "", password: "", totpSecret: "", urls: "" };
-    case 'bookmark':
+    case "password":
+      return {
+        title: "",
+        username: "",
+        email: "",
+        password: "",
+        totpSecret: "",
+        urls: "",
+      };
+    case "bookmark":
       return { title: "", url: "", note: "" };
-    case 'note':
+    case "note":
       return { title: "", content: "" };
     default:
       return {};
@@ -384,7 +401,41 @@ const getEmptyItem = (type) => {
 const editItem = (item) => {
   editingType.value = item.type;
   editingItem.value = { ...item };
+  isReadOnlyMode.value = false;
   showEditModal.value = true;
+};
+
+const viewItemDetails = (item) => {
+  editingType.value = item.type;
+  editingItem.value = { ...item };
+  isReadOnlyMode.value = true;
+  showEditModal.value = true;
+};
+
+const handleEditFromReadOnly = (item) => {
+  // Switch from read-only mode to edit mode
+  isReadOnlyMode.value = false;
+};
+
+const handleDeleteFromModal = async (item) => {
+  if (confirm(`Are you sure you want to delete this ${item.type}?`)) {
+    try {
+      await softDeleteEntry(item.id);
+      await loadAllData();
+      cancelEdit();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  }
+};
+
+const handleCopyFromModal = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    // You could add a toast notification here
+  } catch (error) {
+    console.error("Failed to copy:", error);
+  }
 };
 
 const saveItem = async (data) => {
@@ -392,31 +443,31 @@ const saveItem = async (data) => {
     if (data.id) {
       // Update existing item
       switch (editingType.value) {
-        case 'password':
+        case "password":
           await updatePasswordEntry(data.id, data);
           break;
-        case 'bookmark':
+        case "bookmark":
           await updateBookmarkEntry(data.id, data);
           break;
-        case 'note':
+        case "note":
           await updateNoteEntry(data.id, data);
           break;
       }
     } else {
       // Add new item
       switch (editingType.value) {
-        case 'password':
+        case "password":
           await addPasswordEntry(data);
           break;
-        case 'bookmark':
+        case "bookmark":
           await addBookmarkEntry(data);
           break;
-        case 'note':
+        case "note":
           await addNoteEntry(data);
           break;
       }
     }
-    
+
     await loadAllData();
     cancelEdit();
   } catch (error) {
@@ -424,21 +475,11 @@ const saveItem = async (data) => {
   }
 };
 
-const deleteItem = async (item) => {
-  if (confirm(`Are you sure you want to delete this ${item.type}?`)) {
-    try {
-      await softDeleteEntry(item.id);
-      await loadAllData();
-    } catch (error) {
-      console.error("Error deleting item:", error);
-    }
-  }
-};
-
 const cancelEdit = () => {
   showEditModal.value = false;
   editingItem.value = null;
   editingType.value = "";
+  isReadOnlyMode.value = false;
 };
 
 const copyToClipboard = async (text) => {
@@ -463,9 +504,13 @@ onMounted(() => {
 watch(showAddMenu, (newVal) => {
   if (newVal) {
     setTimeout(() => {
-      document.addEventListener('click', () => {
-        showAddMenu.value = false;
-      }, { once: true });
+      document.addEventListener(
+        "click",
+        () => {
+          showAddMenu.value = false;
+        },
+        { once: true }
+      );
     }, 100);
   }
 });
