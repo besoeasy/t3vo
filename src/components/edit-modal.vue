@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { X, Key, Bookmark, FileText, Eye, EyeOff, Copy, Trash } from "lucide-vue-next";
+import { TOTP, Secret } from "otpauth";
 import PasswordGenerator from "@/components/PasswordGenerator.vue";
 
 const props = defineProps({
@@ -25,6 +26,70 @@ const emit = defineEmits(["save", "cancel", "edit", "delete", "copy"]);
 const formData = ref({});
 const showPassword = ref(false);
 const showPasswordGenerator = ref(false);
+const currentTOTP = ref("");
+const totpTimeLeft = ref(30);
+let totpInterval = null;
+
+// TOTP Generation
+const generateTOTP = (secret, period = 30) => {
+  if (!secret) return "";
+  try {
+    // Clean and validate the secret
+    const cleanSecret = secret.replace(/\s/g, '').toUpperCase();
+    if (!/^[A-Z2-7]+$/.test(cleanSecret)) {
+      console.warn('Invalid TOTP secret format');
+      return "";
+    }
+    
+    const totp = new TOTP({
+      secret: Secret.fromBase32(cleanSecret),
+      algorithm: "SHA1",
+      digits: 6,
+      period,
+    });
+    return totp.generate();
+  } catch (error) {
+    console.warn('Error generating TOTP:', error);
+    return "";
+  }
+};
+
+const updateTOTP = () => {
+  if (formData.value.totpSecret && props.type === 'password') {
+    currentTOTP.value = generateTOTP(formData.value.totpSecret, 30);
+    
+    // Calculate time left in current period
+    const now = Math.floor(Date.now() / 1000);
+    totpTimeLeft.value = 30 - (now % 30);
+  } else {
+    currentTOTP.value = "";
+    totpTimeLeft.value = 30;
+  }
+};
+
+const startTOTPTimer = () => {
+  // Clear any existing timer first
+  stopTOTPTimer();
+  
+  // Update immediately
+  updateTOTP();
+  
+  // Set up interval for updates
+  if (formData.value.totpSecret && props.type === 'password') {
+    totpInterval = setInterval(() => {
+      updateTOTP();
+    }, 1000); // Update every second for the countdown
+  }
+};
+
+const stopTOTPTimer = () => {
+  if (totpInterval) {
+    clearInterval(totpInterval);
+    totpInterval = null;
+  }
+  currentTOTP.value = "";
+  totpTimeLeft.value = 30;
+};
 
 // Initialize form data
 const initializeForm = () => {
@@ -103,6 +168,12 @@ const handleCopy = () => {
   emit("copy", textToCopy);
 };
 
+const handleCopyTOTP = () => {
+  if (currentTOTP.value) {
+    emit("copy", currentTOTP.value);
+  }
+};
+
 const handleSave = () => {
   // Validate required fields
   if (!isValid()) return;
@@ -140,19 +211,25 @@ const handleKeyDown = (e) => {
 };
 
 // Initialize form when component mounts or props change
-watch(() => props.item, initializeForm, { immediate: true, deep: true });
+watch(() => props.item, () => {
+  initializeForm();
+  if (props.readOnly && props.type === 'password') {
+    startTOTPTimer();
+  } else {
+    stopTOTPTimer();
+  }
+}, { immediate: true, deep: true });
 
-// Add event listener
-document.addEventListener("keydown", handleKeyDown);
-
-// Cleanup
-const cleanup = () => {
-  document.removeEventListener("keydown", handleKeyDown);
-};
+// Add event listener on mount
+onMounted(() => {
+  document.addEventListener("keydown", handleKeyDown);
+});
 
 // Cleanup on unmount
-import { onBeforeUnmount } from "vue";
-onBeforeUnmount(cleanup);
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", handleKeyDown);
+  stopTOTPTimer();
+});
 </script>
 
 <template>
@@ -252,6 +329,37 @@ onBeforeUnmount(cleanup);
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Enter TOTP secret (optional)"
             />
+          </div>
+
+          <!-- Live TOTP Display (Read-only mode only) -->
+          <div v-if="readOnly && currentTOTP" class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">2FA Code</label>
+            <div class="flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div class="flex-1">
+                <div class="text-2xl font-mono font-bold text-green-700 tracking-wider">
+                  {{ currentTOTP }}
+                </div>
+                <div class="flex items-center space-x-2 mt-1">
+                  <div class="text-xs text-green-600">
+                    Refreshes in {{ totpTimeLeft }}s
+                  </div>
+                  <!-- Progress bar -->
+                  <div class="flex-1 bg-green-200 rounded-full h-1">
+                    <div 
+                      class="bg-green-600 h-1 rounded-full transition-all duration-1000 ease-linear"
+                      :style="{ width: `${(totpTimeLeft / 30) * 100}%` }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <button
+                @click="handleCopyTOTP"
+                class="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors"
+                title="Copy TOTP Code"
+              >
+                <Copy class="w-4 h-4" />
+              </button>
+            </div>
           </div>
           
           <div>

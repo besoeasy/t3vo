@@ -257,14 +257,22 @@ const addOptions = [
 const generateTOTP = (secret, period = 30) => {
   if (!secret) return "";
   try {
+    // Clean and validate the secret
+    const cleanSecret = secret.replace(/\s/g, '').toUpperCase();
+    if (!/^[A-Z2-7]+$/.test(cleanSecret)) {
+      console.warn('Invalid TOTP secret format');
+      return "";
+    }
+    
     const totp = new TOTP({
-      secret: Secret.fromBase32(secret),
+      secret: Secret.fromBase32(cleanSecret),
       algorithm: "SHA1",
       digits: 6,
       period,
     });
     return totp.generate();
   } catch (error) {
+    console.warn('Error generating TOTP:', error);
     return "";
   }
 };
