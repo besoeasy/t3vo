@@ -170,8 +170,44 @@
       ></div>
     </div>
 
+    <!-- Load more indicator -->
+    <div v-if="isLoadingMore" class="flex justify-center py-4">
+      <div
+        class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
+      ></div>
+    </div>
+
+    <!-- No more data indicator -->
+    <div v-if="!isLoading && !isLoadingMore && !hasMoreData && filteredItems.length > 0" class="text-center py-4 text-gray-500">
+      No more items to load
+    </div>
+
+    <!-- Empty state -->
+    <div v-if="!isLoading && filteredItems.length === 0" class="text-center py-12">
+      <div class="text-gray-400 mb-4">
+        <FileText class="w-16 h-16 mx-auto mb-4" />
+        <p class="text-lg font-medium">No items found</p>
+        <p class="text-sm">Try adjusting your search or filter, or add some new items.</p>
+      </div>
+    </div>
+
     <!-- Load more trigger -->
-    <div ref="loaderRef" class="h-4"></div>
+    <div ref="loaderRef" class="h-10 w-full flex items-center justify-center">
+      <div v-if="hasMoreData && !isLoading && !isLoadingMore" class="text-gray-400 text-sm">
+        Scroll to load more...
+      </div>
+    </div>
+
+    <!-- Manual load more button for testing -->
+    <div v-if="hasMoreData && !isLoading" class="flex justify-center py-4">
+      <button 
+        @click="loadMore" 
+        :disabled="isLoadingMore"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+      >
+        {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+      </button>
+    </div>
 
     <!-- Add/Edit Modal -->
     <EditModal
@@ -189,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import {
   fetchPasswords,
   fetchBookmarks,
@@ -225,7 +261,16 @@ const searchQuery = ref("");
 const activeFilter = ref("all");
 const showAddMenu = ref(false);
 const isLoading = ref(false);
-const currentPage = ref(1);
+const isLoadingMore = ref(false);
+
+// Pagination state for each type
+const passwordsPage = ref(1);
+const bookmarksPage = ref(1);
+const notesPage = ref(1);
+const passwordsHasMore = ref(true);
+const bookmarksHasMore = ref(true);
+const notesHasMore = ref(true);
+const hasMoreData = ref(true);
 
 // Data arrays
 const passwords = ref([]);
@@ -237,6 +282,7 @@ const showEditModal = ref(false);
 const editingItem = ref(null);
 const editingType = ref("");
 const isReadOnlyMode = ref(false);
+const loaderRef = ref(null);
 
 // Filter options
 const filters = [
@@ -338,16 +384,68 @@ const filteredItems = computed(() => {
 });
 
 // Methods
-const loadAllData = async () => {
-  isLoading.value = true;
-  try {
-    const [passwordsData, bookmarksData, notesData] = await Promise.all([
-      fetchPasswords(1, ""),
-      fetchBookmarks(1, ""),
-      fetchNotes(1, ""),
-    ]);
+const loadAllData = async (isInitial = true) => {
+  if (isInitial) {
+    isLoading.value = true;
+    // Reset pagination state
+    passwordsPage.value = 1;
+    bookmarksPage.value = 1;
+    notesPage.value = 1;
+    passwordsHasMore.value = true;
+    bookmarksHasMore.value = true;
+    notesHasMore.value = true;
+    // Clear existing data
+    passwords.value = [];
+    bookmarks.value = [];
+    notes.value = [];
+  } else {
+    isLoadingMore.value = true;
+  }
 
-    passwords.value = passwordsData.map((p) => ({
+  try {
+    // Determine which types to load based on current filter
+    const shouldLoadPasswords = activeFilter.value === 'all' || activeFilter.value === 'password';
+    const shouldLoadBookmarks = activeFilter.value === 'all' || activeFilter.value === 'bookmark';
+    const shouldLoadNotes = activeFilter.value === 'all' || activeFilter.value === 'note';
+
+    const promises = [];
+    let passwordsData = [], bookmarksData = [], notesData = [];
+
+    // For initial load, always try to load. For subsequent loads, check hasMore flags
+    if (shouldLoadPasswords && (isInitial || passwordsHasMore.value)) {
+      promises.push(fetchPasswords(passwordsPage.value, searchQuery.value));
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+
+    if (shouldLoadBookmarks && (isInitial || bookmarksHasMore.value)) {
+      promises.push(fetchBookmarks(bookmarksPage.value, searchQuery.value));
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+
+    if (shouldLoadNotes && (isInitial || notesHasMore.value)) {
+      promises.push(fetchNotes(notesPage.value, searchQuery.value));
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+
+    [passwordsData, bookmarksData, notesData] = await Promise.all(promises);
+
+    console.log('Data fetched:', {
+      passwords: passwordsData.length,
+      bookmarks: bookmarksData.length,
+      notes: notesData.length,
+      isInitial,
+      activeFilter: activeFilter.value
+    });
+
+    // Check if we have more data for each type (assuming 10 items per page)
+    passwordsHasMore.value = shouldLoadPasswords ? passwordsData.length === 10 : false;
+    bookmarksHasMore.value = shouldLoadBookmarks ? bookmarksData.length === 10 : false;
+    notesHasMore.value = shouldLoadNotes ? notesData.length === 10 : false;
+
+    const newPasswords = passwordsData.map((p) => ({
       id: p.id,
       title: p.data.title,
       username: p.data.username,
@@ -358,7 +456,7 @@ const loadAllData = async () => {
       updated_at: p.updatedAt,
     }));
 
-    bookmarks.value = bookmarksData.map((b) => ({
+    const newBookmarks = bookmarksData.map((b) => ({
       id: b.id,
       title: b.data.title,
       url: b.data.url,
@@ -366,17 +464,57 @@ const loadAllData = async () => {
       updated_at: b.updatedAt,
     }));
 
-    notes.value = notesData.map((n) => ({
+    const newNotes = notesData.map((n) => ({
       id: n.id,
       title: n.data.title,
       content: n.data.content,
       updated_at: n.updatedAt,
     }));
+
+    if (isInitial) {
+      passwords.value = newPasswords;
+      bookmarks.value = newBookmarks;
+      notes.value = newNotes;
+    } else {
+      // Append new data to existing arrays
+      passwords.value.push(...newPasswords);
+      bookmarks.value.push(...newBookmarks);
+      notes.value.push(...newNotes);
+    }
+
+    // Update pagination counters for next load only if data was actually loaded
+    if (passwordsData.length > 0 && shouldLoadPasswords) passwordsPage.value++;
+    if (bookmarksData.length > 0 && shouldLoadBookmarks) bookmarksPage.value++;
+    if (notesData.length > 0 && shouldLoadNotes) notesPage.value++;
+
+    // Update hasMoreData based on whether any type has more data
+    hasMoreData.value = passwordsHasMore.value || bookmarksHasMore.value || notesHasMore.value;
+
   } catch (error) {
     console.error("Error loading data:", error);
   } finally {
     isLoading.value = false;
+    isLoadingMore.value = false;
   }
+};
+
+const loadMore = async () => {
+  console.log('LoadMore triggered, checking conditions:', {
+    isLoading: isLoading.value,
+    isLoadingMore: isLoadingMore.value,
+    hasMoreData: hasMoreData.value,
+    passwordsHasMore: passwordsHasMore.value,
+    bookmarksHasMore: bookmarksHasMore.value,
+    notesHasMore: notesHasMore.value
+  });
+  
+  if (isLoading.value || isLoadingMore.value || !hasMoreData.value) {
+    console.log('LoadMore skipped due to conditions');
+    return;
+  }
+  
+  console.log('LoadMore executing...');
+  await loadAllData(false);
 };
 
 const startAdding = (type) => {
@@ -429,7 +567,7 @@ const handleDeleteFromModal = async (item) => {
   if (confirm(`Are you sure you want to delete this ${item.type}?`)) {
     try {
       await softDeleteEntry(item.id);
-      await loadAllData();
+      await loadAllData(true);
       cancelEdit();
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -476,7 +614,7 @@ const saveItem = async (data) => {
       }
     }
 
-    await loadAllData();
+    await loadAllData(true);
     cancelEdit();
   } catch (error) {
     console.error("Error saving item:", error);
@@ -503,9 +641,29 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
 
+// Infinite scroll setup
+const { observeElement, unobserveElement } = useInfiniteScroll(loadMore);
+
 // Lifecycle
-onMounted(() => {
-  loadAllData();
+onMounted(async () => {
+  console.log('Dashboard mounted, loading initial data...');
+  await loadAllData(true);
+  
+  // Set up infinite scroll observer with a slight delay
+  setTimeout(() => {
+    if (loaderRef.value) {
+      console.log('Setting up infinite scroll observer');
+      observeElement(loaderRef.value);
+    } else {
+      console.warn('Loader ref not found');
+    }
+  }, 100);
+});
+
+onBeforeUnmount(() => {
+  if (loaderRef.value) {
+    unobserveElement(loaderRef.value);
+  }
 });
 
 // Close add menu when clicking outside
@@ -521,6 +679,16 @@ watch(showAddMenu, (newVal) => {
       );
     }, 100);
   }
+});
+
+// Reset pagination when search query changes
+watch(searchQuery, () => {
+  loadAllData(true);
+});
+
+// Reset pagination when active filter changes
+watch(activeFilter, () => {
+  loadAllData(true);
 });
 </script>
 
