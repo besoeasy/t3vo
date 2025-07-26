@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
 
-const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY) : null;
+const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY, false) : null;
 
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
@@ -41,21 +41,22 @@ function matchesSearch(entry, searchQuery) {
 }
 
 // Optimized hash function using built-in crypto when available
-function getSha256Hash(str) {
+function getSha256Hash(str, includeTimestamp = false) {
   // Use Web Crypto API if available (more efficient)
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     // For now, fallback to crypto-js for compatibility
     // Could be optimized further with Web Crypto API implementation
   }
   
-  // Simplified approach - the progressive concatenation seems unnecessarily complex
-  // Using direct hashing is more efficient
-  return CryptoJS.SHA256(str + Date.now()).toString(CryptoJS.enc.Hex);
+  // For database naming, we need consistent hashes (no timestamp)
+  // For unique IDs, we include timestamp for uniqueness
+  const hashInput = includeTimestamp ? str + Date.now() : str;
+  return CryptoJS.SHA256(hashInput).toString(CryptoJS.enc.Hex);
 }
 
 export async function addEntry(type, data) {
   const entry = {
-    id: getSha256Hash(type + encryptData(data) + getCurrentTime()),
+    id: getSha256Hash(type + encryptData(data) + getCurrentTime(), true),
     type,
     data: encryptData(data),
     updatedAt: getCurrentTime(),
