@@ -1,23 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Page Header -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p class="mt-1 text-sm text-gray-500">
-            Manage your passwords, bookmarks, and notes
-          </p>
-        </div>
-        <div class="mt-4 sm:mt-0">
-          <div class="flex items-center space-x-4 text-sm text-gray-500">
-            <span>{{ filteredItems.length }} items</span>
-            <span v-if="searchQuery">• Filtered</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Search & Filter Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div class="flex flex-col lg:flex-row gap-4">
