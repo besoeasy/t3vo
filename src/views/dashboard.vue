@@ -1,8 +1,26 @@
 <template>
-  <div class="p-6">
+  <div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p class="mt-1 text-sm text-gray-500">
+            Manage your passwords, bookmarks, and notes
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <div class="flex items-center space-x-4 text-sm text-gray-500">
+            <span>{{ filteredItems.length }} items</span>
+            <span v-if="searchQuery">• Filtered</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search & Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <div class="flex flex-col md:flex-row gap-4">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div class="flex flex-col lg:flex-row gap-4">
         <div class="flex-1">
           <div class="relative">
             <Search
@@ -12,7 +30,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search passwords, bookmarks, and notes..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
             />
           </div>
         </div>
@@ -24,10 +42,10 @@
             :key="filter.key"
             @click="activeFilter = filter.key"
             :class="[
-              'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
               activeFilter === filter.key
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900',
+                ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-200'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
             ]"
           >
             <component :is="filter.icon" class="w-4 h-4 inline mr-2" />
@@ -39,7 +57,7 @@
         <div class="relative">
           <button
             @click="showAddMenu = !showAddMenu"
-            class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm"
           >
             <Plus class="w-4 h-4 mr-2" />
             Add New
@@ -48,19 +66,19 @@
           <!-- Add Menu Dropdown -->
           <div
             v-if="showAddMenu"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 animate-in slide-in-from-top-2 duration-200"
           >
             <button
               v-for="addOption in addOptions"
               :key="addOption.type"
               @click="startAdding(addOption.type)"
-              class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+              class="flex items-center w-full px-4 py-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors duration-200"
             >
               <component
                 :is="addOption.icon"
                 class="w-4 h-4 mr-3 text-gray-400"
               />
-              {{ addOption.name }}
+              <span class="text-sm font-medium text-gray-700">{{ addOption.name }}</span>
             </button>
           </div>
         </div>
@@ -68,144 +86,181 @@
     </div>
 
     <!-- Content Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <!-- Items Display -->
       <div
         v-for="item in filteredItems"
         :key="`${item.type}-${item.id}`"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group"
       >
         <!-- Clickable card content -->
         <div
           @click="viewItemDetails(item)"
-          class="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+          class="p-6 cursor-pointer hover:bg-gray-25 transition-colors duration-200"
         >
           <!-- Password Card -->
-          <div v-if="item.type === 'password'" class="space-y-3">
+          <div v-if="item.type === 'password'" class="space-y-4">
             <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <Key class="w-5 h-5 text-blue-600" />
-                <h3 class="font-semibold text-gray-900 truncate">
-                  {{ item.title }}
-                </h3>
+              <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-50 rounded-lg">
+                  <Key class="w-5 h-5 text-blue-600" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                    {{ item.title }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Password Entry</p>
+                </div>
               </div>
             </div>
 
-            <div class="space-y-2 text-sm">
-              <div v-if="item.username" class="flex items-center space-x-2">
-                <span class="text-gray-500">Username:</span>
-                <span class="font-mono">{{ item.username }}</span>
+            <div class="space-y-3 text-sm">
+              <div v-if="item.username" class="flex items-center justify-between">
+                <span class="text-gray-500 font-medium">Username:</span>
+                <span class="font-mono text-gray-900 truncate ml-2">{{ item.username }}</span>
               </div>
 
-              <div class="flex items-center space-x-2">
-                <span class="text-gray-500">Password:</span>
-                <span class="font-mono">{{
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500 font-medium">Password:</span>
+                <span class="font-mono text-gray-900">{{
                   item.visible ? item.password : "••••••••"
                 }}</span>
               </div>
 
-              <div v-if="item.totp30" class="flex items-center space-x-2">
-                <span class="text-gray-500">2FA:</span>
-                <span class="font-mono text-green-600">{{ item.totp30 }}</span>
+              <div v-if="item.totp30" class="flex items-center justify-between bg-green-50 px-3 py-2 rounded-lg">
+                <span class="text-green-700 font-medium text-xs">2FA Code:</span>
+                <span class="font-mono text-green-800 font-semibold">{{ item.totp30 }}</span>
               </div>
             </div>
           </div>
 
           <!-- Bookmark Card -->
-          <div v-if="item.type === 'bookmark'" class="space-y-3">
+          <div v-if="item.type === 'bookmark'" class="space-y-4">
             <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <Bookmark class="w-5 h-5 text-amber-600" />
-                <h3 class="font-semibold text-gray-900 truncate">
-                  {{ item.title }}
-                </h3>
+              <div class="flex items-center space-x-3">
+                <div class="p-2 bg-amber-50 rounded-lg">
+                  <Bookmark class="w-5 h-5 text-amber-600" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                    {{ item.title }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Bookmark</p>
+                </div>
               </div>
             </div>
 
-            <div class="space-y-2 text-sm">
-              <div class="text-blue-600 flex items-center space-x-1">
-                <Globe class="w-3 h-3" />
-                <span class="truncate">{{ item.url }}</span>
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center space-x-2 text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                <Globe class="w-4 h-4 flex-shrink-0" />
+                <span class="truncate font-medium">{{ item.url }}</span>
               </div>
 
-              <p v-if="item.note" class="text-gray-600 line-clamp-2">
+              <p v-if="item.note" class="text-gray-600 line-clamp-2 leading-relaxed">
                 {{ item.note }}
               </p>
             </div>
           </div>
 
           <!-- Note Card -->
-          <div v-if="item.type === 'note'" class="space-y-3">
+          <div v-if="item.type === 'note'" class="space-y-4">
             <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <FileText class="w-5 h-5 text-green-600" />
-                <h3 class="font-semibold text-gray-900 truncate">
-                  {{ item.title }}
-                </h3>
+              <div class="flex items-center space-x-3">
+                <div class="p-2 bg-green-50 rounded-lg">
+                  <FileText class="w-5 h-5 text-green-600" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                    {{ item.title }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Note</p>
+                </div>
               </div>
             </div>
 
             <div class="text-sm">
-              <p class="text-gray-600 line-clamp-3">{{ item.content }}</p>
+              <p class="text-gray-600 line-clamp-3 leading-relaxed">{{ item.content }}</p>
             </div>
           </div>
 
           <!-- Updated timestamp -->
-          <div
-            class="flex items-center justify-between text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100"
-          >
-            <span>{{ formatDate(item.updated_at) }}</span>
-            <span class="px-2 py-1 bg-gray-100 rounded-full capitalize">{{
-              item.type
-            }}</span>
+          <div class="flex items-center justify-between text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
+            <span class="flex items-center space-x-1">
+              <span>Updated {{ formatDate(item.updated_at) }}</span>
+            </span>
+            <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full capitalize font-medium">
+              {{ item.type }}
+            </span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div
-        class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-      ></div>
+    <div v-if="isLoading" class="flex justify-center py-12">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <p class="text-sm text-gray-500">Loading your data...</p>
+      </div>
     </div>
 
     <!-- Load more indicator -->
-    <div v-if="isLoadingMore" class="flex justify-center py-4">
-      <div
-        class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
-      ></div>
+    <div v-if="isLoadingMore" class="flex justify-center py-8">
+      <div class="flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        <span class="text-sm text-gray-500">Loading more items...</span>
+      </div>
     </div>
 
     <!-- No more data indicator -->
-    <div v-if="!isLoading && !isLoadingMore && !hasMoreData && filteredItems.length > 0" class="text-center py-4 text-gray-500">
-      No more items to load
+    <div v-if="!isLoading && !isLoadingMore && !hasMoreData && filteredItems.length > 0" class="text-center py-8">
+      <div class="bg-gray-50 rounded-lg p-6">
+        <p class="text-gray-500 font-medium">✨ All items loaded</p>
+        <p class="text-sm text-gray-400 mt-1">No more items to display</p>
+      </div>
     </div>
 
     <!-- Empty state -->
-    <div v-if="!isLoading && filteredItems.length === 0" class="text-center py-12">
-      <div class="text-gray-400 mb-4">
-        <FileText class="w-16 h-16 mx-auto mb-4" />
-        <p class="text-lg font-medium">No items found</p>
-        <p class="text-sm">Try adjusting your search or filter, or add some new items.</p>
+    <div v-if="!isLoading && filteredItems.length === 0" class="text-center py-16">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
+        <div class="text-gray-400 mb-6">
+          <FileText class="w-20 h-20 mx-auto mb-4 text-gray-300" />
+          <h3 class="text-xl font-semibold text-gray-600 mb-2">No items found</h3>
+          <p class="text-gray-500 max-w-md mx-auto">
+            {{ searchQuery ? 
+                'Try adjusting your search terms or filters to find what you\'re looking for.' :
+                'Get started by adding your first password, bookmark, or note using the "Add New" button above.'
+            }}
+          </p>
+        </div>
+        <button
+          v-if="!searchQuery"
+          @click="showAddMenu = true"
+          class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+        >
+          <Plus class="w-4 h-4 mr-2" />
+          Add Your First Item
+        </button>
       </div>
     </div>
 
     <!-- Load more trigger -->
-    <div ref="loaderRef" class="h-10 w-full flex items-center justify-center">
-      <div v-if="hasMoreData && !isLoading && !isLoadingMore" class="text-gray-400 text-sm">
+    <div ref="loaderRef" class="h-16 w-full flex items-center justify-center">
+      <div v-if="hasMoreData && !isLoading && !isLoadingMore" class="text-gray-400 text-sm bg-gray-50 px-4 py-2 rounded-full">
         Scroll to load more...
       </div>
     </div>
 
     <!-- Manual load more button for testing -->
-    <div v-if="hasMoreData && !isLoading" class="flex justify-center py-4">
+    <div v-if="hasMoreData && !isLoading" class="flex justify-center py-6">
       <button 
         @click="loadMore" 
         :disabled="isLoadingMore"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        class="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
       >
-        {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+        <component :is="isLoadingMore ? 'RotateCw' : 'Plus'" 
+                   :class="[isLoadingMore ? 'animate-spin' : '', 'w-4 h-4 mr-2']" />
+        {{ isLoadingMore ? 'Loading...' : 'Load More Items' }}
       </button>
     </div>
 
@@ -251,6 +306,7 @@ import {
   Edit,
   Trash,
   RotateCcw,
+  RotateCw,
 } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
 import EditModal from "@/components/edit-modal.vue";

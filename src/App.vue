@@ -2,35 +2,112 @@
   <LockScreen v-if="!isUnlocked" @unlock="handleUnlock" />
 
   <template v-else>
-    <div class="m-auto container">
-      <div class="flex flex-col md:flex-row h-screen">
-        <nav
-          class="text-dark bg-opacity-30 backdrop-blur-md w-full md:w-16 lg:w-24 h-16 md:h-screen flex md:flex-col justify-center items-center"
-        >
-          <div
-            class="flex md:flex-col items-center justify-around w-full md:space-y-8 md:justify-center"
-          >
-            <router-link
-              v-for="item in navItems"
-              :key="item.to"
-              :to="item.to"
-              class="block p-2 rounded-lg transition duration-200 group"
-              :title="item.name"
-            >
-              <component
-                :is="item.icon"
-                class="w-6 h-6 md:w-8 md:h-8 group-hover:text-red-400 transition-colors duration-200"
-              />
-            </router-link>
-          </div>
-        </nav>
+    <div class="min-h-screen bg-gray-50">
+      <!-- Top Navigation Bar -->
+      <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- Logo/Brand -->
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0">
+                <h1 class="text-xl font-bold text-gray-900">T3VO</h1>
+              </div>
+            </div>
 
-        <main class="flex-1 overflow-y-auto">
-          <div class="min-h-screen p-8">
-            <RouterView class="m-auto" />
+            <!-- Navigation Links -->
+            <div class="hidden md:block">
+              <div class="flex items-center space-x-1">
+                <router-link
+                  v-for="item in navItems"
+                  :key="item.to"
+                  :to="item.to"
+                  class="flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 group"
+                  :class="[
+                    $route.path === item.to
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ]"
+                >
+                  <component
+                    :is="item.icon"
+                    class="w-4 h-4 mr-2 transition-colors duration-200"
+                    :class="[
+                      $route.path === item.to
+                        ? 'text-blue-600'
+                        : 'text-gray-400 group-hover:text-gray-600'
+                    ]"
+                  />
+                  {{ item.name }}
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+              <button
+                @click="mobileMenuOpen = !mobileMenuOpen"
+                class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors duration-200"
+              >
+                <component
+                  :is="mobileMenuOpen ? 'X' : 'Menu'"
+                  class="w-6 h-6"
+                />
+              </button>
+            </div>
+
+            <!-- User Actions -->
+            <div class="flex items-center space-x-3">
+              <button
+                @click="handleLogout"
+                class="flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+                title="Lock App"
+              >
+                <Lock class="w-4 h-4 mr-1" />
+                <span class="hidden sm:inline">Lock</span>
+              </button>
+            </div>
           </div>
-        </main>
-      </div>
+
+          <!-- Mobile Navigation Menu -->
+          <div
+            v-if="mobileMenuOpen"
+            class="md:hidden border-t border-gray-200 py-2"
+          >
+            <div class="space-y-1">
+              <router-link
+                v-for="item in navItems"
+                :key="item.to"
+                :to="item.to"
+                @click="mobileMenuOpen = false"
+                class="flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                :class="[
+                  $route.path === item.to
+                    ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ]"
+              >
+                <component
+                  :is="item.icon"
+                  class="w-5 h-5 mr-3"
+                  :class="[
+                    $route.path === item.to
+                      ? 'text-blue-600'
+                      : 'text-gray-400'
+                  ]"
+                />
+                {{ item.name }}
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="flex-1">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <RouterView />
+        </div>
+      </main>
     </div>
   </template>
 </template>
@@ -38,7 +115,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
-import { Home, Layers, RefreshCw, Import, Scaling } from "lucide-vue-next";
+import { Home, Layers, RefreshCw, Import, Scaling, Lock, Menu, X } from "lucide-vue-next";
 
 const navItems = [
   { name: "Home", icon: Home, to: "/" },
@@ -49,9 +126,17 @@ const navItems = [
 ];
 
 const isUnlocked = ref(false);
+const mobileMenuOpen = ref(false);
 
 const handleUnlock = () => {
   location.reload();
+};
+
+const handleLogout = () => {
+  if (confirm("Are you sure you want to lock the app?")) {
+    sessionStorage.removeItem("ENCRYPTION_KEY");
+    location.reload();
+  }
 };
 
 onMounted(() => {
@@ -65,11 +150,46 @@ onMounted(() => {
 body {
   margin: 0;
   padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Router link active state transitions */
+.router-link-active {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus states for accessibility */
+button:focus,
+a:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 </style>
