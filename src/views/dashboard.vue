@@ -244,13 +244,6 @@
       </div>
     </div>
 
-    <!-- Load more trigger -->
-    <div ref="loaderRef" class="h-16 w-full flex items-center justify-center">
-      <div v-if="hasMoreData && !isLoading && !isLoadingMore" class="text-gray-400 text-sm bg-gray-50 px-4 py-2 rounded-full">
-        Scroll to load more...
-      </div>
-    </div>
-
     <!-- Manual load more button for testing -->
     <div v-if="hasMoreData && !isLoading" class="flex justify-center py-6">
       <button 
