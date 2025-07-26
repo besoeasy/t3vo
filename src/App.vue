@@ -4,15 +4,19 @@
   <template v-else>
     <div class="min-h-screen bg-gray-50">
       <!-- Top Navigation Bar -->
-      <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav
+        class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50"
+      >
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <!-- Logo/Brand -->
             <div class="flex items-center space-x-4">
               <div class="flex-shrink-0">
                 <h1 class="text-xl font-bold text-gray-900">
-                  T3VO 
-                  <span class="text-sm font-medium text-gray-500 ml-2">v{{ version }}</span>
+                  T3VO
+                  <span class="text-sm font-medium text-gray-500 ml-2"
+                    >v{{ version }}</span
+                  >
                 </h1>
               </div>
             </div>
@@ -28,7 +32,7 @@
                   :class="[
                     $route.path === item.to
                       ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
                   ]"
                 >
                   <component
@@ -37,7 +41,7 @@
                     :class="[
                       $route.path === item.to
                         ? 'text-blue-600'
-                        : 'text-gray-400 group-hover:text-gray-600'
+                        : 'text-gray-400 group-hover:text-gray-600',
                     ]"
                   />
                   {{ item.name }}
@@ -96,21 +100,19 @@
                 :class="[
                   $route.path === item.to
                     ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
                 ]"
               >
                 <component
                   :is="item.icon"
                   class="w-5 h-5 mr-3"
                   :class="[
-                    $route.path === item.to
-                      ? 'text-blue-600'
-                      : 'text-gray-400'
+                    $route.path === item.to ? 'text-blue-600' : 'text-gray-400',
                   ]"
                 />
                 {{ item.name }}
               </router-link>
-              
+
               <!-- Mobile GitHub Link -->
               <a
                 href="https://github.com/besoeasy/t3vo"
@@ -129,7 +131,7 @@
 
       <!-- Main Content -->
       <main class="flex-1">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <RouterView />
         </div>
       </main>
@@ -140,7 +142,16 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
-import { Layers, RefreshCw, Import, Scaling, Lock, Menu, X, GithubIcon } from "lucide-vue-next";
+import {
+  Layers,
+  RefreshCw,
+  Import,
+  Scaling,
+  Lock,
+  Menu,
+  X,
+  GithubIcon,
+} from "lucide-vue-next";
 import { version } from "../package.json";
 
 const navItems = [
@@ -175,8 +186,8 @@ onMounted(() => {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
