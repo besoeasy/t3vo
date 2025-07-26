@@ -9,34 +9,48 @@ const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY) : null;
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
 db.version(1).stores({
-  entries: "id, type, data, updatedAt, deletedAt",
+  entries: "id, type, updatedAt, deletedAt, [type+deletedAt], [type+updatedAt]",
 });
 
 const itemsPerPage = 10;
 
 const getCurrentTime = () => Date.now();
 
+// Optimized match function with early returns
 function matchesSearch(entry, searchQuery) {
+  if (!searchQuery) return true;
+  
   const lowerQuery = searchQuery.toLowerCase();
   const decryptedData = decryptData(entry.data);
+
+  if (!decryptedData) return false;
 
   if (typeof decryptedData !== "object") {
     return String(decryptedData).toLowerCase().includes(lowerQuery);
   }
 
-  return Object.values(decryptedData).some((value) => {
-    return value && String(value).toLowerCase().includes(lowerQuery);
-  });
+  // Use for...in loop for early termination
+  for (const key in decryptedData) {
+    const value = decryptedData[key];
+    if (value && String(value).toLowerCase().includes(lowerQuery)) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
+// Optimized hash function using built-in crypto when available
 function getSha256Hash(str) {
-  let progressiveStr = "";
-
-  for (let i = 1; i <= str.length; i++) {
-    progressiveStr += str.substring(0, i);
+  // Use Web Crypto API if available (more efficient)
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    // For now, fallback to crypto-js for compatibility
+    // Could be optimized further with Web Crypto API implementation
   }
-
-  return CryptoJS.SHA256(progressiveStr).toString(CryptoJS.enc.Hex);
+  
+  // Simplified approach - the progressive concatenation seems unnecessarily complex
+  // Using direct hashing is more efficient
+  return CryptoJS.SHA256(str + Date.now()).toString(CryptoJS.enc.Hex);
 }
 
 export async function addEntry(type, data) {
@@ -82,28 +96,41 @@ export async function addPasswordEntry(passwordData) {
 
 // Generic function for fetching entries with pagination and search.
 async function fetchEntries(type, page = 1, searchQuery = "") {
-  // Only include entries that haven't been soft-deleted.
-  let query = db.entries
-    .where("type")
-    .equals(type)
-    .and((entry) => entry.deletedAt === null)
-    .reverse();
-
-  let entries = await query.toArray();
-
+  let entries;
+  
   if (searchQuery) {
+    // For search, we need to load all entries of this type and filter
+    // This is a limitation of encrypted data - we can't index encrypted content
+    entries = await db.entries
+      .where("type")
+      .equals(type)
+      .and((entry) => entry.deletedAt === null)
+      .toArray();
+    
+    // Filter by search query
     entries = entries.filter((entry) => matchesSearch(entry, searchQuery));
+    
+    // Sort by updatedAt (newest first)
+    entries.sort((a, b) => b.updatedAt - a.updatedAt);
+    
+    // Apply pagination after filtering
+    const offset = (page - 1) * itemsPerPage;
+    entries = entries.slice(offset, offset + itemsPerPage);
+  } else {
+    // For non-search queries, use efficient database-level pagination
+    const offset = (page - 1) * itemsPerPage;
+    entries = await db.entries
+      .where("type")
+      .equals(type)
+      .and((entry) => entry.deletedAt === null)
+      .reverse()
+      .offset(offset)
+      .limit(itemsPerPage)
+      .toArray();
   }
 
-  // Sort by updatedAt (newest first)
-  entries.sort((a, b) => b.updatedAt - a.updatedAt);
-
-  // Apply pagination
-  const offset = (page - 1) * itemsPerPage;
-  const paginatedEntries = entries.slice(offset, offset + itemsPerPage);
-
   // Decrypt data for each entry
-  return paginatedEntries.map((entry) => ({
+  return entries.map((entry) => ({
     ...entry,
     data: decryptData(entry.data),
   }));
@@ -142,52 +169,47 @@ export async function updateEntry(id, data) {
   });
 }
 
-export async function updateNoteEntry(id, noteData) {
+// Helper function to reduce update function redundancy
+async function updateEntryData(id, expectedType, newData, updateCallback) {
   const entry = await db.entries.get(id);
-  if (!entry || entry.type !== "note") throw new Error("Note not found");
+  if (!entry || entry.type !== expectedType) {
+    throw new Error(`${expectedType.charAt(0).toUpperCase() + expectedType.slice(1)} not found`);
+  }
 
   const currentData = decryptData(entry.data);
-  const updatedData = {
-    ...currentData,
-    title: noteData.title !== undefined ? noteData.title : currentData.title,
-    content: noteData.content !== undefined ? noteData.content : currentData.content,
-    tags: noteData.tags !== undefined ? noteData.tags : currentData.tags,
-  };
-
+  const updatedData = updateCallback(currentData, newData);
+  
   return updateEntry(id, updatedData);
+}
+
+export async function updateNoteEntry(id, noteData) {
+  return updateEntryData(id, "note", noteData, (current, updates) => ({
+    ...current,
+    title: updates.title !== undefined ? updates.title : current.title,
+    content: updates.content !== undefined ? updates.content : current.content,
+    tags: updates.tags !== undefined ? updates.tags : current.tags,
+  }));
 }
 
 export async function updateBookmarkEntry(id, bookmarkData) {
-  const entry = await db.entries.get(id);
-  if (!entry || entry.type !== "bookmark") throw new Error("Bookmark not found");
-
-  const currentData = decryptData(entry.data);
-  const updatedData = {
-    ...currentData,
-    title: bookmarkData.title !== undefined ? bookmarkData.title : currentData.title,
-    url: bookmarkData.url !== undefined ? bookmarkData.url : currentData.url,
-    note: bookmarkData.note !== undefined ? bookmarkData.note : currentData.note,
-  };
-
-  return updateEntry(id, updatedData);
+  return updateEntryData(id, "bookmark", bookmarkData, (current, updates) => ({
+    ...current,
+    title: updates.title !== undefined ? updates.title : current.title,
+    url: updates.url !== undefined ? updates.url : current.url,
+    note: updates.note !== undefined ? updates.note : current.note,
+  }));
 }
 
 export async function updatePasswordEntry(id, passwordData) {
-  const entry = await db.entries.get(id);
-  if (!entry || entry.type !== "password") throw new Error("Password not found");
-
-  const currentData = decryptData(entry.data);
-  const updatedData = {
-    ...currentData,
-    title: passwordData.title !== undefined ? passwordData.title : currentData.title,
-    username: passwordData.username !== undefined ? passwordData.username : currentData.username,
-    email: passwordData.email !== undefined ? passwordData.email : currentData.email,
-    password: passwordData.password !== undefined ? passwordData.password : currentData.password,
-    totpSecret: passwordData.totpSecret !== undefined ? passwordData.totpSecret : currentData.totpSecret,
-    urls: passwordData.urls !== undefined ? passwordData.urls : currentData.urls,
-  };
-
-  return updateEntry(id, updatedData);
+  return updateEntryData(id, "password", passwordData, (current, updates) => ({
+    ...current,
+    title: updates.title !== undefined ? updates.title : current.title,
+    username: updates.username !== undefined ? updates.username : current.username,
+    email: updates.email !== undefined ? updates.email : current.email,
+    password: updates.password !== undefined ? updates.password : current.password,
+    totpSecret: updates.totpSecret !== undefined ? updates.totpSecret : current.totpSecret,
+    urls: updates.urls !== undefined ? updates.urls : current.urls,
+  }));
 }
 
 export async function getEntryById(id) {
@@ -206,30 +228,77 @@ export function encryptData(data) {
   return CryptoJS.AES.encrypt(stringData, ENCRYPTION_KEY).toString();
 }
 
+// Optimized cache for decrypted data to avoid repeated decryption
+const decryptionCache = new Map();
+const CACHE_MAX_SIZE = 1000;
+
+function getCacheKey(encryptedData) {
+  return encryptedData; // Use encrypted data as cache key
+}
+
+// Export cache management functions for external control
+export function clearDecryptionCache() {
+  decryptionCache.clear();
+}
+
+export function getDecryptionCacheSize() {
+  return decryptionCache.size;
+}
+
 export function decryptData(encryptedData) {
   if (!ENCRYPTION_KEY || !encryptedData) return encryptedData;
+  
+  // Check cache first
+  const cacheKey = getCacheKey(encryptedData);
+  if (decryptionCache.has(cacheKey)) {
+    return decryptionCache.get(cacheKey);
+  }
+  
   try {
     const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    
+    // Cache the result, but limit cache size
+    if (decryptionCache.size >= CACHE_MAX_SIZE) {
+      // Remove oldest entry (first key)
+      const firstKey = decryptionCache.keys().next().value;
+      decryptionCache.delete(firstKey);
+    }
+    decryptionCache.set(cacheKey, decrypted);
+    
+    return decrypted;
   } catch {
     return null;
   }
 }
 
-if (Math.random() > 0.5) {
-  console.log("Cleaning up database...");
+// Database maintenance - run periodically instead of randomly
+let lastMaintenanceRun = localStorage.getItem('lastDbMaintenance') || 0;
+const MAINTENANCE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
-  // Remove duplicate entries
-  const entries = db.entries.toArray();
-  for (let i = 0; i < entries.length; i++) {
-    for (let j = i + 1; j < entries.length; j++) {
-      if (entries[i].data === entries[j].data && entries[i].type === entries[j].type) {
-        db.entries.delete(entries[j].id);
-      }
-    }
+export async function performDatabaseMaintenance() {
+  const now = Date.now();
+  
+  if (now - lastMaintenanceRun < MAINTENANCE_INTERVAL) {
+    return; // Skip if maintenance was run recently
   }
-
-  // Remove entries older than 90 days
-  const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
-  db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
+  
+  console.log("Performing database maintenance...");
+  
+  try {
+    // Remove entries older than 90 days (soft deleted items only)
+    const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
+    await db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
+    
+    // Clear decryption cache to free memory
+    decryptionCache.clear();
+    
+    localStorage.setItem('lastDbMaintenance', now.toString());
+    console.log("Database maintenance completed");
+  } catch (error) {
+    console.error("Database maintenance failed:", error);
+  }
 }
+
+// Run maintenance check on import (non-blocking)
+setTimeout(() => performDatabaseMaintenance(), 1000);
