@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import HomeView from "@/views/index.vue";
 import Dashboard from "@/views/dashboard.vue";
 import Backup from "@/views/backup.vue";
 import Import from "@/views/import.vue";
@@ -11,8 +10,7 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      name: "home",
-      component: HomeView,
+      redirect: "/dashboard"
     },
     {
       path: "/dashboard",

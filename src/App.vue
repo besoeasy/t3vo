@@ -10,7 +10,10 @@
             <!-- Logo/Brand -->
             <div class="flex items-center space-x-4">
               <div class="flex-shrink-0">
-                <h1 class="text-xl font-bold text-gray-900">T3VO</h1>
+                <h1 class="text-xl font-bold text-gray-900">
+                  T3VO 
+                  <span class="text-sm font-medium text-gray-500 ml-2">v{{ version }}</span>
+                </h1>
               </div>
             </div>
 
@@ -57,6 +60,16 @@
 
             <!-- User Actions -->
             <div class="flex items-center space-x-3">
+              <a
+                href="https://github.com/besoeasy/t3vo"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
+                title="View on GitHub"
+              >
+                <GithubIcon class="w-4 h-4 mr-1" />
+                <span class="hidden sm:inline">GitHub</span>
+              </a>
               <button
                 @click="handleLogout"
                 class="flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
@@ -97,6 +110,18 @@
                 />
                 {{ item.name }}
               </router-link>
+              
+              <!-- Mobile GitHub Link -->
+              <a
+                href="https://github.com/besoeasy/t3vo"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-200 border-t border-gray-200 mt-2 pt-3"
+                @click="mobileMenuOpen = false"
+              >
+                <GithubIcon class="w-5 h-5 mr-3 text-gray-400" />
+                View on GitHub
+              </a>
             </div>
           </div>
         </div>
@@ -115,10 +140,10 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
-import { Home, Layers, RefreshCw, Import, Scaling, Lock, Menu, X } from "lucide-vue-next";
+import { Layers, RefreshCw, Import, Scaling, Lock, Menu, X, GithubIcon } from "lucide-vue-next";
+import { version } from "../package.json";
 
 const navItems = [
-  { name: "Home", icon: Home, to: "/" },
   { name: "Dashboard", icon: Layers, to: "/dashboard" },
   { name: "Import", icon: Import, to: "/import" },
   { name: "Backup", icon: Scaling, to: "/backup" },
