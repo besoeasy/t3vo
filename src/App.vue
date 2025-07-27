@@ -158,7 +158,6 @@ const navItems = [
   { name: "Dashboard", icon: Layers, to: "/dashboard" },
   { name: "Import", icon: Import, to: "/import" },
   { name: "Backup", icon: Scaling, to: "/backup" },
-  { name: "Sync", icon: RefreshCw, to: "/sync" },
 ];
 
 const isUnlocked = ref(false);
