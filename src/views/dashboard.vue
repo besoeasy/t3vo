@@ -173,7 +173,7 @@
             </div>
 
             <div class="space-y-3 text-sm flex-grow">
-              <div class="flex items-start space-x-3 p-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm group-hover:border-blue-300 transition-colors duration-300">
+              <div class="flex items-start space-x-3 p-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm group-hover:border-blue-300 transition-colors duration-300 cursor-pointer hover:bg-gradient-to-r hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100" @click="openUrl(item.url)">
                 <Globe class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5 group-hover:text-blue-700 transition-colors duration-300" />
                 <div class="min-w-0 flex-1">
                   <p class="text-blue-700 font-medium text-sm truncate group-hover:text-blue-800 transition-colors duration-300">{{ item.url }}</p>
@@ -821,6 +821,14 @@ const copyToClipboard = async (text) => {
     // You could add a toast notification here
   } catch (error) {
     console.error("Failed to copy:", error);
+  }
+};
+
+const openUrl = (url) => {
+  if (url) {
+    // Ensure the URL has a protocol
+    const formattedUrl = url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url;
+    window.open(formattedUrl, '_blank', 'noopener,noreferrer');
   }
 };
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
-import { X, Key, Bookmark, FileText, Eye, EyeOff, Copy, Trash } from "lucide-vue-next";
+import { X, Key, Bookmark, FileText, Eye, EyeOff, Copy, Trash, Globe } from "lucide-vue-next";
 import { TOTP, Secret } from "otpauth";
 import PasswordGenerator from "@/components/PasswordGenerator.vue";
 
@@ -206,6 +206,14 @@ const handleCopyTOTP = () => {
   }
 };
 
+const openUrl = (url) => {
+  if (url) {
+    // Ensure the URL has a protocol
+    const formattedUrl = url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url;
+    window.open(formattedUrl, '_blank', 'noopener,noreferrer');
+  }
+};
+
 const handleSave = () => {
   // Validate required fields
   if (!isValid()) return;
@@ -275,7 +283,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-500">
     <!-- Mobile: Slide up from bottom, Desktop: Gentle scale -->
-    <div class="w-full max-w-lg bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-4 sm:zoom-in-95 duration-500 ease-out">
+    <div class="w-full max-w-4xl bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-4 sm:zoom-in-95 duration-500 ease-out">
       
       <!-- Quick Type Indicator -->
       <div class="h-1 bg-gradient-to-r" :class="{
@@ -285,7 +293,7 @@ onBeforeUnmount(() => {
       }"></div>
 
       <!-- Header - Clean & Minimal -->
-      <div class="px-6 py-5 flex items-center justify-between">
+      <div class="px-8 py-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <!-- Animated icon with type-specific colors -->
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300" :class="{
@@ -308,7 +316,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Content Area -->
-      <div class="px-6 pb-6 max-h-[70vh] overflow-y-auto">
+      <div class="px-8 pb-8 max-h-[80vh] overflow-y-auto">
         
         <!-- Password Form -->
         <div v-if="type === 'password'" class="space-y-5">
@@ -433,7 +441,25 @@ onBeforeUnmount(() => {
         <div v-if="type === 'bookmark'" class="space-y-5">
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Website URL</label>
+            <div v-if="readOnly" class="relative">
+              <input
+                v-model="formData.url"
+                :disabled="readOnly"
+                class="w-full px-4 py-3 pr-12 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400/50 transition-all duration-200 cursor-pointer"
+                placeholder="https://awesome-website.com"
+                @click="openUrl(formData.url)"
+                readonly
+              />
+              <button
+                @click="openUrl(formData.url)"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-orange-100 hover:bg-orange-200 flex items-center justify-center transition-all duration-200 hover:scale-110"
+                title="Open URL"
+              >
+                <Globe class="w-4 h-4 text-orange-600" />
+              </button>
+            </div>
             <input
+              v-else
               v-model="formData.url"
               :disabled="readOnly"
               class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400/50 transition-all duration-200"
@@ -489,7 +515,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Action Buttons - Floating bottom -->
-      <div class="p-6 pt-0">
+      <div class="p-8 pt-0">
         <div v-if="readOnly" class="flex gap-3">
           <button @click="handleCopy" class="flex-1 py-3 px-4 bg-gray-100/80 hover:bg-gray-200/80 rounded-2xl font-medium text-gray-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
             <Copy class="w-4 h-4" />
