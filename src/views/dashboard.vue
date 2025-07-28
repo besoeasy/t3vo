@@ -68,111 +68,156 @@
     </div>
 
     <!-- Content Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="columns-1 md:columns-2 xl:columns-3 gap-6 space-y-6">
       <!-- Items Display -->
       <div
         v-for="item in filteredItems"
         :key="`${item.type}-${item.id}`"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group"
+        :class="[
+          'break-inside-avoid mb-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 overflow-hidden group card-hover relative',
+          getCardSize(item),
+          getCardTheme(item.type),
+          isRecentlyUpdated(item) ? 'ring-2 ring-blue-200 ring-opacity-50' : ''
+        ]"
       >
+        <!-- Recently updated indicator -->
+        <div v-if="isRecentlyUpdated(item)" class="absolute top-2 right-2 w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-sm animate-pulse z-10"></div>
         <!-- Clickable card content -->
         <div
           @click="viewItemDetails(item)"
-          class="p-6 cursor-pointer hover:bg-gray-25 transition-colors duration-200"
+          class="p-6 cursor-pointer hover:bg-gradient-to-br hover:from-gray-25 hover:to-transparent transition-all duration-300 h-full flex flex-col justify-between"
         >
           <!-- Password Card -->
-          <div v-if="item.type === 'password'" class="space-y-4">
+          <div v-if="item.type === 'password'" class="space-y-4 h-full flex flex-col">
             <div class="flex items-start justify-between">
               <div class="flex items-center space-x-3">
-                <div class="p-2 bg-blue-50 rounded-lg">
-                  <Key class="w-5 h-5 text-blue-600" />
+                <div class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                  <Key class="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                  <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
                     {{ item.title }}
                   </h3>
-                  <p class="text-sm text-gray-500 mt-1">Password Entry</p>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full group-hover:bg-blue-200 transition-colors duration-300">
+                      Password
+                    </span>
+                    <span v-if="item.totp30" class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full group-hover:bg-green-200 transition-colors duration-300 animate-pulse">
+                      2FA
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="space-y-3 text-sm">
-              <div v-if="item.username" class="flex items-center justify-between">
-                <span class="text-gray-500 font-medium">Username:</span>
-                <span class="font-mono text-gray-900 truncate ml-2">{{ item.username }}</span>
+            <div class="space-y-3 text-sm flex-grow">
+              <div v-if="item.username" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600 font-medium flex items-center">
+                  <div class="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
+                  Username
+                </span>
+                <span class="font-mono text-gray-900 truncate ml-2 font-medium">{{ item.username }}</span>
               </div>
 
-              <div class="flex items-center justify-between">
-                <span class="text-gray-500 font-medium">Password:</span>
-                <span class="font-mono text-gray-900">{{
+              <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <span class="text-blue-600 font-medium flex items-center">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                  Password
+                </span>
+                <span class="font-mono text-blue-900 font-bold">{{
                   item.visible ? item.password : "••••••••"
                 }}</span>
               </div>
 
-              <div v-if="item.totp30" class="flex items-center justify-between bg-green-50 px-3 py-2 rounded-lg">
-                <span class="text-green-700 font-medium text-xs">2FA Code:</span>
-                <span class="font-mono text-green-800 font-semibold">{{ item.totp30 }}</span>
+              <div v-if="item.totp30" class="relative flex items-center justify-between bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 px-4 py-3 rounded-xl border border-green-200 shadow-sm group-hover:border-green-300 transition-colors duration-300">
+                <div class="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span class="text-green-700 font-semibold text-sm flex items-center">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  2FA Code
+                </span>
+                <span class="font-mono text-green-800 font-bold text-lg tracking-wider bg-white px-3 py-1 rounded-lg shadow-sm">{{ item.totp30 }}</span>
               </div>
             </div>
           </div>
 
           <!-- Bookmark Card -->
-          <div v-if="item.type === 'bookmark'" class="space-y-4">
+          <div v-if="item.type === 'bookmark'" class="space-y-4 h-full flex flex-col">
             <div class="flex items-start justify-between">
               <div class="flex items-center space-x-3">
-                <div class="p-2 bg-amber-50 rounded-lg">
-                  <Bookmark class="w-5 h-5 text-amber-600" />
+                <div class="p-3 bg-gradient-to-br from-amber-50 to-orange-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                  <Bookmark class="w-6 h-6 text-amber-600 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                  <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
                     {{ item.title }}
                   </h3>
-                  <p class="text-sm text-gray-500 mt-1">Bookmark</p>
+                  <span class="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full group-hover:bg-amber-200 transition-colors duration-300">
+                    Bookmark
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div class="space-y-3 text-sm">
-              <div class="flex items-center space-x-2 text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
-                <Globe class="w-4 h-4 flex-shrink-0" />
-                <span class="truncate font-medium">{{ item.url }}</span>
+            <div class="space-y-3 text-sm flex-grow">
+              <div class="flex items-start space-x-3 p-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm group-hover:border-blue-300 transition-colors duration-300">
+                <Globe class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5 group-hover:text-blue-700 transition-colors duration-300" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-blue-700 font-medium text-sm truncate group-hover:text-blue-800 transition-colors duration-300">{{ item.url }}</p>
+                  <p class="text-xs text-blue-500 mt-1 group-hover:text-blue-600 transition-colors duration-300">Click to visit</p>
+                </div>
               </div>
 
-              <p v-if="item.note" class="text-gray-600 line-clamp-2 leading-relaxed">
-                {{ item.note }}
-              </p>
+              <div v-if="item.note" class="p-3 bg-gray-50 rounded-lg border-l-4 border-l-amber-400">
+                <p class="text-gray-700 line-clamp-3 leading-relaxed text-sm">
+                  <span class="font-medium text-gray-600">Note: </span>{{ item.note }}
+                </p>
+              </div>
             </div>
           </div>
 
           <!-- Note Card -->
-          <div v-if="item.type === 'note'" class="space-y-4">
+          <div v-if="item.type === 'note'" class="space-y-4 h-full flex flex-col">
             <div class="flex items-start justify-between">
               <div class="flex items-center space-x-3">
-                <div class="p-2 bg-green-50 rounded-lg">
-                  <FileText class="w-5 h-5 text-green-600" />
+                <div class="p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                  <FileText class="w-6 h-6 text-green-600 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-semibold text-gray-900 truncate text-lg">
+                  <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
                     {{ item.title }}
                   </h3>
-                  <p class="text-sm text-gray-500 mt-1">Note</p>
+                  <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full group-hover:bg-green-200 transition-colors duration-300">
+                    Note
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div class="text-sm">
-              <p class="text-gray-600 line-clamp-3 leading-relaxed">{{ item.content }}</p>
+            <div class="text-sm flex-grow">
+              <div class="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-l-4 border-l-green-400 shadow-inner group-hover:shadow-md transition-shadow duration-300">
+                <p class="text-gray-700 line-clamp-6 leading-relaxed">{{ item.content }}</p>
+                <div v-if="item.content && item.content.length > 150" class="mt-3 pt-3 border-t border-gray-200">
+                  <span class="text-xs text-gray-500 font-medium flex items-center">
+                    <div class="w-1 h-1 bg-gray-400 rounded-full mr-2"></div>
+                    {{ item.content.length }} characters
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Updated timestamp -->
-          <div class="flex items-center justify-between text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
-            <span class="flex items-center space-x-1">
-              <span>Updated {{ formatDate(item.updated_at) }}</span>
+          <!-- Updated timestamp and actions -->
+          <div class="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-100">
+            <span class="flex items-center space-x-2">
+              <div class="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+              <span class="font-medium">Updated {{ formatDate(item.updated_at) }}</span>
             </span>
-            <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full capitalize font-medium">
-              {{ item.type }}
-            </span>
+            <div class="flex items-center space-x-1">
+              <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full capitalize font-medium text-xs">
+                {{ item.type }}
+              </span>
+              <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -352,6 +397,68 @@ const generateTOTP = (secret, period = 30) => {
     console.warn('Error generating TOTP:', error);
     return "";
   }
+};
+
+// Card styling functions
+const getCardSize = (item) => {
+  // Create variety in card sizes based on content and type
+  const contentLength = getContentLength(item);
+  const random = item.id % 5; // Use ID for consistent sizing per item
+  
+  // Special sizing logic for different types
+  if (item.type === 'note') {
+    if (contentLength > 300) return 'min-h-[320px]'; // Extra large for very long notes
+    if (contentLength > 200) return 'min-h-[280px]'; // Large for long notes
+    if (contentLength > 100) return 'min-h-[240px]'; // Medium for medium notes
+    return 'min-h-[200px]'; // Standard for short notes
+  } 
+  
+  if (item.type === 'password') {
+    if (item.totp30 && (item.username || item.email)) return 'min-h-[260px]'; // Large for full password entries
+    if (item.totp30) return 'min-h-[240px]'; // Medium-large for passwords with 2FA
+    if (item.username || item.email) return 'min-h-[220px]'; // Medium for passwords with username
+    return 'min-h-[200px]'; // Standard for simple passwords
+  }
+  
+  if (item.type === 'bookmark') {
+    if (item.note && item.note.length > 100) return 'min-h-[260px]'; // Large for bookmarks with long notes
+    if (item.note) return 'min-h-[220px]'; // Medium for bookmarks with notes
+    return 'min-h-[180px]'; // Small for simple bookmarks
+  }
+  
+  // Fallback with some randomization
+  const sizes = ['min-h-[160px]', 'min-h-[180px]', 'min-h-[200px]', 'min-h-[220px]', 'min-h-[240px]'];
+  return sizes[random] || 'min-h-[200px]';
+};
+
+const getCardTheme = (type) => {
+  switch (type) {
+    case 'password':
+      return 'border-l-4 border-l-blue-500 hover:border-l-blue-600';
+    case 'bookmark':
+      return 'border-l-4 border-l-amber-500 hover:border-l-amber-600';
+    case 'note':
+      return 'border-l-4 border-l-green-500 hover:border-l-green-600';
+    default:
+      return 'border-l-4 border-l-gray-500 hover:border-l-gray-600';
+  }
+};
+
+const getContentLength = (item) => {
+  let length = 0;
+  if (item.title) length += item.title.length;
+  if (item.content) length += item.content.length;
+  if (item.note) length += item.note.length;
+  if (item.username) length += item.username.length;
+  if (item.url) length += item.url.length;
+  return length;
+};
+
+const isRecentlyUpdated = (item) => {
+  const now = new Date();
+  const updated = new Date(item.updated_at);
+  const diffInHours = (now - updated) / (1000 * 60 * 60);
+  return diffInHours < 24; // Consider items updated in the last 24 hours as recent
 };
 
 // Computed properties
@@ -738,5 +845,38 @@ watch(activeFilter, () => {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.line-clamp-6 {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Enhanced card animations */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Masonry layout improvements */
+@media (min-width: 768px) {
+  .columns-2 > div {
+    display: inline-block;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .columns-3 > div {
+    display: inline-block;
+    width: 100%;
+  }
 }
 </style>

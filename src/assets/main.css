@@ -106,12 +106,72 @@ button:disabled {
 
 /* Card hover effects */
 .card-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+  animation: cardFadeIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.card-hover:nth-child(1) { animation-delay: 0.1s; }
+.card-hover:nth-child(2) { animation-delay: 0.2s; }
+.card-hover:nth-child(3) { animation-delay: 0.3s; }
+.card-hover:nth-child(4) { animation-delay: 0.1s; }
+.card-hover:nth-child(5) { animation-delay: 0.2s; }
+.card-hover:nth-child(6) { animation-delay: 0.3s; }
+.card-hover:nth-child(7) { animation-delay: 0.1s; }
+.card-hover:nth-child(8) { animation-delay: 0.2s; }
+.card-hover:nth-child(9) { animation-delay: 0.3s; }
+
+@keyframes cardFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced gradients */
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+/* Better masonry columns */
+.columns-1 {
+  columns: 1;
+  column-gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .columns-1.md\:columns-2 {
+    columns: 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .columns-1.md\:columns-2.xl\:columns-3 {
+    columns: 3;
+  }
+}
+
+/* Prevent column breaks inside cards */
+.break-inside-avoid {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Additional line clamp utilities */
+.line-clamp-6 {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Better scrollbars */
