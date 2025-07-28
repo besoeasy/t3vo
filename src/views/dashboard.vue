@@ -208,11 +208,10 @@
             </div>
 
             <div class="text-sm flex-grow">
-              <div class="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-l-4 border-l-green-400 shadow-inner group-hover:shadow-md transition-shadow duration-300">
+              <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-l-green-400">
                 <p class="text-gray-700 line-clamp-6 leading-relaxed">{{ item.content }}</p>
                 <div v-if="item.content && item.content.length > 150" class="mt-3 pt-3 border-t border-gray-200">
-                  <span class="text-xs text-gray-500 font-medium flex items-center">
-                    <div class="w-1 h-1 bg-gray-400 rounded-full mr-2"></div>
+                  <span class="text-xs text-gray-500 font-medium">
                     {{ item.content.length }} characters
                   </span>
                 </div>
