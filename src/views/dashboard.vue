@@ -78,17 +78,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Clean Stats Row -->
-        <div v-if="!searchQuery" class="mt-8 flex justify-center gap-8">
-          <div v-for="stat in quickStats" :key="stat.type" class="text-center">
-            <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-2">
-              <component :is="stat.icon" class="w-5 h-5 text-gray-600" />
-            </div>
-            <p class="text-xl font-semibold text-gray-900">{{ stat.count }}</p>
-            <p class="text-sm text-gray-600">{{ stat.label }}</p>
-          </div>
-        </div>
       </div>
     </div>
 
