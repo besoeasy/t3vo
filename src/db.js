@@ -12,7 +12,7 @@ db.version(1).stores({
   entries: "id, type, updatedAt, deletedAt, [type+deletedAt], [type+updatedAt]",
 });
 
-const itemsPerPage = 10;
+const itemsPerPage = 60;
 
 const getCurrentTime = () => Date.now();
 
