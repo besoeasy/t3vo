@@ -143,6 +143,38 @@ const typeIcon = computed(() => {
   }
 });
 
+const getSubtitle = () => {
+  if (props.readOnly) {
+    return 'View and manage your item';
+  }
+  return formData.value.id ? 'Update your information' : 'Add new item to your collection';
+};
+
+const getTitle = () => {
+  if (props.readOnly) {
+    return formData.value.title || 'Item Details';
+  }
+  return formData.value.id ? 'Edit Item' : 'New Item';
+};
+
+const getPasswordStrengthColor = (index) => {
+  const password = formData.value.password || '';
+  let strength = 0;
+  
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+  
+  if (index < strength) {
+    if (strength <= 1) return 'bg-red-400';
+    if (strength <= 2) return 'bg-yellow-400';
+    if (strength <= 3) return 'bg-blue-400';
+    return 'bg-emerald-400';
+  }
+  return 'bg-gray-200';
+};
+
 // Methods
 const handleEdit = () => {
   emit("edit", { ...formData.value });
@@ -223,263 +255,269 @@ watch(() => props.item, () => {
 // Add event listener on mount
 onMounted(() => {
   document.addEventListener("keydown", handleKeyDown);
+  // Prevent body scroll when modal is open (mobile experience)
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
 });
 
 // Cleanup on unmount
 onBeforeUnmount(() => {
   document.removeEventListener("keydown", handleKeyDown);
   stopTOTPTimer();
+  // Restore body scroll
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
 });
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden" @click.stop>
-      <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200">
-        <div class="flex items-center space-x-3">
-          <component :is="typeIcon" class="w-6 h-6 text-gray-600" />
-          <h3 class="text-xl font-semibold text-gray-900">{{ modalTitle }}</h3>
+  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-500">
+    <!-- Mobile: Slide up from bottom, Desktop: Gentle scale -->
+    <div class="w-full max-w-lg bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-4 sm:zoom-in-95 duration-500 ease-out">
+      
+      <!-- Quick Type Indicator -->
+      <div class="h-1 bg-gradient-to-r" :class="{
+        'from-emerald-400 via-teal-400 to-cyan-400': type === 'password',
+        'from-orange-400 via-amber-400 to-yellow-400': type === 'bookmark', 
+        'from-violet-400 via-purple-400 to-fuchsia-400': type === 'note'
+      }"></div>
+
+      <!-- Header - Clean & Minimal -->
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Animated icon with type-specific colors -->
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300" :class="{
+            'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-emerald-500/25': type === 'password',
+            'bg-gradient-to-br from-orange-400 to-yellow-500 shadow-orange-500/25': type === 'bookmark',
+            'bg-gradient-to-br from-violet-400 to-purple-500 shadow-violet-500/25': type === 'note'
+          }">
+            <component :is="typeIcon" class="w-6 h-6 text-white drop-shadow-sm" />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">{{ getTitle() }}</h2>
+            <p class="text-sm text-gray-500 mt-0.5">{{ getSubtitle() }}</p>
+          </div>
         </div>
-        <button @click="handleCancel" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-          <X class="w-5 h-5" />
+        
+        <!-- Close button -->
+        <button @click="handleCancel" class="w-10 h-10 rounded-xl bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95">
+          <X class="w-5 h-5 text-gray-600" />
         </button>
       </div>
-      
-      <!-- Form Content -->
-      <div class="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
+
+      <!-- Content Area -->
+      <div class="px-6 pb-6 max-h-[70vh] overflow-y-auto">
+        
         <!-- Password Form -->
-        <div v-if="type === 'password'" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+        <div v-if="type === 'password'" class="space-y-5">
+          <!-- Title -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">What's this for?</label>
             <input
               v-model="formData.title"
-              type="text"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Enter title"
-            />
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-              <input
-                v-model="formData.username"
-                type="text"
-                :disabled="readOnly"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                placeholder="Enter username"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                v-model="formData.email"
-                type="email"
-                :disabled="readOnly"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                placeholder="Enter email"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-            <div class="flex space-x-2">
-              <div class="relative flex-1">
-                <input
-                  v-model="formData.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  :disabled="readOnly"
-                  class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                  placeholder="Enter password"
-                />
-                <button
-                  type="button"
-                  @click="showPassword = !showPassword"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <component :is="showPassword ? EyeOff : Eye" class="w-4 h-4" />
-                </button>
-              </div>
-              <button
-                v-if="!readOnly"
-                type="button"
-                @click="showPasswordGenerator = !showPasswordGenerator"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Generate
-              </button>
-            </div>
-            
-            <!-- Password Generator -->
-            <div v-if="showPasswordGenerator && !readOnly" class="mt-4 p-4 bg-gray-50 rounded-lg">
-              <PasswordGenerator @generated="handlePasswordGenerated" />
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">TOTP Secret</label>
-            <input
-              v-model="formData.totpSecret"
-              type="text"
-              :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Enter TOTP secret (optional)"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200"
+              placeholder="Netflix, Gmail, Work laptop..."
             />
           </div>
 
-          <!-- Live TOTP Display (Read-only mode only) -->
-          <div v-if="readOnly && currentTOTP" class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">2FA Code</label>
-            <div class="flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div class="flex-1">
-                <div class="text-2xl font-mono font-bold text-green-700 tracking-wider">
-                  {{ currentTOTP }}
-                </div>
-                <div class="flex items-center space-x-2 mt-1">
-                  <div class="text-xs text-green-600">
-                    Refreshes in {{ totpTimeLeft }}s
-                  </div>
-                  <!-- Progress bar -->
-                  <div class="flex-1 bg-green-200 rounded-full h-1">
-                    <div 
-                      class="bg-green-600 h-1 rounded-full transition-all duration-1000 ease-linear"
-                      :style="{ width: `${(totpTimeLeft / 30) * 100}%` }"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              <button
-                @click="handleCopyTOTP"
-                class="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors"
-                title="Copy TOTP Code"
-              >
-                <Copy class="w-4 h-4" />
-              </button>
+          <!-- Username & Email in one row -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Username</label>
+              <input
+                v-model="formData.username"
+                :disabled="readOnly"
+                class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200"
+                placeholder="john_doe"
+              />
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Email</label>
+              <input
+                v-model="formData.email"
+                :disabled="readOnly"
+                type="email"
+                class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200"
+                placeholder="you@email.com"
+              />
             </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">URLs</label>
+
+          <!-- Password with visual strength indicator -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Password</label>
+            <div class="relative">
+              <input
+                v-model="formData.password"
+                :type="showPassword ? 'text' : 'password'"
+                :disabled="readOnly"
+                class="w-full px-4 py-3 pr-20 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200"
+                placeholder="Your secure password"
+              />
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button
+                  v-if="!readOnly"
+                  @click="showPasswordGenerator = !showPasswordGenerator"
+                  class="w-8 h-8 rounded-xl bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center transition-all duration-200 hover:scale-110"
+                  title="Generate password"
+                >
+                  <span class="text-sm">✨</span>
+                </button>
+                <button
+                  @click="showPassword = !showPassword"
+                  class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 hover:scale-110"
+                >
+                  <component :is="showPassword ? EyeOff : Eye" class="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            </div>
+            
+            <!-- Password strength indicator -->
+            <div class="flex gap-1 mt-2" v-if="formData.password && !readOnly">
+              <div class="h-1 flex-1 rounded-full" :class="getPasswordStrengthColor(0)"></div>
+              <div class="h-1 flex-1 rounded-full" :class="getPasswordStrengthColor(1)"></div>
+              <div class="h-1 flex-1 rounded-full" :class="getPasswordStrengthColor(2)"></div>
+              <div class="h-1 flex-1 rounded-full" :class="getPasswordStrengthColor(3)"></div>
+            </div>
+
+            <!-- Inline Password Generator -->
+            <div v-if="showPasswordGenerator && !readOnly" class="mt-3 p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+              <PasswordGenerator @generated="handlePasswordGenerated" />
+            </div>
+          </div>
+
+          <!-- 2FA Section -->
+          <div class="space-y-2" v-if="formData.totpSecret || !readOnly">
+            <label class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+            <input
+              v-if="!readOnly"
+              v-model="formData.totpSecret"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200"
+              placeholder="Paste your 2FA secret key here..."
+            />
+            
+            <!-- Live TOTP Display -->
+            <div v-if="readOnly && currentTOTP" class="mt-3 p-4 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl text-white">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-2xl font-mono font-bold tracking-wider">{{ currentTOTP }}</div>
+                  <div class="text-emerald-100 text-sm">Expires in {{ totpTimeLeft }}s</div>
+                </div>
+                <button @click="handleCopyTOTP" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110">
+                  <Copy class="w-5 h-5" />
+                </button>
+              </div>
+              <div class="mt-2 h-1 bg-emerald-300/30 rounded-full overflow-hidden">
+                <div class="h-full bg-white/60 rounded-full transition-all duration-1000 ease-linear" :style="{ width: `${(totpTimeLeft / 30) * 100}%` }"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Website URLs -->
+          <div class="space-y-2" v-if="formData.urls || !readOnly">
+            <label class="text-sm font-medium text-gray-700">Related websites</label>
             <textarea
               v-model="formData.urls"
-              rows="2"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Enter URLs (one per line)"
+              rows="2"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/50 transition-all duration-200 resize-none"
+              placeholder="https://netflix.com&#10;https://app.netflix.com"
             ></textarea>
           </div>
         </div>
 
         <!-- Bookmark Form -->
-        <div v-if="type === 'bookmark'" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">URL *</label>
+        <div v-if="type === 'bookmark'" class="space-y-5">
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Website URL</label>
             <input
               v-model="formData.url"
-              type="url"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="https://example.com"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400/50 transition-all duration-200"
+              placeholder="https://awesome-website.com"
             />
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Name this bookmark</label>
             <input
               v-model="formData.title"
-              type="text"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Enter title (auto-generated if empty)"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400/50 transition-all duration-200"
+              placeholder="Cool Design Tool, Recipe Blog..."
             />
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Note</label>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Why did you save this?</label>
             <textarea
               v-model="formData.note"
-              rows="4"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Add a note about this bookmark"
+              rows="3"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-orange-400/50 transition-all duration-200 resize-none"
+              placeholder="Great for inspiration, has free templates, recommend by Sarah..."
             ></textarea>
           </div>
         </div>
 
         <!-- Note Form -->
-        <div v-if="type === 'note'" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+        <div v-if="type === 'note'" class="space-y-5">
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Note title</label>
             <input
               v-model="formData.title"
-              type="text"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Enter note title"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-400/50 transition-all duration-200"
+              placeholder="Meeting notes, Ideas, Shopping list..."
             />
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Write your thoughts</label>
             <textarea
               v-model="formData.content"
-              rows="8"
               :disabled="readOnly"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Write your note content here..."
+              rows="8"
+              class="w-full px-4 py-3 bg-gray-50/50 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-400/50 transition-all duration-200 resize-none leading-relaxed"
+              placeholder="Start writing... you can add anything here - ideas, reminders, links, or whatever comes to mind."
             ></textarea>
           </div>
         </div>
       </div>
-      
-      <!-- Footer -->
-      <div class="flex justify-between p-6 border-t border-gray-200 bg-gray-50">
-        <!-- Left side - Action buttons for read-only mode -->
-        <div v-if="readOnly" class="flex gap-2">
-          <button 
-            @click="handleCopy" 
-            class="flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            :title="`Copy ${type === 'password' ? 'Password' : type === 'bookmark' ? 'URL' : 'Content'}`"
-          >
-            <Copy class="w-4 h-4 mr-2" />
+
+      <!-- Action Buttons - Floating bottom -->
+      <div class="p-6 pt-0">
+        <div v-if="readOnly" class="flex gap-3">
+          <button @click="handleCopy" class="flex-1 py-3 px-4 bg-gray-100/80 hover:bg-gray-200/80 rounded-2xl font-medium text-gray-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+            <Copy class="w-4 h-4" />
             Copy
           </button>
-          <button 
-            @click="handleDelete" 
-            class="flex items-center px-3 py-2 text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-          >
-            <Trash class="w-4 h-4 mr-2" />
+          <button @click="handleDelete" class="flex-1 py-3 px-4 bg-red-100/80 hover:bg-red-200/80 rounded-2xl font-medium text-red-600 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+            <Trash class="w-4 h-4" />
             Delete
           </button>
-        </div>
-        <div v-else></div>
-
-        <!-- Right side - Close/Cancel and Edit/Save buttons -->
-        <div class="flex gap-3">
-          <button 
-            @click="handleCancel" 
-            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {{ readOnly ? 'Close' : 'Cancel' }}
-          </button>
-          <button 
-            v-if="readOnly"
-            @click="handleEdit" 
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <button @click="handleEdit" class="flex-1 py-3 px-4 rounded-2xl font-medium text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg" :class="{
+            'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-emerald-500/25': type === 'password',
+            'bg-gradient-to-r from-orange-400 to-yellow-500 shadow-orange-500/25': type === 'bookmark',
+            'bg-gradient-to-r from-violet-400 to-purple-500 shadow-violet-500/25': type === 'note'
+          }">
             Edit
           </button>
-          <button 
-            v-else
-            @click="handleSave" 
-            :disabled="!isValid()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {{ formData.id ? 'Update' : 'Create' }}
+        </div>
+        
+        <div v-else class="flex gap-3">
+          <button @click="handleCancel" class="py-3 px-6 bg-gray-100/80 hover:bg-gray-200/80 rounded-2xl font-medium text-gray-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+            Cancel
+          </button>
+          <button @click="handleSave" :disabled="!isValid()" class="flex-1 py-3 px-4 rounded-2xl font-medium text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg" :class="{
+            'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-emerald-500/25': type === 'password',
+            'bg-gradient-to-r from-orange-400 to-yellow-500 shadow-orange-500/25': type === 'bookmark',
+            'bg-gradient-to-r from-violet-400 to-purple-500 shadow-violet-500/25': type === 'note'
+          }">
+            {{ formData.id ? 'Save Changes' : 'Create' }}
           </button>
         </div>
       </div>
