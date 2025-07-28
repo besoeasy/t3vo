@@ -1,67 +1,92 @@
 <template>
-  <div class="space-y-6">
-    <!-- Search & Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <div class="flex flex-col lg:flex-row gap-4">
-        <div class="flex-1">
+  <div class="space-y-8">
+    <!-- Clean Centered Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 py-8 px-6">
+      <div class="max-w-4xl mx-auto">
+        <!-- Centered Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-2xl font-semibold text-gray-900 mb-2">Your Digital Vault</h1>
+          <p class="text-gray-600">Search through your passwords, bookmarks, and notes</p>
+        </div>
+
+        <!-- Centered Search Input -->
+        <div class="max-w-2xl mx-auto mb-8">
           <div class="relative">
-            <Search
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
-            />
+            <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search passwords, bookmarks, and notes..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              class="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
             />
+            <div v-if="searchQuery" class="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <span class="text-sm text-gray-500">{{ filteredItems.length }} results</span>
+            </div>
           </div>
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="flex bg-gray-100 rounded-lg p-1">
-          <button
-            v-for="filter in filters"
-            :key="filter.key"
-            @click="activeFilter = filter.key"
-            :class="[
-              'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
-              activeFilter === filter.key
-                ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-200'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
-            ]"
-          >
-            <component :is="filter.icon" class="w-4 h-4 inline mr-2" />
-            {{ filter.name }}
-          </button>
+        <!-- Centered Filter Tabs -->
+        <div class="flex justify-center mb-6">
+          <div class="flex bg-gray-100 rounded-lg p-1">
+            <button
+              v-for="filter in filters"
+              :key="filter.key"
+              @click="activeFilter = filter.key"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center',
+                activeFilter === filter.key
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+              ]"
+            >
+              <component :is="filter.icon" class="w-4 h-4 mr-2" />
+              {{ filter.name }}
+            </button>
+          </div>
         </div>
 
-        <!-- Add Button -->
-        <div class="relative">
-          <button
-            @click="showAddMenu = !showAddMenu"
-            class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm"
-          >
-            <Plus class="w-4 h-4 mr-2" />
-            Add New
-          </button>
-
-          <!-- Add Menu Dropdown -->
-          <div
-            v-if="showAddMenu"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 animate-in slide-in-from-top-2 duration-200"
-          >
+        <!-- Centered Add Button -->
+        <div class="flex justify-center">
+          <div class="relative">
             <button
-              v-for="addOption in addOptions"
-              :key="addOption.type"
-              @click="startAdding(addOption.type)"
-              class="flex items-center w-full px-4 py-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors duration-200"
+              @click="showAddMenu = !showAddMenu"
+              class="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium"
             >
-              <component
-                :is="addOption.icon"
-                class="w-4 h-4 mr-3 text-gray-400"
-              />
-              <span class="text-sm font-medium text-gray-700">{{ addOption.name }}</span>
+              <Plus class="w-4 h-4 mr-2" />
+              Add New
             </button>
+
+            <!-- Add Menu Dropdown -->
+            <div
+              v-if="showAddMenu"
+              class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-30"
+            >
+              <div class="py-1">
+                <button
+                  v-for="addOption in addOptions"
+                  :key="addOption.type"
+                  @click="startAdding(addOption.type)"
+                  class="flex items-center w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <component
+                    :is="addOption.icon"
+                    class="w-4 h-4 mr-3 text-gray-400"
+                  />
+                  <span class="text-sm font-medium text-gray-700">{{ addOption.name }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clean Stats Row -->
+        <div v-if="!searchQuery" class="mt-8 flex justify-center gap-8">
+          <div v-for="stat in quickStats" :key="stat.type" class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-2">
+              <component :is="stat.icon" class="w-5 h-5 text-gray-600" />
+            </div>
+            <p class="text-xl font-semibold text-gray-900">{{ stat.count }}</p>
+            <p class="text-sm text-gray-600">{{ stat.label }}</p>
           </div>
         </div>
       </div>
@@ -661,6 +686,42 @@ const startAdding = (type) => {
   showEditModal.value = true;
   showAddMenu.value = false;
 };
+
+const getAddOptionDescription = (type) => {
+  switch (type) {
+    case "password":
+      return "Store login credentials securely";
+    case "bookmark":
+      return "Save important websites";
+    case "note":
+      return "Write and organize notes";
+    default:
+      return "";
+  }
+};
+
+const quickStats = computed(() => {
+  return [
+    {
+      type: 'password',
+      icon: Key,
+      count: passwords.value.length,
+      label: passwords.value.length === 1 ? 'Password' : 'Passwords'
+    },
+    {
+      type: 'bookmark',
+      icon: Bookmark,
+      count: bookmarks.value.length,
+      label: bookmarks.value.length === 1 ? 'Bookmark' : 'Bookmarks'
+    },
+    {
+      type: 'note',
+      icon: FileText,
+      count: notes.value.length,
+      label: notes.value.length === 1 ? 'Note' : 'Notes'
+    }
+  ];
+});
 
 const getEmptyItem = (type) => {
   switch (type) {
