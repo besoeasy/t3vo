@@ -1,13 +1,11 @@
 {
   "name": "t3vo",
-  "version": "0.0.9",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "bump": "npm version patch && npm i"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.1",
