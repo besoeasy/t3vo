@@ -96,7 +96,6 @@
             <p class="font-semibold text-blue-900 mb-3">Available Tags:</p>
             <div class="grid grid-cols-2 gap-3 text-blue-800">
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@title=</code> Title</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@color=</code> Color</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@email=</code> Email</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@username=</code> Username</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@password=</code> Password</div>
@@ -161,13 +160,6 @@
                   <component :is="typeIcon" class="w-3.5 h-3.5 mr-1.5" />
                   {{ detectedType }}
                 </span>
-                <span
-                  v-if="parsed.color"
-                  class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full"
-                  :style="{ backgroundColor: getNoteColor(parsed.color), color: '#000' }"
-                >
-                  {{ parsed.color }}
-                </span>
               </div>
             </div>
 
@@ -223,7 +215,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { parseNote, validateNote, NOTE_COLORS } from '@/utils/noteParser';
+import { parseNote, validateNote } from '@/utils/noteParser';
 import {
   ArrowLeft,
   Save,
@@ -293,11 +285,6 @@ const typeClass = computed(() => {
       return 'bg-green-100 text-green-700';
   }
 });
-
-// Get note color
-const getNoteColor = (colorKey) => {
-  return NOTE_COLORS[colorKey]?.bg || NOTE_COLORS.yellow.bg;
-};
 
 // Count tags
 const tagCount = computed(() => {
