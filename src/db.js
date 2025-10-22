@@ -1,6 +1,6 @@
 import Dexie from "dexie";
-
 import CryptoJS from "crypto-js";
+import { parseNote } from "@/utils/noteParser";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
 
@@ -8,36 +8,26 @@ const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY, false) : null;
 
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
-db.version(1).stores({
-  entries: "id, type, updatedAt, deletedAt, [type+deletedAt], [type+updatedAt]",
+// Simplified schema - everything is a note
+db.version(2).stores({
+  notes: "id, updatedAt, deletedAt",
 });
 
 const itemsPerPage = 60;
 
 const getCurrentTime = () => Date.now();
 
-// Optimized match function with early returns
-function matchesSearch(entry, searchQuery) {
+// Optimized match function - searches in raw content
+function matchesSearch(note, searchQuery) {
   if (!searchQuery) return true;
   
   const lowerQuery = searchQuery.toLowerCase();
-  const decryptedData = decryptData(entry.data);
+  const content = decryptData(note.content);
 
-  if (!decryptedData) return false;
-
-  if (typeof decryptedData !== "object") {
-    return String(decryptedData).toLowerCase().includes(lowerQuery);
-  }
-
-  // Use for...in loop for early termination
-  for (const key in decryptedData) {
-    const value = decryptedData[key];
-    if (value && String(value).toLowerCase().includes(lowerQuery)) {
-      return true;
-    }
-  }
+  if (!content) return false;
   
-  return false;
+  // Search in raw content (includes tags and text)
+  return content.toLowerCase().includes(lowerQuery);
 }
 
 // Optimized hash function using built-in crypto when available
@@ -54,172 +44,136 @@ function getSha256Hash(str, includeTimestamp = false) {
   return CryptoJS.SHA256(hashInput).toString(CryptoJS.enc.Hex);
 }
 
-export async function addEntry(type, data) {
-  const entry = {
-    id: getSha256Hash(type + encryptData(data) + getCurrentTime(), true),
-    type,
-    data: encryptData(data),
+/**
+ * Add a new note to the database
+ * @param {string} content - Raw note content with tags
+ * @returns {string} - Note ID
+ */
+export async function addNote(content) {
+  const note = {
+    id: getSha256Hash(encryptData(content) + getCurrentTime(), true),
+    content: encryptData(content),
     updatedAt: getCurrentTime(),
     deletedAt: null,
   };
 
-  const id = await db.entries.add(entry);
+  const id = await db.notes.add(note);
   return id;
 }
 
-// Convenience functions for specific types
-export async function addNoteEntry(noteData) {
-  return addEntry("note", {
-    title: noteData.title,
-    content: noteData.content,
-    tags: noteData.tags || [],
-  });
-}
-
-export async function addBookmarkEntry(bookmarkData) {
-  return addEntry("bookmark", {
-    title: bookmarkData.title,
-    url: bookmarkData.url,
-    note: bookmarkData.note || "",
-  });
-}
-
-export async function addPasswordEntry(passwordData) {
-  return addEntry("password", {
-    title: passwordData.title,
-    username: passwordData.username,
-    email: passwordData.email,
-    password: passwordData.password,
-    totpSecret: passwordData.totpSecret || "",
-    urls: passwordData.urls || [],
-  });
-}
-
-// Generic function for fetching entries with pagination and search.
-async function fetchEntries(type, page = 1, searchQuery = "") {
-  let entries;
+/**
+ * Fetch notes with pagination and optional search
+ * @param {number} page - Page number
+ * @param {string} searchQuery - Optional search query
+ * @param {string} typeFilter - Optional type filter ('all', 'password', 'bookmark', 'note')
+ * @returns {Array} - Array of notes with parsed data
+ */
+export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all") {
+  let notes;
   
-  if (searchQuery) {
-    // For search, we need to load all entries of this type and filter
-    // This is a limitation of encrypted data - we can't index encrypted content
-    entries = await db.entries
-      .where("type")
-      .equals(type)
-      .and((entry) => entry.deletedAt === null)
+  if (searchQuery || typeFilter !== "all") {
+    // For search or filter, load all notes and filter client-side
+    notes = await db.notes
+      .where("deletedAt")
+      .equals(null)
       .toArray();
     
+    // Decrypt and parse
+    notes = notes.map((note) => {
+      const content = decryptData(note.content);
+      const parsed = parseNote(content);
+      return {
+        ...note,
+        content,
+        parsed,
+      };
+    });
+    
     // Filter by search query
-    entries = entries.filter((entry) => matchesSearch(entry, searchQuery));
+    if (searchQuery) {
+      notes = notes.filter((note) => matchesSearch(note, searchQuery));
+    }
+    
+    // Filter by type
+    if (typeFilter !== "all") {
+      notes = notes.filter((note) => note.parsed.type === typeFilter);
+    }
     
     // Sort by updatedAt (newest first)
-    entries.sort((a, b) => b.updatedAt - a.updatedAt);
+    notes.sort((a, b) => b.updatedAt - a.updatedAt);
     
     // Apply pagination after filtering
     const offset = (page - 1) * itemsPerPage;
-    entries = entries.slice(offset, offset + itemsPerPage);
+    notes = notes.slice(offset, offset + itemsPerPage);
   } else {
     // For non-search queries, use efficient database-level pagination
     const offset = (page - 1) * itemsPerPage;
-    entries = await db.entries
-      .where("type")
-      .equals(type)
-      .and((entry) => entry.deletedAt === null)
+    notes = await db.notes
+      .where("deletedAt")
+      .equals(null)
       .reverse()
-      .offset(offset)
-      .limit(itemsPerPage)
-      .toArray();
+      .sortBy("updatedAt");
+    
+    notes = notes.slice(offset, offset + itemsPerPage);
+    
+    // Decrypt and parse
+    notes = notes.map((note) => {
+      const content = decryptData(note.content);
+      const parsed = parseNote(content);
+      return {
+        ...note,
+        content,
+        parsed,
+      };
+    });
   }
 
-  // Decrypt data for each entry
-  return entries.map((entry) => ({
-    ...entry,
-    data: decryptData(entry.data),
-  }));
+  return notes;
 }
 
-// Convenience functions for fetching specific types
-export function fetchNotes(page = 1, searchQuery = "") {
-  return fetchEntries("note", page, searchQuery);
+/**
+ * Update a note
+ * @param {string} id - Note ID
+ * @param {string} content - New raw content
+ */
+export async function updateNote(id, content) {
+  const note = await db.notes.get(id);
+  if (!note) throw new Error("Note not found");
+
+  await db.notes.update(id, {
+    content: encryptData(content),
+    updatedAt: getCurrentTime(),
+  });
 }
 
-export function fetchBookmarks(page = 1, searchQuery = "") {
-  return fetchEntries("bookmark", page, searchQuery);
-}
-
-export function fetchPasswords(page = 1, searchQuery = "") {
-  return fetchEntries("password", page, searchQuery);
-}
-
-// Soft deletes an entry by setting its deletedAt timestamp.
-export async function softDeleteEntry(id) {
+/**
+ * Soft delete a note
+ * @param {string} id - Note ID
+ */
+export async function softDeleteNote(id) {
   const currentTime = getCurrentTime();
-  await db.entries.update(id, {
+  await db.notes.update(id, {
     deletedAt: currentTime,
     updatedAt: currentTime,
   });
 }
 
-// Update an entry
-export async function updateEntry(id, data) {
-  const entry = await db.entries.get(id);
-  if (!entry) throw new Error("Entry not found");
+/**
+ * Get a note by ID
+ * @param {string} id - Note ID
+ * @returns {Object|null} - Note with parsed data or null
+ */
+export async function getNoteById(id) {
+  const note = await db.notes.get(id);
+  if (!note || note.deletedAt !== null) return null;
 
-  await db.entries.update(id, {
-    data: encryptData(data),
-    updatedAt: getCurrentTime(),
-  });
-}
-
-// Helper function to reduce update function redundancy
-async function updateEntryData(id, expectedType, newData, updateCallback) {
-  const entry = await db.entries.get(id);
-  if (!entry || entry.type !== expectedType) {
-    throw new Error(`${expectedType.charAt(0).toUpperCase() + expectedType.slice(1)} not found`);
-  }
-
-  const currentData = decryptData(entry.data);
-  const updatedData = updateCallback(currentData, newData);
-  
-  return updateEntry(id, updatedData);
-}
-
-export async function updateNoteEntry(id, noteData) {
-  return updateEntryData(id, "note", noteData, (current, updates) => ({
-    ...current,
-    title: updates.title !== undefined ? updates.title : current.title,
-    content: updates.content !== undefined ? updates.content : current.content,
-    tags: updates.tags !== undefined ? updates.tags : current.tags,
-  }));
-}
-
-export async function updateBookmarkEntry(id, bookmarkData) {
-  return updateEntryData(id, "bookmark", bookmarkData, (current, updates) => ({
-    ...current,
-    title: updates.title !== undefined ? updates.title : current.title,
-    url: updates.url !== undefined ? updates.url : current.url,
-    note: updates.note !== undefined ? updates.note : current.note,
-  }));
-}
-
-export async function updatePasswordEntry(id, passwordData) {
-  return updateEntryData(id, "password", passwordData, (current, updates) => ({
-    ...current,
-    title: updates.title !== undefined ? updates.title : current.title,
-    username: updates.username !== undefined ? updates.username : current.username,
-    email: updates.email !== undefined ? updates.email : current.email,
-    password: updates.password !== undefined ? updates.password : current.password,
-    totpSecret: updates.totpSecret !== undefined ? updates.totpSecret : current.totpSecret,
-    urls: updates.urls !== undefined ? updates.urls : current.urls,
-  }));
-}
-
-export async function getEntryById(id) {
-  const entry = await db.entries.get(id);
-  if (!entry || entry.deletedAt !== null) return null;
+  const content = decryptData(note.content);
+  const parsed = parseNote(content);
 
   return {
-    ...entry,
-    data: decryptData(entry.data),
+    ...note,
+    content,
+    parsed,
   };
 }
 
@@ -287,9 +241,9 @@ export async function performDatabaseMaintenance() {
   console.log("Performing database maintenance...");
   
   try {
-    // Remove entries older than 90 days (soft deleted items only)
+    // Remove notes older than 90 days (soft deleted items only)
     const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
-    await db.entries.where("deletedAt").below(ninetyDaysAgo).delete();
+    await db.notes.where("deletedAt").below(ninetyDaysAgo).delete();
     
     // Clear decryption cache to free memory
     decryptionCache.clear();

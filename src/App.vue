@@ -144,8 +144,6 @@ import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
 import {
   Layers,
-  RefreshCw,
-  Import,
   Scaling,
   Lock,
   Menu,
@@ -155,8 +153,7 @@ import {
 import { version } from "../package.json";
 
 const navItems = [
-  { name: "Dashboard", icon: Layers, to: "/dashboard" },
-  { name: "Import", icon: Import, to: "/import" },
+  { name: "Notes", icon: Layers, to: "/dashboard" },
   { name: "Backup", icon: Scaling, to: "/backup" },
 ];
 

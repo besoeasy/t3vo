@@ -1,72 +1,222 @@
+<template>
+  <div class="space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div class="max-w-2xl mx-auto text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+          <Database class="w-8 h-8 text-blue-600" />
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Backup & Restore</h1>
+        <p class="text-gray-600">Keep your notes safe by creating regular backups</p>
+      </div>
+    </div>
+
+    <!-- Backup Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <div class="p-3 bg-green-100 rounded-xl">
+              <Download class="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+          <div class="flex-1">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Backup Your Notes</h2>
+            <p class="text-gray-600 mb-4">
+              Download all your notes as a JSON file. This file is encrypted with your master password.
+            </p>
+            <button
+              @click="backupDatabase"
+              :disabled="isBackingUp"
+              class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              <Download class="w-5 h-5 mr-2" />
+              {{ isBackingUp ? 'Creating Backup...' : 'Download Backup' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restore Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <div class="p-3 bg-blue-100 rounded-xl">
+              <Upload class="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+          <div class="flex-1">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Restore From Backup</h2>
+            <p class="text-gray-600 mb-4">
+              Upload a previously created backup file to restore your notes. This will not delete existing notes.
+            </p>
+            
+            <!-- Warning -->
+            <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
+              <AlertTriangle class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
+              <div class="text-sm text-yellow-800">
+                <p class="font-medium mb-1">Important:</p>
+                <p>Make sure you're logged in with the same master password that was used to create the backup.</p>
+              </div>
+            </div>
+
+            <input
+              type="file"
+              ref="fileInput"
+              @change="restoreDatabase"
+              accept=".json"
+              class="hidden"
+            />
+            <button
+              @click="fileInput.click()"
+              :disabled="isRestoring"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              <Upload class="w-5 h-5 mr-2" />
+              {{ isRestoring ? 'Restoring...' : 'Upload Backup File' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    <div
+      v-if="successMessage"
+      class="bg-green-50 border border-green-200 rounded-xl p-4 max-w-2xl mx-auto"
+    >
+      <div class="flex items-start">
+        <CheckCircle class="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+        <div>
+          <p class="font-medium text-green-900">{{ successMessage }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div
+      v-if="errorMessage"
+      class="bg-red-50 border border-red-200 rounded-xl p-4 max-w-2xl mx-auto"
+    >
+      <div class="flex items-start">
+        <XCircle class="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+        <div>
+          <p class="font-medium text-red-900">{{ errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from "vue";
 import { db, decryptData, encryptData } from "@/db.js";
 import { saveAs } from "file-saver";
+import {
+  Database,
+  Download,
+  Upload,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+} from "lucide-vue-next";
 
 const fileInput = ref(null);
+const isBackingUp = ref(false);
+const isRestoring = ref(false);
+const successMessage = ref("");
+const errorMessage = ref("");
 
 const backupDatabase = async () => {
-  const entries = await db.entries.filter((entry) => !entry.deletedAt).toArray();
+  try {
+    isBackingUp.value = true;
+    errorMessage.value = "";
+    successMessage.value = "";
 
-  const decryptedEntries = entries.map((entry) => ({
-    ...entry,
-    data: decryptData(entry.data),
-  }));
+    const notes = await db.notes.filter((note) => !note.deletedAt).toArray();
 
-  const jsonData = JSON.stringify(decryptedEntries, null, 2);
-  const blob = new Blob([jsonData], { type: "application/json" });
-  saveAs(blob, "t3vo.json");
+    if (notes.length === 0) {
+      errorMessage.value = "No notes to backup. Create some notes first!";
+      return;
+    }
+
+    const decryptedNotes = notes.map((note) => ({
+      ...note,
+      content: decryptData(note.content),
+    }));
+
+    const jsonData = JSON.stringify(decryptedNotes, null, 2);
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const timestamp = new Date().toISOString().split('T')[0];
+    saveAs(blob, `t3vo-backup-${timestamp}.json`);
+
+    successMessage.value = `Successfully backed up ${notes.length} note${notes.length !== 1 ? 's' : ''}!`;
+  } catch (error) {
+    console.error("Backup failed:", error);
+    errorMessage.value = "Backup failed. Please try again.";
+  } finally {
+    isBackingUp.value = false;
+  }
 };
 
 const restoreDatabase = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
+  isRestoring.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
       const jsonData = JSON.parse(e.target.result);
 
-      for (const entry of jsonData) {
-        console.log("entry", entry);
+      if (!Array.isArray(jsonData) || jsonData.length === 0) {
+        errorMessage.value = "Invalid backup file or empty backup.";
+        isRestoring.value = false;
+        return;
+      }
 
-        const encryptedData = encryptData(entry.data);
+      let restoredCount = 0;
+      let skippedCount = 0;
 
-        const existingEntry = await db.entries.where({ updatedAt: entry.updatedAt, type: entry.type }).first();
+      for (const note of jsonData) {
+        const encryptedContent = encryptData(note.content);
+        const existingNote = await db.notes.where({ id: note.id }).first();
 
-        if (existingEntry) {
-          console.log("Entry already exists, skipping...");
+        if (existingNote) {
+          skippedCount++;
         } else {
-          console.log("Adding new entry...");
-
-          await db.entries.add({
-            type: entry.type,
-            data: encryptedData,
-            updatedAt: entry.updatedAt,
-            deletedAt: entry.deletedAt,
+          await db.notes.add({
+            id: note.id,
+            content: encryptedContent,
+            updatedAt: note.updatedAt,
+            deletedAt: note.deletedAt,
           });
+          restoredCount++;
         }
       }
 
-      alert("Database restored successfully!");
+      successMessage.value = `Restored ${restoredCount} note${restoredCount !== 1 ? 's' : ''}${skippedCount > 0 ? ` (${skippedCount} skipped as duplicates)` : ''}. Reloading...`;
+      
+      // Reload after 2 seconds to show the notes
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
     } catch (error) {
-      alert("Failed to restore database.  ");
-      console.error(error);
+      console.error("Restore failed:", error);
+      errorMessage.value = "Failed to restore backup. Make sure you're using the correct master password.";
+    } finally {
+      isRestoring.value = false;
+      // Reset file input
+      if (fileInput.value) {
+        fileInput.value.value = "";
+      }
     }
   };
   reader.readAsText(file);
 };
 </script>
-
-<template>
-  <div class="flex items-center justify-center h-screen">
-    <div class="p-6 max-w-lg w-full bg-white rounded-lg shadow-lg">
-      <h2 class="text-xl font-semibold text-gray-700 mb-4">Database Backup & Restore</h2>
-
-      <button @click="backupDatabase" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Backup Database</button>
-
-      <input type="file" ref="fileInput" @change="restoreDatabase" class="hidden" />
-      <button @click="fileInput.click()" class="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Restore Database</button>
-    </div>
-  </div>
-</template>
