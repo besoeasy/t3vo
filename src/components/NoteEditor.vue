@@ -178,6 +178,26 @@
               <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-4 bg-green-50 rounded-xl border border-green-200">
                 <span class="text-xs text-green-700 font-semibold">2FA Secret</span>
                 <p class="text-xs text-green-900 mt-1.5 break-all" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags['2fa'] || parsed.tags.totp }}</p>
+                
+                <!-- TOTP Code -->
+                <div v-if="totpCode && totpCode !== 'Invalid Secret'" class="mt-3 pt-3 border-t border-green-300">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs text-green-700 font-semibold">Current Code</span>
+                    <span class="text-xs text-green-600">{{ totpTimeRemaining }}s</span>
+                  </div>
+                  <p class="text-3xl font-bold text-green-900 tracking-wider" style="font-family: 'SF Mono', 'Monaco', monospace">
+                    {{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}
+                  </p>
+                  <div class="mt-2 h-1 bg-green-200 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full bg-green-600 transition-all duration-1000 ease-linear"
+                      :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"
+                    ></div>
+                  </div>
+                </div>
+                <div v-else-if="totpCode === 'Invalid Secret'" class="mt-3 pt-3 border-t border-green-300">
+                  <p class="text-xs text-red-600">Invalid 2FA secret format</p>
+                </div>
               </div>
 
               <div v-if="parsed.tags.domains" class="p-4 bg-gray-50 rounded-xl border border-gray-200">
@@ -216,6 +236,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { parseNote, validateNote } from '@/utils/noteParser';
+import * as OTPAuth from 'otpauth';
 import {
   ArrowLeft,
   Save,
@@ -243,11 +264,64 @@ const emit = defineEmits(['save', 'cancel', 'delete']);
 const content = ref(props.initialContent);
 const showTagHelp = ref(false);
 const textareaRef = ref(null);
+const totpCode = ref('');
+const totpTimeRemaining = ref(30);
+let totpInterval = null;
 
 // Parse content in real-time
 const parsed = computed(() => {
   if (!content.value) return null;
   return parseNote(content.value);
+});
+
+// Generate TOTP code
+const generateTOTP = () => {
+  const secret = parsed.value?.tags['2fa'] || parsed.value?.tags.totp;
+  if (!secret) {
+    totpCode.value = '';
+    totpTimeRemaining.value = 30;
+    return;
+  }
+
+  try {
+    // Create TOTP instance
+    const totp = new OTPAuth.TOTP({
+      secret: secret.replace(/\s/g, ''), // Remove spaces
+      digits: 6,
+      period: 30,
+    });
+
+    // Generate current token
+    totpCode.value = totp.generate();
+
+    // Calculate time remaining
+    const now = Math.floor(Date.now() / 1000);
+    totpTimeRemaining.value = 30 - (now % 30);
+  } catch (error) {
+    console.error('Error generating TOTP:', error);
+    totpCode.value = 'Invalid Secret';
+    totpTimeRemaining.value = 0;
+  }
+};
+
+// Watch for changes in 2FA secret
+watch(() => parsed.value?.tags['2fa'] || parsed.value?.tags.totp, () => {
+  generateTOTP();
+}, { immediate: true });
+
+// Update TOTP every second
+onMounted(() => {
+  totpInterval = setInterval(() => {
+    if (parsed.value?.tags['2fa'] || parsed.value?.tags.totp) {
+      generateTOTP();
+    }
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (totpInterval) {
+    clearInterval(totpInterval);
+  }
 });
 
 // Detect type and get styling
