@@ -58,7 +58,8 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 overflow-auto">
-      <div class="max-w-7xl mx-auto p-8">
+      <!-- Notes Grid View -->
+      <div v-if="!showEditor" class="max-w-7xl mx-auto p-8">
         <!-- Search Bar -->
         <div class="mb-8">
           <div class="relative max-w-md">
@@ -130,17 +131,17 @@
           </p>
         </div>
       </div>
-    </main>
 
-    <!-- Note Editor Modal -->
-    <NoteEditor
-      v-if="showEditor"
-      :initialContent="editingContent"
-      :isNew="isNewNote"
-      @save="handleSave"
-      @cancel="closeEditor"
-      @delete="handleDelete"
-    />
+      <!-- Note Editor View -->
+      <NoteEditor
+        v-else
+        :initialContent="editingContent"
+        :isNew="isNewNote"
+        @save="handleSave"
+        @cancel="closeEditor"
+        @delete="handleDelete"
+      />
+    </main>
   </div>
 </template>
 
