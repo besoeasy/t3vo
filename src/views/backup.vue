@@ -1,112 +1,132 @@
 <template>
-  <div class="space-y-8">
-    <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div class="max-w-2xl mx-auto text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-          <Database class="w-8 h-8 text-blue-600" />
-        </div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Backup & Restore</h1>
-        <p class="text-gray-600">Keep your notes safe by creating regular backups</p>
-      </div>
-    </div>
+  <div class="flex h-screen bg-[#E8EBF0] overflow-hidden">
+    <!-- Left Sidebar -->
+    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 shadow-sm">
+      <h1 class="text-2xl font-semibold text-gray-900 mb-8">T3VO</h1>
+      
+      <!-- Back to Notes Button -->
+      <router-link
+        to="/dashboard"
+        class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-900 hover:bg-gray-200 transition-colors mb-8"
+        title="Back to Notes"
+      >
+        <ArrowLeft class="w-6 h-6" />
+      </router-link>
 
-    <!-- Backup Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div class="max-w-2xl mx-auto">
-        <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0">
-            <div class="p-3 bg-green-100 rounded-xl">
-              <Download class="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-          <div class="flex-1">
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">Backup Your Notes</h2>
-            <p class="text-gray-600 mb-4">
-              Download all your notes as a JSON file. This file is encrypted with your master password.
-            </p>
-            <button
-              @click="backupDatabase"
-              :disabled="isBackingUp"
-              class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-            >
-              <Download class="w-5 h-5 mr-2" />
-              {{ isBackingUp ? 'Creating Backup...' : 'Download Backup' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <div class="flex-1"></div>
 
-    <!-- Restore Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div class="max-w-2xl mx-auto">
-        <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0">
-            <div class="p-3 bg-blue-100 rounded-xl">
-              <Upload class="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-          <div class="flex-1">
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">Restore From Backup</h2>
-            <p class="text-gray-600 mb-4">
-              Upload a previously created backup file to restore your notes. This will not delete existing notes.
-            </p>
-            
-            <!-- Warning -->
-            <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
-              <AlertTriangle class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
-              <div class="text-sm text-yellow-800">
-                <p class="font-medium mb-1">Important:</p>
-                <p>Make sure you're logged in with the same master password that was used to create the backup.</p>
+      <!-- Lock Button -->
+      <button
+        @click="handleLogout"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+        title="Lock App"
+      >
+        <Lock class="w-5 h-5" />
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto">
+      <div class="max-w-4xl mx-auto p-8">
+        <!-- Page Title -->
+        <h2 class="text-5xl font-bold text-gray-900 mb-8">Backup</h2>
+
+        <div class="space-y-6">
+          <!-- Backup Section -->
+          <div class="bg-white rounded-xl shadow-sm p-8">
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0">
+                <div class="p-3 bg-green-100 rounded-xl">
+                  <Download class="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Backup Your Notes</h3>
+                <p class="text-gray-600 mb-4">
+                  Download all your notes as a JSON file. This file is encrypted with your master password.
+                </p>
+                <button
+                  @click="backupDatabase"
+                  :disabled="isBackingUp"
+                  class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  <Download class="w-5 h-5 mr-2" />
+                  {{ isBackingUp ? 'Creating Backup...' : 'Download Backup' }}
+                </button>
               </div>
             </div>
+          </div>
 
-            <input
-              type="file"
-              ref="fileInput"
-              @change="restoreDatabase"
-              accept=".json"
-              class="hidden"
-            />
-            <button
-              @click="fileInput.click()"
-              :disabled="isRestoring"
-              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-            >
-              <Upload class="w-5 h-5 mr-2" />
-              {{ isRestoring ? 'Restoring...' : 'Upload Backup File' }}
-            </button>
+          <!-- Restore Section -->
+          <div class="bg-white rounded-xl shadow-sm p-8">
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0">
+                <div class="p-3 bg-blue-100 rounded-xl">
+                  <Upload class="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Restore From Backup</h3>
+                <p class="text-gray-600 mb-4">
+                  Upload a previously created backup file to restore your notes. This will not delete existing notes.
+                </p>
+                
+                <!-- Warning -->
+                <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
+                  <AlertTriangle class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
+                  <div class="text-sm text-yellow-800">
+                    <p class="font-medium mb-1">Important:</p>
+                    <p>Make sure you're logged in with the same master password that was used to create the backup.</p>
+                  </div>
+                </div>
+
+                <input
+                  type="file"
+                  ref="fileInput"
+                  @change="restoreDatabase"
+                  accept=".json"
+                  class="hidden"
+                />
+                <button
+                  @click="fileInput.click()"
+                  :disabled="isRestoring"
+                  class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  <Upload class="w-5 h-5 mr-2" />
+                  {{ isRestoring ? 'Restoring...' : 'Upload Backup File' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success Message -->
+          <div
+            v-if="successMessage"
+            class="bg-green-50 border border-green-200 rounded-xl p-4"
+          >
+            <div class="flex items-start">
+              <CheckCircle class="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+              <div>
+                <p class="font-medium text-green-900">{{ successMessage }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div
+            v-if="errorMessage"
+            class="bg-red-50 border border-red-200 rounded-xl p-4"
+          >
+            <div class="flex items-start">
+              <XCircle class="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+              <div>
+                <p class="font-medium text-red-900">{{ errorMessage }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Success Message -->
-    <div
-      v-if="successMessage"
-      class="bg-green-50 border border-green-200 rounded-xl p-4 max-w-2xl mx-auto"
-    >
-      <div class="flex items-start">
-        <CheckCircle class="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-        <div>
-          <p class="font-medium text-green-900">{{ successMessage }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Error Message -->
-    <div
-      v-if="errorMessage"
-      class="bg-red-50 border border-red-200 rounded-xl p-4 max-w-2xl mx-auto"
-    >
-      <div class="flex items-start">
-        <XCircle class="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-        <div>
-          <p class="font-medium text-red-900">{{ errorMessage }}</p>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -121,6 +141,8 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  ArrowLeft,
+  Lock,
 } from "lucide-vue-next";
 
 const fileInput = ref(null);
@@ -128,6 +150,11 @@ const isBackingUp = ref(false);
 const isRestoring = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
+
+const handleLogout = () => {
+  sessionStorage.removeItem("masterPassword");
+  location.reload();
+};
 
 const backupDatabase = async () => {
   try {

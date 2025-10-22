@@ -74,8 +74,7 @@ export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all")
   if (searchQuery || typeFilter !== "all") {
     // For search or filter, load all notes and filter client-side
     notes = await db.notes
-      .where("deletedAt")
-      .equals(null)
+      .filter(note => note.deletedAt === null || note.deletedAt === undefined)
       .toArray();
     
     // Decrypt and parse
@@ -109,8 +108,7 @@ export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all")
     // For non-search queries, use efficient database-level pagination
     const offset = (page - 1) * itemsPerPage;
     notes = await db.notes
-      .where("deletedAt")
-      .equals(null)
+      .filter(note => note.deletedAt === null || note.deletedAt === undefined)
       .reverse()
       .sortBy("updatedAt");
     
@@ -211,7 +209,7 @@ export function decryptData(encryptedData) {
   
   try {
     const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
     
     // Cache the result, but limit cache size
     if (decryptionCache.size >= CACHE_MAX_SIZE) {
@@ -222,7 +220,8 @@ export function decryptData(encryptedData) {
     decryptionCache.set(cacheKey, decrypted);
     
     return decrypted;
-  } catch {
+  } catch (error) {
+    console.error("Decryption error:", error);
     return null;
   }
 }

@@ -3,6 +3,7 @@
  * 
  * Supported tags:
  * - #@title=... - Title for any note type
+ * - #@color=... - Color for the note card (yellow, coral, purple, cyan, lime, etc.)
  * - #@bookmark=... or #@url=... - Marks as bookmark
  * - #@email=... or #@username=... - Marks as password
  * - #@password=... - Password value
@@ -11,6 +12,18 @@
  */
 
 const TAG_REGEX = /#@([a-zA-Z0-9]+)=([^\n]+)/g;
+
+// Available colors for notes
+export const NOTE_COLORS = {
+  yellow: { bg: '#F5C26B', name: 'Yellow' },
+  coral: { bg: '#F08A7A', name: 'Coral' },
+  purple: { bg: '#9B7EDE', name: 'Purple' },
+  cyan: { bg: '#4DD4E8', name: 'Cyan' },
+  lime: { bg: '#D4E157', name: 'Lime' },
+  pink: { bg: '#F49A89', name: 'Pink' },
+  blue: { bg: '#7EB6FF', name: 'Blue' },
+  green: { bg: '#81C784', name: 'Green' },
+};
 
 /**
  * Parse a note and extract all #@ tags
@@ -52,6 +65,7 @@ export function parseNote(content) {
     tags,
     type,
     title,
+    color: tags.color || 'yellow', // Default color
   };
 }
 
@@ -251,6 +265,7 @@ export function highlightTags(content) {
 export function getTagSuggestions() {
   return [
     { tag: '#@title=', description: 'Title for the note', type: 'all' },
+    { tag: '#@color=', description: 'Color (yellow, coral, purple, cyan, lime, pink, blue, green)', type: 'all' },
     { tag: '#@bookmark=', description: 'URL for bookmark', type: 'bookmark' },
     { tag: '#@url=', description: 'Alternative to bookmark', type: 'bookmark' },
     { tag: '#@email=', description: 'Email for login', type: 'password' },

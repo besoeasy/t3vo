@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import Dashboard from "@/views/dashboard.vue";
+import Dashboard from "@/views/dashboard-docket.vue";
 import Backup from "@/views/backup.vue";
 
 const router = createRouter({
