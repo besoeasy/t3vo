@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Dashboard from "@/views/dashboard-docket.vue";
 import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
+import Sync from "@/views/sync.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -25,6 +26,11 @@ const router = createRouter({
       path: "/stats",
       name: "stats",
       component: Stats,
+    },
+    {
+      path: "/sync",
+      name: "sync",
+      component: Sync,
     },
   ],
 });

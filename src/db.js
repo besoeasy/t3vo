@@ -256,3 +256,68 @@ export async function performDatabaseMaintenance() {
 
 // Run maintenance check on import (non-blocking)
 setTimeout(() => performDatabaseMaintenance(), 1000);
+
+/**
+ * Get all notes including deleted ones (for sync)
+ * @returns {Array} - All notes with encrypted content
+ */
+export async function getAllNotes() {
+  try {
+    const notes = await db.notes.toArray();
+    return notes; // Return raw notes with encrypted content
+  } catch (error) {
+    console.error("Error fetching all notes:", error);
+    return [];
+  }
+}
+
+/**
+ * Merge sync data from remote device
+ * @param {Array} localNotes - Local notes
+ * @param {Array} remoteNotes - Remote notes
+ * @returns {Object} - Sync statistics
+ */
+export async function mergeSyncData(localNotes, remoteNotes) {
+  const stats = {
+    sent: localNotes.length,
+    received: remoteNotes.length,
+    updated: 0,
+    conflicts: 0
+  };
+
+  try {
+    // Create a map of local notes by ID for quick lookup
+    const localNotesMap = new Map(localNotes.map(note => [note.id, note]));
+
+    // Process each remote note
+    for (const remoteNote of remoteNotes) {
+      const localNote = localNotesMap.get(remoteNote.id);
+
+      if (!localNote) {
+        // New note from remote - add it
+        await db.notes.add(remoteNote);
+        stats.updated++;
+      } else {
+        // Note exists locally - check for conflicts
+        if (remoteNote.updatedAt > localNote.updatedAt) {
+          // Remote is newer - update local
+          await db.notes.put(remoteNote);
+          stats.updated++;
+          stats.conflicts++;
+        } else if (remoteNote.updatedAt < localNote.updatedAt) {
+          // Local is newer - remote will get our version
+          stats.conflicts++;
+        }
+        // If timestamps are equal, no action needed
+      }
+    }
+
+    // Clear cache after sync
+    clearDecryptionCache();
+
+    return stats;
+  } catch (error) {
+    console.error("Error merging sync data:", error);
+    throw error;
+  }
+}
