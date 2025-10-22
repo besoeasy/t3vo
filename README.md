@@ -49,7 +49,7 @@ Discussed project timeline...
 ### Easy
 
 1. Fork this repository.
-2. Enable GitHub Pages on your fork.
+2. Deploy on Vercel
 
 ### Super Easy
 
