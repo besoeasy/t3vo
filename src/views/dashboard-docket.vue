@@ -17,6 +17,15 @@
       <!-- Spacer -->
       <div class="flex-1"></div>
 
+      <!-- Stats Link -->
+      <router-link
+        to="/stats"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
+        title="Statistics"
+      >
+        <BarChart3 class="w-5 h-5" />
+      </router-link>
+
       <!-- Backup Link -->
       <router-link
         to="/backup"
@@ -133,7 +142,16 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { fetchNotes, addNote, updateNote, softDeleteNote } from "@/db";
-import { Plus, Search, Lock, FileText, Key, Bookmark, Database } from "lucide-vue-next";
+import {
+  Plus,
+  Search,
+  Lock,
+  FileText,
+  Key,
+  Bookmark,
+  Database,
+  BarChart3,
+} from 'lucide-vue-next';
 import NoteEditor from "@/components/NoteEditor.vue";
 import { format } from "timeago.js";
 

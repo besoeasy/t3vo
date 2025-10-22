@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 import Dashboard from "@/views/dashboard-docket.vue";
 import Backup from "@/views/backup.vue";
+import Stats from "@/views/stats.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: "/backup",
       name: "backup",
       component: Backup,
+    },
+    {
+      path: "/stats",
+      name: "stats",
+      component: Stats,
     },
   ],
 });
