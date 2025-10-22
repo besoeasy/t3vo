@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-screen bg-[#E8EBF0] overflow-hidden">
+  <div class="flex h-screen bg-white overflow-hidden">
     <!-- Left Sidebar -->
-    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 shadow-sm">
+    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 border-r border-gray-200">
       <h1 class="text-2xl font-semibold text-gray-900 mb-8">T3VO</h1>
       
       <!-- Back to Notes Button -->

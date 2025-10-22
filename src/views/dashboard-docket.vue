@@ -1,11 +1,9 @@
 <template>
-  <div class="flex h-screen bg-[#E8EBF0] overflow-hidden">
+  <div class="flex h-screen bg-white overflow-hidden">
     <!-- Left Sidebar -->
-    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 shadow-sm">
+    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 border-r border-gray-200">
       <!-- App Branding -->
-      <h1 class="text-2xl font-semibold text-gray-900 mb-8 writing-mode-vertical transform -rotate-0">
-        T3VO
-      </h1>
+      <h1 class="text-2xl font-semibold text-gray-900 mb-8 writing-mode-vertical transform -rotate-0">T3VO</h1>
 
       <!-- New Note Button -->
       <button
@@ -37,7 +35,11 @@
         title="GitHub Repository"
       >
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+            clip-rule="evenodd"
+          />
         </svg>
       </a>
 
@@ -54,7 +56,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 overflow-auto">
       <!-- Notes Grid View -->
-      <div v-if="!showEditor" class="max-w-7xl mx-auto p-8">
+      <div v-if="!showEditor" class="w-full mx-auto p-8">
         <!-- Search Bar -->
         <div class="mb-8">
           <div class="relative max-w-md">
@@ -68,11 +70,8 @@
           </div>
         </div>
 
-        <!-- Page Title -->
-        <h2 class="text-5xl font-bold text-gray-900 mb-8">Notes</h2>
-
         <!-- Notes Grid -->
-        <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div
             v-for="note in filteredNotes"
             :key="note.id"
@@ -86,7 +85,7 @@
                 {{ note.parsed.title }}
               </h3>
               <p class="text-gray-800 text-sm line-clamp-4">
-                {{ note.parsed.content || 'Empty note' }}
+                {{ note.parsed.content || "Empty note" }}
               </p>
             </div>
 
@@ -117,50 +116,33 @@
             <FileText class="w-10 h-10 text-gray-400" />
           </div>
           <h3 class="text-2xl font-semibold text-gray-900 mb-2">
-            {{ searchQuery ? 'No notes found' : 'No notes yet' }}
+            {{ searchQuery ? "No notes found" : "No notes yet" }}
           </h3>
           <p class="text-gray-600 mb-6">
-            {{ searchQuery 
-               ? 'Try adjusting your search' 
-               : 'Click the + button to create your first note' }}
+            {{ searchQuery ? "Try adjusting your search" : "Click the + button to create your first note" }}
           </p>
         </div>
       </div>
 
       <!-- Note Editor View -->
-      <NoteEditor
-        v-else
-        :initialContent="editingContent"
-        :isNew="isNewNote"
-        @save="handleSave"
-        @cancel="closeEditor"
-        @delete="handleDelete"
-      />
+      <NoteEditor v-else :initialContent="editingContent" :isNew="isNewNote" @save="handleSave" @cancel="closeEditor" @delete="handleDelete" />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { fetchNotes, addNote, updateNote, softDeleteNote } from '@/db';
-import {
-  Plus,
-  Search,
-  Lock,
-  FileText,
-  Key,
-  Bookmark,
-  Database,
-} from 'lucide-vue-next';
-import NoteEditor from '@/components/NoteEditor.vue';
-import { format } from 'timeago.js';
+import { ref, computed, onMounted, watch } from "vue";
+import { fetchNotes, addNote, updateNote, softDeleteNote } from "@/db";
+import { Plus, Search, Lock, FileText, Key, Bookmark, Database } from "lucide-vue-next";
+import NoteEditor from "@/components/NoteEditor.vue";
+import { format } from "timeago.js";
 
 // State
-const searchQuery = ref('');
+const searchQuery = ref("");
 const isLoading = ref(false);
 const notes = ref([]);
 const showEditor = ref(false);
-const editingContent = ref('');
+const editingContent = ref("");
 const editingNoteId = ref(null);
 const isNewNote = ref(true);
 
@@ -171,10 +153,7 @@ const filteredNotes = computed(() => {
   // Filter by search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(note => 
-      note.parsed.title?.toLowerCase().includes(query) ||
-      note.parsed.content?.toLowerCase().includes(query)
-    );
+    filtered = filtered.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
 
   return filtered;
@@ -183,14 +162,14 @@ const filteredNotes = computed(() => {
 // Methods
 const getNoteColor = (colorKey) => {
   const colors = {
-    yellow: '#F5C26B',
-    coral: '#F08A7A',
-    purple: '#9B7EDE',
-    cyan: '#4DD4E8',
-    lime: '#D4E157',
-    pink: '#F49A89',
-    blue: '#7EB6FF',
-    green: '#81C784',
+    yellow: "#F5C26B",
+    coral: "#F08A7A",
+    purple: "#9B7EDE",
+    cyan: "#4DD4E8",
+    lime: "#D4E157",
+    pink: "#F49A89",
+    blue: "#7EB6FF",
+    green: "#81C784",
   };
   return colors[colorKey] || colors.yellow;
 };
@@ -198,17 +177,17 @@ const getNoteColor = (colorKey) => {
 const loadNotes = async () => {
   isLoading.value = true;
   try {
-    const loadedNotes = await fetchNotes(1, '', 'all');
+    const loadedNotes = await fetchNotes(1, "", "all");
     notes.value = loadedNotes;
   } catch (error) {
-    console.error('Error loading notes:', error);
+    console.error("Error loading notes:", error);
   } finally {
     isLoading.value = false;
   }
 };
 
 const startNewNote = () => {
-  editingContent.value = '';
+  editingContent.value = "";
   editingNoteId.value = null;
   isNewNote.value = true;
   showEditor.value = true;
@@ -223,7 +202,7 @@ const openNote = (note) => {
 
 const closeEditor = () => {
   showEditor.value = false;
-  editingContent.value = '';
+  editingContent.value = "";
   editingNoteId.value = null;
 };
 
@@ -237,29 +216,29 @@ const handleSave = async (content) => {
     await loadNotes();
     closeEditor();
   } catch (error) {
-    console.error('Error saving note:', error);
-    alert('Failed to save note. Please try again.');
+    console.error("Error saving note:", error);
+    alert("Failed to save note. Please try again.");
   }
 };
 
 const handleDelete = async () => {
   if (!editingNoteId.value) return;
-  
-  if (confirm('Are you sure you want to delete this note?')) {
+
+  if (confirm("Are you sure you want to delete this note?")) {
     try {
       await softDeleteNote(editingNoteId.value);
       await loadNotes();
       closeEditor();
     } catch (error) {
-      console.error('Error deleting note:', error);
-      alert('Failed to delete note. Please try again.');
+      console.error("Error deleting note:", error);
+      alert("Failed to delete note. Please try again.");
     }
   }
 };
 
 const handleLogout = () => {
-  if (confirm('Are you sure you want to lock the app?')) {
-    sessionStorage.removeItem('ENCRYPTION_KEY');
+  if (confirm("Are you sure you want to lock the app?")) {
+    sessionStorage.removeItem("ENCRYPTION_KEY");
     location.reload();
   }
 };

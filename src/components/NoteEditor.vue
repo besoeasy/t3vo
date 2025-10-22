@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col bg-[#E8EBF0]">
+  <div class="h-full flex flex-col bg-white">
     <!-- Header -->
     <div class="bg-white border-b border-gray-200 px-8 py-4">
       <div class="flex items-center justify-between">
@@ -52,7 +52,7 @@
     <!-- Editor Content -->
     <div class="flex-1 overflow-hidden flex p-8 gap-8">
       <!-- Editor Panel -->
-      <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <!-- Toolbar -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div class="flex items-center justify-between">
@@ -140,7 +140,7 @@
       </div>
 
       <!-- Preview Panel -->
-      <div class="w-1/2 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 class="text-sm font-semibold text-gray-900">Live Preview</h3>
         </div>
