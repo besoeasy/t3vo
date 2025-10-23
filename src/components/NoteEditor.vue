@@ -253,12 +253,12 @@
         <div class="flex-1 p-6 overflow-auto">
           <div
             v-if="parsed && content.trim()"
-            class="space-y-4"
+            class="space-y-6"
           >
-            <!-- Title -->
+            <!-- Title (Always at top) -->
             <div v-if="parsed.title">
               <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ parsed.title }}</h3>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 mb-4">
                 <span
                   class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full"
                   :class="typeClass"
@@ -267,6 +267,15 @@
                   {{ detectedType }}
                 </span>
               </div>
+            </div>
+
+            <!-- Content/Notes Body (Second - main content) -->
+            <div v-if="parsed.content" class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <span class="text-xs text-gray-600 font-semibold mb-3 block">{{ parsed.type === 'note' ? 'Content' : 'Notes' }}</span>
+              <div 
+                class="text-sm text-gray-900 markdown-body"
+                v-html="renderedMarkdown"
+              ></div>
             </div>
 
             <!-- Password Fields -->
@@ -310,34 +319,6 @@
                 <span class="text-xs text-gray-600 font-semibold">Domains</span>
                 <p class="text-sm text-gray-900 mt-1.5">{{ parsed.tags.domains }}</p>
               </div>
-            </div>
-
-            <!-- Bookmark Fields -->
-            <div v-if="parsed.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)" class="mt-6">
-              <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex-1 min-w-0">
-                    <span class="text-xs text-blue-700 font-semibold">URL</span>
-                    <p class="text-sm text-blue-700 mt-1.5 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
-                  </div>
-                  <a
-                    :href="parsed.tags.bookmark || parsed.tags.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex-shrink-0 flex items-center px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
-                    title="Open in new tab"
-                  >
-                    <ExternalLink class="w-3.5 h-3.5 mr-1.5" />
-                    Open
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Content/Notes -->
-            <div v-if="parsed.content" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <span class="text-xs text-gray-600 font-semibold">{{ parsed.type === 'note' ? 'Content' : 'Notes' }}</span>
-              <p class="text-sm text-gray-900 mt-2 whitespace-pre-wrap leading-relaxed">{{ parsed.content }}</p>
             </div>
 
             <!-- Attachments Preview -->
@@ -415,6 +396,28 @@
                 </a>
               </div>
             </div>
+
+            <!-- Bookmark Fields (Bottom) -->
+            <div v-if="parsed.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)">
+              <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <span class="text-xs text-blue-700 font-semibold">URL</span>
+                    <p class="text-sm text-blue-700 mt-1.5 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
+                  </div>
+                  <a
+                    :href="parsed.tags.bookmark || parsed.tags.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex-shrink-0 flex items-center px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
+                    title="Open in new tab"
+                  >
+                    <ExternalLink class="w-3.5 h-3.5 mr-1.5" />
+                    Open
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-else class="flex items-center justify-center h-full text-gray-400">
             <div class="text-center">
@@ -433,6 +436,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { parseNote, validateNote } from '@/utils/noteParser';
 import * as OTPAuth from 'otpauth';
+import { Marked } from 'marked';
 import {
   ArrowLeft,
   Save,
@@ -489,6 +493,35 @@ const isDragging = ref(false);
 const parsed = computed(() => {
   if (!content.value) return null;
   return parseNote(content.value);
+});
+
+// Initialize marked
+const markedInstance = new Marked({
+  breaks: true,
+  gfm: true,
+});
+
+// Render markdown - make it async
+const renderedMarkdown = computed(() => {
+  if (!parsed.value?.content) return '';
+  
+  try {
+    // Use parseInline for inline content or parse for full markdown
+    const result = markedInstance.parse(parsed.value.content);
+    // Handle Promise if needed
+    if (result instanceof Promise) {
+      result.then(html => {
+        console.log('Markdown HTML:', html);
+        return html;
+      });
+      return 'Loading...';
+    }
+    console.log('Markdown HTML:', result);
+    return result;
+  } catch (error) {
+    console.error('Error rendering markdown:', error);
+    return `<div>${parsed.value.content.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>`;
+  }
 });
 
 // Generate TOTP code
@@ -873,5 +906,125 @@ textarea::-webkit-scrollbar-thumb {
 
 textarea::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Markdown styling */
+.markdown-body {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.markdown-body :deep(h1) {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.67em 0;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body :deep(h2) {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin: 0.75em 0 0.5em;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body :deep(h3) {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 0.5em 0;
+}
+
+.markdown-body :deep(p) {
+  margin: 0.5em 0;
+}
+
+.markdown-body :deep(code) {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-size: 0.9em;
+}
+
+.markdown-body :deep(pre) {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.markdown-body :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  margin: 0.5em 0;
+  padding-left: 2em;
+}
+
+.markdown-body :deep(li) {
+  margin: 0.25em 0;
+}
+
+.markdown-body :deep(blockquote) {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #6b7280;
+}
+
+.markdown-body :deep(a) {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.markdown-body :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.markdown-body :deep(strong) {
+  font-weight: bold;
+}
+
+.markdown-body :deep(em) {
+  font-style: italic;
+}
+
+.markdown-body :deep(hr) {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5em 0;
+}
+
+.markdown-body :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-body :deep(table th),
+.markdown-body :deep(table td) {
+  border: 1px solid #e5e7eb;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.markdown-body :deep(table th) {
+  background-color: #f9fafb;
+  font-weight: bold;
+}
+
+.markdown-body :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0.5em 0;
 }
 </style>
