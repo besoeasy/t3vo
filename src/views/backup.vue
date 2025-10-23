@@ -179,6 +179,28 @@ const handleLogout = () => {
   location.reload();
 };
 
+// Helper function to convert ArrayBuffer to base64
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
+// Helper function to convert base64 to ArrayBuffer
+const base64ToArrayBuffer = (base64) => {
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
 const backupDatabase = async () => {
   try {
     isBackingUp.value = true;
@@ -195,6 +217,11 @@ const backupDatabase = async () => {
     const decryptedNotes = notes.map((note) => ({
       ...note,
       content: decryptData(note.content),
+      // Convert ArrayBuffer to base64 for attachments
+      attachments: note.attachments?.map((att) => ({
+        ...att,
+        data: att.data ? arrayBufferToBase64(att.data) : null,
+      })) || [],
     }));
 
     const jsonData = JSON.stringify(decryptedNotes, null, 2);
@@ -245,6 +272,11 @@ const restoreDatabase = async (event) => {
             content: encryptedContent,
             updatedAt: note.updatedAt,
             deletedAt: note.deletedAt,
+            // Convert base64 back to ArrayBuffer for attachments
+            attachments: note.attachments?.map((att) => ({
+              ...att,
+              data: att.data ? base64ToArrayBuffer(att.data) : null,
+            })) || [],
           });
           restoredCount++;
         }
