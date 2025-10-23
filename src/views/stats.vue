@@ -62,7 +62,7 @@
         <!-- Stats Grid -->
         <div v-else class="space-y-6">
           <!-- Overview Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Total Notes -->
             <div class="bg-white rounded-xl border border-gray-200 p-6">
               <div class="flex items-center justify-between mb-2">
@@ -70,6 +70,18 @@
                 <FileText class="w-5 h-5 text-blue-600" />
               </div>
               <p class="text-3xl font-bold text-gray-900">{{ stats.totalNotes }}</p>
+            </div>
+
+            <!-- Deleted Notes -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-medium text-gray-600">Deleted Notes</h3>
+                <Trash2 class="w-5 h-5 text-red-600" />
+              </div>
+              <p class="text-3xl font-bold text-gray-900">{{ stats.deletedNotes }}</p>
+              <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">
+                Automatically purged after 90 days
+              </p>
             </div>
 
             <!-- Created Date -->
@@ -124,11 +136,13 @@ import {
   Calendar,
   HardDrive,
   Shield,
+  Trash2,
 } from 'lucide-vue-next';
 
 const isLoading = ref(true);
 const stats = ref({
   totalNotes: 0,
+  deletedNotes: 0,
   oldestNoteDate: 'N/A',
   dbName: '',
   appVersion: '0.0.9',
@@ -137,12 +151,19 @@ const stats = ref({
 const loadStats = async () => {
   isLoading.value = true;
   try {
-    // Get all notes
+    // Get active notes
     const notes = await db.notes
       .filter(note => note.deletedAt === null || note.deletedAt === undefined)
       .toArray();
 
     stats.value.totalNotes = notes.length;
+
+    // Get deleted notes
+    const deletedNotes = await db.notes
+      .filter(note => note.deletedAt !== null && note.deletedAt !== undefined)
+      .toArray();
+
+    stats.value.deletedNotes = deletedNotes.length;
 
     // Find oldest note date
     if (notes.length > 0) {
