@@ -1,4 +1,6 @@
 <img width="2002" height="1515" alt="Screenshot_20251023_210835" src="https://github.com/user-attachments/assets/1a245b36-f30d-4d6d-95d1-2ead228bd853" />
+<img width="6400" height="2160" alt="Screenshot_20251023_210858" src="https://github.com/user-attachments/assets/92adff40-f565-4b89-9fe9-eb4f59cf7cdd" />
+<img width="2002" height="1515" alt="Screenshot_20251023_210841" src="https://github.com/user-attachments/assets/df965073-c629-4b9f-ae1c-93d2ebd60e2e" />
 
 
 # T3VO - Unified Note Vault
