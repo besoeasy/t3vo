@@ -350,7 +350,7 @@
                 <div
                   v-for="(attachment, index) in attachments"
                   :key="index"
-                  class="p-2 bg-white rounded-lg border border-emerald-200"
+                  class="relative group p-2 bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 transition-colors"
                 >
                   <div v-if="attachment.preview" class="w-full h-24 rounded overflow-hidden mb-2">
                     <img :src="attachment.preview" :alt="attachment.name" class="w-full h-full object-cover" />
@@ -359,7 +359,16 @@
                     <File class="w-8 h-8 text-gray-400" />
                   </div>
                   <p class="text-xs font-medium text-gray-900 truncate">{{ attachment.name }}</p>
-                  <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
+                    <button
+                      @click="downloadAttachment(attachment)"
+                      class="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors"
+                      title="Download"
+                    >
+                      <Download class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -690,9 +699,9 @@ const downloadAttachment = async (attachment) => {
     let blob;
     
     // If it's an existing attachment, we need to get it from the database
-    if (attachment.existing && attachment.id) {
+    if (attachment.existing && attachment.id && props.noteId) {
       const { getAttachment } = await import('@/db');
-      const dbAttachment = await getAttachment(attachment.id);
+      const dbAttachment = await getAttachment(props.noteId, attachment.id);
       if (dbAttachment) {
         blob = new Blob([dbAttachment.data], { type: dbAttachment.type });
       } else {

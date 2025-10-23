@@ -13,10 +13,9 @@ db.version(2).stores({
   notes: "id, updatedAt, deletedAt",
 });
 
-// Add attachments support in version 3
+// Add attachments support in version 3 - store inline with note
 db.version(3).stores({
   notes: "id, updatedAt, deletedAt",
-  attachments: "id, noteId, uploadedAt",
 }).upgrade(tx => {
   // Migration to add attachments field to existing notes
   return tx.table("notes").toCollection().modify(note => {
@@ -60,26 +59,35 @@ function getSha256Hash(str, includeTimestamp = false) {
 /**
  * Add a new note to the database
  * @param {string} content - Raw note content with tags
- * @param {Array} attachments - Optional array of attachments
+ * @param {Array} files - Optional array of File/Blob objects
  * @returns {string} - Note ID
  */
-export async function addNote(content, attachments = []) {
+export async function addNote(content, files = []) {
   const noteId = getSha256Hash(encryptData(content) + getCurrentTime(), true);
+  
+  // Process attachments
+  const attachments = [];
+  for (const file of files) {
+    const arrayBuffer = await file.arrayBuffer();
+    attachments.push({
+      id: getSha256Hash(noteId + file.name + getCurrentTime(), true),
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      data: arrayBuffer,
+      uploadedAt: getCurrentTime(),
+    });
+  }
+  
   const note = {
     id: noteId,
     content: encryptData(content),
     updatedAt: getCurrentTime(),
     deletedAt: null,
-    attachments: [],
+    attachments,
   };
 
   await db.notes.add(note);
-  
-  // Add attachments if provided
-  if (attachments.length > 0) {
-    await addAttachments(noteId, attachments);
-  }
-  
   return noteId;
 }
 
@@ -167,18 +175,23 @@ export async function updateNote(id, content) {
 }
 
 /**
- * Add attachments to a note
+ * Add attachments to an existing note
  * @param {string} noteId - Note ID
- * @param {Array} files - Array of File objects
+ * @param {Array} files - Array of File/Blob objects
  * @returns {Array} - Array of attachment IDs
  */
 export async function addAttachments(noteId, files) {
-  const attachmentIds = [];
-  const attachmentMetadata = [];
-  
   if (!files || files.length === 0) {
-    return attachmentIds;
+    return [];
   }
+  
+  const note = await db.notes.get(noteId);
+  if (!note) {
+    throw new Error("Note not found");
+  }
+  
+  const currentAttachments = note.attachments || [];
+  const attachmentIds = [];
   
   for (const file of files) {
     // Validate file size (10MB limit per file)
@@ -186,44 +199,26 @@ export async function addAttachments(noteId, files) {
       throw new Error(`File ${file.name} is too large (max 10MB)`);
     }
     
-    // Read file as ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
-    
-    // Create attachment record
     const attachmentId = getSha256Hash(noteId + file.name + getCurrentTime(), true);
-    const attachment = {
+    
+    currentAttachments.push({
       id: attachmentId,
-      noteId,
       name: file.name,
       type: file.type,
       size: file.size,
-      data: arrayBuffer, // Store as ArrayBuffer
+      data: arrayBuffer,
       uploadedAt: getCurrentTime(),
-    };
-    
-    // Store attachment
-    await db.attachments.add(attachment);
-    attachmentIds.push(attachmentId);
-    
-    // Store metadata in note
-    attachmentMetadata.push({
-      id: attachmentId,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      uploadedAt: attachment.uploadedAt,
     });
+    
+    attachmentIds.push(attachmentId);
   }
   
-  // Update note with attachment metadata
-  const note = await db.notes.get(noteId);
-  if (note) {
-    const currentAttachments = note.attachments || [];
-    await db.notes.update(noteId, {
-      attachments: [...currentAttachments, ...attachmentMetadata],
-      updatedAt: getCurrentTime(),
-    });
-  }
+  // Update note with new attachments
+  await db.notes.update(noteId, {
+    attachments: currentAttachments,
+    updatedAt: getCurrentTime(),
+  });
   
   return attachmentIds;
 }
@@ -234,16 +229,20 @@ export async function addAttachments(noteId, files) {
  * @returns {Array} - Array of attachments with data
  */
 export async function getAttachments(noteId) {
-  return await db.attachments.where("noteId").equals(noteId).toArray();
+  const note = await db.notes.get(noteId);
+  return note?.attachments || [];
 }
 
 /**
  * Get a single attachment
+ * @param {string} noteId - Note ID
  * @param {string} attachmentId - Attachment ID
  * @returns {Object|null} - Attachment object
  */
-export async function getAttachment(attachmentId) {
-  return await db.attachments.get(attachmentId);
+export async function getAttachment(noteId, attachmentId) {
+  const note = await db.notes.get(noteId);
+  if (!note || !note.attachments) return null;
+  return note.attachments.find(att => att.id === attachmentId);
 }
 
 /**
@@ -252,17 +251,13 @@ export async function getAttachment(attachmentId) {
  * @param {string} attachmentId - Attachment ID
  */
 export async function deleteAttachment(noteId, attachmentId) {
-  // Delete from attachments table
-  await db.attachments.delete(attachmentId);
-  
-  // Update note metadata
   const note = await db.notes.get(noteId);
-  if (note && note.attachments) {
-    await db.notes.update(noteId, {
-      attachments: note.attachments.filter(a => a.id !== attachmentId),
-      updatedAt: getCurrentTime(),
-    });
-  }
+  if (!note || !note.attachments) return;
+  
+  await db.notes.update(noteId, {
+    attachments: note.attachments.filter(a => a.id !== attachmentId),
+    updatedAt: getCurrentTime(),
+  });
 }
 
 /**
@@ -273,7 +268,7 @@ export async function deleteAttachment(noteId, attachmentId) {
 export async function getNoteTotalAttachmentSize(noteId) {
   const note = await db.notes.get(noteId);
   if (!note || !note.attachments) return 0;
-  return note.attachments.reduce((total, att) => total + att.size, 0);
+  return note.attachments.reduce((total, att) => total + (att.size || 0), 0);
 }
 
 /**
@@ -282,14 +277,6 @@ export async function getNoteTotalAttachmentSize(noteId) {
  */
 export async function softDeleteNote(id) {
   const currentTime = getCurrentTime();
-  
-  // Delete all attachments for this note
-  const attachments = await db.attachments.where("noteId").equals(id).toArray();
-  for (const att of attachments) {
-    await db.attachments.delete(att.id);
-  }
-  
-  // Soft delete the note
   await db.notes.update(id, {
     deletedAt: currentTime,
     updatedAt: currentTime,
