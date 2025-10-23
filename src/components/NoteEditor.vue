@@ -209,8 +209,22 @@
             <!-- Bookmark Fields -->
             <div v-if="parsed.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)" class="mt-6">
               <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <span class="text-xs text-blue-700 font-semibold">URL</span>
-                <p class="text-sm text-blue-700 mt-1.5 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <span class="text-xs text-blue-700 font-semibold">URL</span>
+                    <p class="text-sm text-blue-700 mt-1.5 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
+                  </div>
+                  <a
+                    :href="parsed.tags.bookmark || parsed.tags.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex-shrink-0 flex items-center px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
+                    title="Open in new tab"
+                  >
+                    <ExternalLink class="w-3.5 h-3.5 mr-1.5" />
+                    Open
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -218,6 +232,49 @@
             <div v-if="parsed.content" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
               <span class="text-xs text-gray-600 font-semibold">{{ parsed.type === 'note' ? 'Content' : 'Notes' }}</span>
               <p class="text-sm text-gray-900 mt-2 whitespace-pre-wrap leading-relaxed">{{ parsed.content }}</p>
+            </div>
+
+            <!-- References Section -->
+            <div v-if="parsed.references && parsed.references.length > 0" class="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <div class="flex items-center mb-3">
+                <Link2 class="w-4 h-4 text-purple-700 mr-2" />
+                <span class="text-xs text-purple-700 font-semibold">References ({{ parsed.references.length }})</span>
+              </div>
+              <div class="space-y-2">
+                <a
+                  v-for="(ref, index) in parsed.references"
+                  :key="index"
+                  :href="ref.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-start p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
+                >
+                  <!-- Platform Icon -->
+                  <div class="flex-shrink-0 mr-3">
+                    <div
+                      class="w-8 h-8 rounded-lg flex items-center justify-center"
+                      :class="getPlatformColorClass(ref.type)"
+                    >
+                      <component :is="getPlatformIcon(ref.type)" class="w-4 h-4" />
+                    </div>
+                  </div>
+                  
+                  <!-- Reference Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs font-semibold text-gray-900">{{ ref.platform }}</span>
+                      <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                    </div>
+                    <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
+                    <div v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">
+                      r/{{ ref.subreddit }}
+                    </div>
+                    <div v-if="ref.username" class="text-xs text-gray-500 mt-1">
+                      @{{ ref.username }}
+                    </div>
+                  </div>
+                </a>
+              </div>
             </div>
           </div>
           <div v-else class="flex items-center justify-center h-full text-gray-400">
@@ -246,6 +303,12 @@ import {
   FileText,
   HelpCircle,
   AlertCircle,
+  Link2,
+  ExternalLink,
+  Youtube,
+  Instagram,
+  Twitter,
+  MessageSquare,
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -414,6 +477,37 @@ const handleInput = () => {
 const handleSave = () => {
   if (content.value.trim()) {
     emit('save', content.value);
+  }
+};
+
+// Helper functions for references
+const getPlatformIcon = (type) => {
+  switch (type) {
+    case 'youtube':
+      return Youtube;
+    case 'instagram':
+      return Instagram;
+    case 'twitter':
+      return Twitter;
+    case 'reddit':
+      return MessageSquare;
+    default:
+      return Link2;
+  }
+};
+
+const getPlatformColorClass = (type) => {
+  switch (type) {
+    case 'youtube':
+      return 'bg-red-100 text-red-600';
+    case 'instagram':
+      return 'bg-pink-100 text-pink-600';
+    case 'twitter':
+      return 'bg-blue-100 text-blue-600';
+    case 'reddit':
+      return 'bg-orange-100 text-orange-600';
+    default:
+      return 'bg-gray-100 text-gray-600';
   }
 };
 

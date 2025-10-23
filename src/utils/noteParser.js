@@ -13,6 +13,25 @@
 const TAG_REGEX = /#@([a-zA-Z0-9]+)=([^\n]+)/g;
 
 /**
+ * URL patterns for detecting media references
+ */
+const URL_PATTERNS = {
+  youtube: [
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/gi,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/gi,
+  ],
+  instagram: [
+    /(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/gi,
+  ],
+  twitter: [
+    /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/gi,
+  ],
+  reddit: [
+    /(?:https?:\/\/)?(?:www\.)?reddit\.com\/r\/([a-zA-Z0-9_]+)\/comments\/([a-zA-Z0-9]+)/gi,
+  ],
+};
+
+/**
  * Parse a note and extract all #@ tags
  * @param {string} content - Raw note content
  * @returns {Object} Parsed note with tags and cleaned content
@@ -25,6 +44,7 @@ export function parseNote(content) {
       tags: {},
       type: 'note',
       title: '',
+      references: [],
     };
   }
 
@@ -46,12 +66,16 @@ export function parseNote(content) {
   // Get title (either from tag or first line)
   const title = getTitle(tags, cleanContent);
 
+  // Extract media references
+  const references = extractReferences(content);
+
   return {
     raw: content,
     content: cleanContent,
     tags,
     type,
     title,
+    references,
   };
 }
 
@@ -131,6 +155,102 @@ export function getTagSuggestions() {
     { tag: '#@totp=', description: 'Alternative to 2fa', type: 'password' },
     { tag: '#@domains=', description: 'Comma-separated domains', type: 'password' },
   ];
+}
+
+/**
+ * Extract media references from note content
+ * @param {string} content - Raw note content
+ * @returns {Array} - Array of reference objects
+ */
+function extractReferences(content) {
+  const references = [];
+  const seen = new Set(); // To avoid duplicates
+
+  // YouTube
+  URL_PATTERNS.youtube.forEach((pattern) => {
+    const matches = content.matchAll(pattern);
+    for (const match of matches) {
+      const videoId = match[1];
+      const url = match[0].startsWith('http') ? match[0] : `https://youtube.com/watch?v=${videoId}`;
+      const key = `youtube:${videoId}`;
+      
+      if (!seen.has(key)) {
+        seen.add(key);
+        references.push({
+          type: 'youtube',
+          url,
+          videoId,
+          platform: 'YouTube',
+        });
+      }
+    }
+  });
+
+  // Instagram
+  URL_PATTERNS.instagram.forEach((pattern) => {
+    const matches = content.matchAll(pattern);
+    for (const match of matches) {
+      const postId = match[1];
+      const url = match[0].startsWith('http') ? match[0] : `https://instagram.com/p/${postId}`;
+      const key = `instagram:${postId}`;
+      
+      if (!seen.has(key)) {
+        seen.add(key);
+        references.push({
+          type: 'instagram',
+          url,
+          postId,
+          platform: 'Instagram',
+        });
+      }
+    }
+  });
+
+  // Twitter/X
+  URL_PATTERNS.twitter.forEach((pattern) => {
+    const matches = content.matchAll(pattern);
+    for (const match of matches) {
+      const username = match[1];
+      const tweetId = match[2];
+      const url = match[0].startsWith('http') ? match[0] : `https://twitter.com/${username}/status/${tweetId}`;
+      const key = `twitter:${tweetId}`;
+      
+      if (!seen.has(key)) {
+        seen.add(key);
+        references.push({
+          type: 'twitter',
+          url,
+          tweetId,
+          username,
+          platform: 'Twitter/X',
+        });
+      }
+    }
+  });
+
+  // Reddit
+  URL_PATTERNS.reddit.forEach((pattern) => {
+    const matches = content.matchAll(pattern);
+    for (const match of matches) {
+      const subreddit = match[1];
+      const postId = match[2];
+      const url = match[0].startsWith('http') ? match[0] : `https://reddit.com/r/${subreddit}/comments/${postId}`;
+      const key = `reddit:${postId}`;
+      
+      if (!seen.has(key)) {
+        seen.add(key);
+        references.push({
+          type: 'reddit',
+          url,
+          postId,
+          subreddit,
+          platform: 'Reddit',
+        });
+      }
+    }
+  });
+
+  return references;
 }
 
 /**
