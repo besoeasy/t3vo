@@ -159,11 +159,18 @@ Automatically extract and display links from:
 
 ### Device Sync
 
-- Peer-to-peer sync using WebRTC (no cloud server!)
-- Generate QR code for easy pairing
-- Automatic conflict resolution
-- Encrypted data transfer
-- Works across different networks
+- **🏠 Host/Guest Architecture**: First device becomes host, others auto-connect as guests
+- **🔄 Room-Based**: Simple room codes like "happytiger" for easy sharing
+- **📱 Cross-Device**: Works between phones, tablets, laptops seamlessly
+- **🕸️ Mesh Network**: All devices connect directly to each other
+- **📊 QR Code Sharing**: Scan to join rooms instantly
+- **🔐 Peer-to-peer sync using WebRTC**: No cloud server needed!
+- **⚡ Automatic conflict resolution**: Newest timestamp wins
+- **🔒 Encrypted data transfer**: Notes stay encrypted during sync
+- **🌐 Works across different networks**: Uses public STUN servers
+
+👉 **[Complete P2P Sync Documentation](./P2P_SYNC_INDEX.md)** - Start here for all sync docs  
+📖 Quick links: [Guide](./P2P_SYNC_GUIDE.md) | [Quick Ref](./P2P_SYNC_QUICKREF.md) | [Diagrams](./P2P_SYNC_DIAGRAMS.md) | [Testing](./P2P_SYNC_TESTING.md)
 
 ### Backup & Restore
 
