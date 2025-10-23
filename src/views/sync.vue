@@ -137,7 +137,8 @@
       </div>
 
       <!-- Connecting State -->
-      <div v-else-if="connecting && !isConnected" class="space-y-6">
+            <!-- Connecting View -->
+      <div v-else-if="connecting && !isConnected && !roomReady" class="space-y-6">
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
           <div class="flex items-center gap-4">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600"></div>
@@ -159,6 +160,53 @@
             class="px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors"
           >
             Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Room Ready - Host waiting for others -->
+      <div v-else-if="roomReady && !isConnected" class="space-y-6">
+        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-blue-500 rounded-lg">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">HOST</span>
+                <h3 class="text-lg font-semibold text-gray-900">Room Created Successfully!</h3>
+              </div>
+              <p class="text-sm text-gray-600 mb-4">
+                Your room is ready and waiting for others to join. Share the room code or QR code below.
+              </p>
+              
+              <!-- Room Code Display -->
+              <div class="bg-white rounded-lg p-4 border border-blue-200 mb-4">
+                <p class="text-xs text-gray-500 mb-1">Room Code</p>
+                <p class="text-2xl font-mono font-bold text-gray-900">{{ roomCode }}</p>
+              </div>
+
+              <!-- QR Code -->
+              <div v-if="qrCodeDataUrl" class="bg-white rounded-lg p-4 border border-blue-200">
+                <p class="text-xs text-gray-500 mb-2">Scan to Join</p>
+                <img :src="qrCodeDataUrl" alt="Room QR Code" class="w-48 h-48 mx-auto" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="animate-pulse w-3 h-3 bg-blue-500 rounded-full"></div>
+            <p class="text-sm font-medium text-gray-700">Waiting for devices to join...</p>
+          </div>
+          <button
+            @click="disconnect"
+            class="px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Leave Room
           </button>
         </div>
       </div>
@@ -368,6 +416,7 @@ const isHost = ref(false);
 const qrCodeDataUrl = ref('');
 const isConnected = ref(false);
 const connecting = ref(false);
+const roomReady = ref(false); // Indicates host has created room and is waiting for others
 const syncing = ref(false);
 const errorMessage = ref('');
 const lastSyncStats = ref(null);
@@ -449,6 +498,7 @@ function initializePeer(peerId, tryHost = false) {
           isHost.value = true;
           console.log('🎯 Became HOST with ID:', id);
           connecting.value = false;
+          roomReady.value = true; // Room is created and ready for others to join
           resolve(id);
         } else if (!tryHost && id.startsWith(`t3vo-${roomCode.value}-`)) {
           isHost.value = false;
@@ -739,6 +789,7 @@ function disconnect() {
   });
   connections.value.clear();
   isConnected.value = false;
+  roomReady.value = false;
   
   if (peer) {
     peer.destroy();
