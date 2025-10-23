@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
     <!-- Left Sidebar -->
-    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 border-r border-gray-200">
+    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4">
       <!-- App Branding -->
       <h1 class="text-2xl font-semibold text-gray-900 mb-8 writing-mode-vertical transform -rotate-0">T3VO</h1>
 
@@ -142,7 +142,15 @@
       </div>
 
       <!-- Note Editor View -->
-      <NoteEditor v-else :initialContent="editingContent" :isNew="isNewNote" :noteId="editingNoteId" @save="handleSave" @cancel="closeEditor" @delete="handleDelete" />
+      <NoteEditor
+        v-else
+        :initialContent="editingContent"
+        :isNew="isNewNote"
+        :noteId="editingNoteId"
+        @save="handleSave"
+        @cancel="closeEditor"
+        @delete="handleDelete"
+      />
     </main>
   </div>
 </template>
@@ -150,17 +158,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { fetchNotes, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
-import {
-  Plus,
-  Search,
-  Lock,
-  FileText,
-  Key,
-  Bookmark,
-  Database,
-  BarChart3,
-  Wifi,
-} from 'lucide-vue-next';
+import { Plus, Search, Lock, FileText, Key, Bookmark, Database, BarChart3, Wifi } from "lucide-vue-next";
 import NoteEditor from "@/components/NoteEditor.vue";
 import { format } from "timeago.js";
 
@@ -223,13 +221,13 @@ const handleSave = async (content, attachments = []) => {
   try {
     if (isNewNote.value) {
       // Extract File objects from attachments
-      const files = attachments.map(att => att.file).filter(f => f);
+      const files = attachments.map((att) => att.file).filter((f) => f);
       await addNote(content, files);
     } else {
       await updateNote(editingNoteId.value, content);
       // Handle attachments for existing notes
       if (attachments.length > 0) {
-        const files = attachments.map(att => att.file).filter(f => f);
+        const files = attachments.map((att) => att.file).filter((f) => f);
         await addAttachments(editingNoteId.value, files);
       }
     }
