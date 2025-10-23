@@ -142,14 +142,14 @@
       </div>
 
       <!-- Note Editor View -->
-      <NoteEditor v-else :initialContent="editingContent" :isNew="isNewNote" @save="handleSave" @cancel="closeEditor" @delete="handleDelete" />
+      <NoteEditor v-else :initialContent="editingContent" :isNew="isNewNote" :noteId="editingNoteId" @save="handleSave" @cancel="closeEditor" @delete="handleDelete" />
     </main>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { fetchNotes, addNote, updateNote, softDeleteNote } from "@/db";
+import { fetchNotes, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
 import {
   Plus,
   Search,
@@ -219,18 +219,25 @@ const closeEditor = () => {
   editingNoteId.value = null;
 };
 
-const handleSave = async (content) => {
+const handleSave = async (content, attachments = []) => {
   try {
     if (isNewNote.value) {
-      await addNote(content);
+      // Extract File objects from attachments
+      const files = attachments.map(att => att.file).filter(f => f);
+      await addNote(content, files);
     } else {
       await updateNote(editingNoteId.value, content);
+      // Handle attachments for existing notes
+      if (attachments.length > 0) {
+        const files = attachments.map(att => att.file).filter(f => f);
+        await addAttachments(editingNoteId.value, files);
+      }
     }
     await loadNotes();
     closeEditor();
   } catch (error) {
     console.error("Error saving note:", error);
-    alert("Failed to save note. Please try again.");
+    alert(`Failed to save note: ${error.message}`);
   }
 };
 

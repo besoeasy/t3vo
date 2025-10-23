@@ -132,6 +132,112 @@
           ></textarea>
         </div>
 
+        <!-- Attachments Section -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <Paperclip class="w-4 h-4 text-gray-600" />
+              <span class="text-xs font-semibold text-gray-900">Attachments</span>
+              <span v-if="attachments.length > 0" class="text-xs text-gray-500">({{ attachments.length }})</span>
+            </div>
+            <label class="flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors">
+              <Upload class="w-3.5 h-3.5 mr-1.5" />
+              Add Files
+              <input
+                ref="fileInputRef"
+                type="file"
+                multiple
+                @change="handleFileSelect"
+                class="hidden"
+                accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+              />
+            </label>
+          </div>
+
+          <!-- Drag and Drop Zone -->
+          <div
+            v-if="attachments.length === 0"
+            @drop.prevent="handleFileDrop"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="isDragging = false"
+            :class="[
+              'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
+              isDragging ? 'border-gray-900 bg-gray-100' : 'border-gray-300 bg-white'
+            ]"
+          >
+            <Upload class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+            <p class="text-xs text-gray-600">Drag and drop files here or click "Add Files"</p>
+            <p class="text-xs text-gray-400 mt-1">Max 10MB per file • Images, PDFs, Documents</p>
+          </div>
+
+          <!-- Attachments List -->
+          <div v-else class="space-y-2">
+            <div
+              v-for="(attachment, index) in attachments"
+              :key="index"
+              class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
+            >
+              <!-- File Icon/Preview -->
+              <div class="flex-shrink-0">
+                <div v-if="attachment.preview" class="w-12 h-12 rounded overflow-hidden">
+                  <img :src="attachment.preview" :alt="attachment.name" class="w-full h-full object-cover" />
+                </div>
+                <div v-else class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center">
+                  <File class="w-6 h-6 text-gray-500" />
+                </div>
+              </div>
+              
+              <!-- File Info -->
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</p>
+                <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-1">
+                <!-- Download Button -->
+                <button
+                  @click="downloadAttachment(attachment)"
+                  class="flex-shrink-0 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  title="Download"
+                >
+                  <Download class="w-4 h-4" />
+                </button>
+                
+                <!-- Delete Button -->
+                <button
+                  @click="removeAttachment(index)"
+                  class="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                  title="Remove"
+                >
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Add more files button -->
+            <label class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors">
+              <Plus class="w-4 h-4 text-gray-500" />
+              <span class="text-xs font-medium text-gray-600">Add more files</span>
+              <input
+                type="file"
+                multiple
+                @change="handleFileSelect"
+                class="hidden"
+                accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+              />
+            </label>
+          </div>
+
+          <!-- Total Size Warning -->
+          <div v-if="totalAttachmentSize > 50 * 1024 * 1024" class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-xs text-yellow-800">
+              <AlertCircle class="w-3 h-3 inline mr-1" />
+              Total attachment size is large ({{ formatFileSize(totalAttachmentSize) }}). This may impact performance.
+            </p>
+          </div>
+        </div>
+
         <!-- Character Count -->
         <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
           <span>{{ content.length }} characters</span>
@@ -234,6 +340,30 @@
               <p class="text-sm text-gray-900 mt-2 whitespace-pre-wrap leading-relaxed">{{ parsed.content }}</p>
             </div>
 
+            <!-- Attachments Preview -->
+            <div v-if="attachments.length > 0" class="mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+              <div class="flex items-center mb-3">
+                <Paperclip class="w-4 h-4 text-emerald-700 mr-2" />
+                <span class="text-xs text-emerald-700 font-semibold">Attachments ({{ attachments.length }})</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div
+                  v-for="(attachment, index) in attachments"
+                  :key="index"
+                  class="p-2 bg-white rounded-lg border border-emerald-200"
+                >
+                  <div v-if="attachment.preview" class="w-full h-24 rounded overflow-hidden mb-2">
+                    <img :src="attachment.preview" :alt="attachment.name" class="w-full h-full object-cover" />
+                  </div>
+                  <div v-else class="w-full h-24 rounded bg-gray-100 flex items-center justify-center mb-2">
+                    <File class="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p class="text-xs font-medium text-gray-900 truncate">{{ attachment.name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
+                </div>
+              </div>
+            </div>
+
             <!-- References Section -->
             <div v-if="parsed.references && parsed.references.length > 0" class="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
               <div class="flex items-center mb-3">
@@ -309,6 +439,12 @@ import {
   Instagram,
   Twitter,
   MessageSquare,
+  Paperclip,
+  Upload,
+  File,
+  X,
+  Plus,
+  Download,
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -320,6 +456,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  noteId: {
+    type: String,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['save', 'cancel', 'delete']);
@@ -327,9 +467,14 @@ const emit = defineEmits(['save', 'cancel', 'delete']);
 const content = ref(props.initialContent);
 const showTagHelp = ref(false);
 const textareaRef = ref(null);
+const fileInputRef = ref(null);
 const totpCode = ref('');
 const totpTimeRemaining = ref(30);
 let totpInterval = null;
+
+// Attachments state
+const attachments = ref([]);
+const isDragging = ref(false);
 
 // Parse content in real-time
 const parsed = computed(() => {
@@ -476,9 +621,132 @@ const handleInput = () => {
 // Save handler
 const handleSave = () => {
   if (content.value.trim()) {
-    emit('save', content.value);
+    // Only pass new attachments (not existing ones)
+    const newAttachments = attachments.value.filter(att => !att.existing);
+    emit('save', content.value, newAttachments);
   }
 };
+
+// Attachment handlers
+const handleFileSelect = async (event) => {
+  const files = Array.from(event.target.files || []);
+  await processFiles(files);
+  // Reset input
+  if (event.target) {
+    event.target.value = '';
+  }
+};
+
+const handleFileDrop = async (event) => {
+  isDragging.value = false;
+  const files = Array.from(event.dataTransfer.files || []);
+  await processFiles(files);
+};
+
+const processFiles = async (files) => {
+  for (const file of files) {
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+      continue;
+    }
+
+    // Check total attachment size (50MB limit)
+    const currentTotalSize = attachments.value.reduce((sum, att) => sum + att.size, 0);
+    if (currentTotalSize + file.size > 50 * 1024 * 1024) {
+      alert('Total attachment size would exceed 50MB limit.');
+      break;
+    }
+
+    // Create attachment object
+    const attachment = {
+      file,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      preview: null,
+    };
+
+    // Generate preview for images
+    if (file.type.startsWith('image/')) {
+      attachment.preview = await generateImagePreview(file);
+    }
+
+    attachments.value.push(attachment);
+  }
+};
+
+const generateImagePreview = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+};
+
+const downloadAttachment = async (attachment) => {
+  try {
+    let blob;
+    
+    // If it's an existing attachment, we need to get it from the database
+    if (attachment.existing && attachment.id) {
+      const { getAttachment } = await import('@/db');
+      const dbAttachment = await getAttachment(attachment.id);
+      if (dbAttachment) {
+        blob = new Blob([dbAttachment.data], { type: dbAttachment.type });
+      } else {
+        throw new Error("Attachment not found in database");
+      }
+    } else {
+      // For new attachments, use the file directly
+      blob = attachment.file;
+    }
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = attachment.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error downloading attachment:", error);
+    alert("Failed to download attachment");
+  }
+};
+
+const removeAttachment = async (index) => {
+  const attachment = attachments.value[index];
+  
+  // If it's an existing attachment, delete from database
+  if (attachment.existing && attachment.id && props.noteId) {
+    try {
+      const { deleteAttachment } = await import('@/db');
+      await deleteAttachment(props.noteId, attachment.id);
+    } catch (error) {
+      console.error("Error deleting attachment:", error);
+      alert("Failed to delete attachment");
+      return;
+    }
+  }
+  
+  attachments.value.splice(index, 1);
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
+const totalAttachmentSize = computed(() => {
+  return attachments.value.reduce((sum, att) => sum + att.size, 0);
+});
 
 // Helper functions for references
 const getPlatformIcon = (type) => {
@@ -511,6 +779,41 @@ const getPlatformColorClass = (type) => {
   }
 };
 
+// Load existing attachments for editing
+const loadExistingAttachments = async () => {
+  if (!props.noteId || props.isNew) return;
+  
+  try {
+    const { getAttachments } = await import('@/db');
+    const existingAttachments = await getAttachments(props.noteId);
+    
+    // Convert stored attachments to display format
+    for (const att of existingAttachments) {
+      const blob = new Blob([att.data], { type: att.type });
+      
+      const attachment = {
+        file: blob, // Just use the blob directly
+        id: att.id,
+        name: att.name,
+        type: att.type,
+        size: att.size,
+        preview: null,
+        existing: true,
+      };
+      
+      // Generate preview for images
+      if (att.type.startsWith('image/')) {
+        const url = URL.createObjectURL(blob);
+        attachment.preview = url;
+      }
+      
+      attachments.value.push(attachment);
+    }
+  } catch (error) {
+    console.error("Error loading attachments:", error);
+  }
+};
+
 // Focus textarea on mount
 onMounted(() => {
   if (textareaRef.value) {
@@ -523,6 +826,9 @@ onMounted(() => {
       }, 5000);
     }
   }
+  
+  // Load existing attachments
+  loadExistingAttachments();
 });
 
 // Handle Escape key
