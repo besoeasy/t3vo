@@ -72,22 +72,15 @@
 
     <!-- Reading View (for existing notes) -->
     <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-12 max-w-5xl mx-auto">
-      <div class="space-y-6">
+      <div class="space-y-8">
         <!-- Title -->
         <div v-if="parsed?.title">
-          <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ parsed.title }}</h1>
+          <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ parsed.title }}</h1>
         </div>
 
-        <!-- Content Body with Markdown -->
-        <div v-if="parsed?.content" class="prose prose-lg max-w-none">
-          <div 
-            class="markdown-body text-gray-800"
-            v-html="renderedMarkdown"
-          ></div>
-        </div>
-
+        <!-- Notes Structure (Credentials or Bookmark) -->
         <!-- Password Fields -->
-        <div v-if="parsed?.type === 'password'" class="space-y-4 mt-8">
+        <div v-if="parsed?.type === 'password'" class="space-y-4">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Credentials</h3>
           
           <div v-if="parsed.tags.email || parsed.tags.username" class="p-6 bg-gray-50 rounded-xl border border-gray-200">
@@ -124,8 +117,38 @@
           </div>
         </div>
 
+        <!-- Bookmark URL -->
+        <div v-if="parsed?.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)">
+          <div class="p-6 bg-blue-50 rounded-xl border border-blue-200">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <span class="text-sm text-blue-700 font-semibold block mb-2">Bookmark URL</span>
+                <p class="text-base text-blue-700 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
+              </div>
+              <a
+                :href="parsed.tags.bookmark || parsed.tags.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex-shrink-0 flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
+                title="Open in new tab"
+              >
+                <ExternalLink class="w-4 h-4 mr-2" />
+                Open
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note Content (Markdown Parsed) -->
+        <div v-if="parsed?.content" class="prose prose-lg max-w-none">
+          <div 
+            class="markdown-body text-gray-800"
+            v-html="renderedMarkdown"
+          ></div>
+        </div>
+
         <!-- Attachments -->
-        <div v-if="attachments.length > 0" class="mt-8">
+        <div v-if="attachments.length > 0">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Attachments ({{ attachments.length }})</h3>
           <div class="grid grid-cols-3 gap-4">
             <div
@@ -155,7 +178,7 @@
         </div>
 
         <!-- References -->
-        <div v-if="parsed?.references && parsed.references.length > 0" class="mt-8">
+        <div v-if="parsed?.references && parsed.references.length > 0">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">References ({{ parsed.references.length }})</h3>
           <div class="space-y-3">
             <a
@@ -182,28 +205,6 @@
                 <p class="text-sm text-gray-600 truncate">{{ ref.url }}</p>
               </div>
             </a>
-          </div>
-        </div>
-
-        <!-- Bookmark URL -->
-        <div v-if="parsed?.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)" class="mt-8">
-          <div class="p-6 bg-blue-50 rounded-xl border border-blue-200">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <span class="text-sm text-blue-700 font-semibold block mb-2">Bookmark URL</span>
-                <p class="text-base text-blue-700 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
-              </div>
-              <a
-                :href="parsed.tags.bookmark || parsed.tags.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex-shrink-0 flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
-                title="Open in new tab"
-              >
-                <ExternalLink class="w-4 h-4 mr-2" />
-                Open
-              </a>
-            </div>
           </div>
         </div>
       </div>
