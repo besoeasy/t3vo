@@ -1,3 +1,6 @@
+<img width="2002" height="1515" alt="Screenshot_20251023_210835" src="https://github.com/user-attachments/assets/1a245b36-f30d-4d6d-95d1-2ead228bd853" />
+
+
 # T3VO - Unified Note Vault
 
 T3VO is a secure, offline-first note-taking app with smart tag-based organization and rich features. Everything is a note—use simple tags to automatically organize passwords, bookmarks, and regular notes with markdown support, file attachments, and media references.
