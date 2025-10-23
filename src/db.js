@@ -282,6 +282,14 @@ export async function getNoteTotalAttachmentSize(noteId) {
  */
 export async function softDeleteNote(id) {
   const currentTime = getCurrentTime();
+  
+  // Delete all attachments for this note
+  const attachments = await db.attachments.where("noteId").equals(id).toArray();
+  for (const att of attachments) {
+    await db.attachments.delete(att.id);
+  }
+  
+  // Soft delete the note
   await db.notes.update(id, {
     deletedAt: currentTime,
     updatedAt: currentTime,
