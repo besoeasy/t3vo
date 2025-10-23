@@ -338,17 +338,6 @@ const typeIcon = computed(() => {
   }
 });
 
-const typeColor = computed(() => {
-  switch (detectedType.value) {
-    case 'password':
-      return 'text-blue-600';
-    case 'bookmark':
-      return 'text-amber-600';
-    default:
-      return 'text-green-600';
-  }
-});
-
 const typeClass = computed(() => {
   switch (detectedType.value) {
     case 'password':
