@@ -77,13 +77,13 @@
       <div v-if="!showEditor" class="w-full mx-auto p-8">
         <!-- Search Bar -->
         <div class="mb-8">
-          <div class="relative max-w-md">
+          <div class="relative">
             <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search"
-              class="w-full pl-12 pr-4 py-3 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              class="w-full pl-12 pr-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
         </div>
