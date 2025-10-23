@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import Dashboard from "@/views/dashboard-docket.vue";
+import Dashboard from "@/views/dashboard.vue";
 import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
 import Sync from "@/views/sync.vue";
