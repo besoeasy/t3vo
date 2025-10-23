@@ -94,8 +94,7 @@
             v-for="note in filteredNotes"
             :key="note.id"
             @click="openNote(note)"
-            class="group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col"
-            :style="{ backgroundColor: getNoteColor(note.parsed.color) }"
+            class="group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col bg-[#F5C26B]"
           >
             <!-- Note Content -->
             <div class="flex-1">
@@ -188,20 +187,6 @@ const filteredNotes = computed(() => {
 });
 
 // Methods
-const getNoteColor = (colorKey) => {
-  const colors = {
-    yellow: "#F5C26B",
-    coral: "#F08A7A",
-    purple: "#9B7EDE",
-    cyan: "#4DD4E8",
-    lime: "#D4E157",
-    pink: "#F49A89",
-    blue: "#7EB6FF",
-    green: "#81C784",
-  };
-  return colors[colorKey] || colors.yellow;
-};
-
 const loadNotes = async () => {
   isLoading.value = true;
   try {
