@@ -11,11 +11,7 @@
     </button>
 
     <!-- Overlay for mobile menu -->
-    <div
-      v-if="mobileMenuOpen"
-      @click="toggleMobileMenu"
-      class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-    ></div>
+    <div v-if="mobileMenuOpen" @click="toggleMobileMenu" class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>
 
     <!-- Left Sidebar -->
     <aside
@@ -23,11 +19,11 @@
         'bg-white flex flex-col items-center border-r border-gray-200 transition-all duration-300',
         'md:w-[80px] md:py-6 md:px-3 md:relative md:translate-x-0',
         'fixed inset-y-0 left-0 z-40 w-[200px] py-8 px-4',
-        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
       <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">T3VO</h1>
-      
+
       <!-- Back to Notes Button -->
       <router-link
         to="/dashboard"
@@ -59,7 +55,11 @@
         title="GitHub Repository"
       >
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+            clip-rule="evenodd"
+          />
         </svg>
       </a>
 
@@ -105,9 +105,7 @@
                 <Trash2 class="w-5 h-5 text-red-600" />
               </div>
               <p class="text-3xl font-bold text-gray-900">{{ stats.deletedNotes }}</p>
-              <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">
-                Automatically purged after 90 days
-              </p>
+              <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">Automatically purged after 90 days</p>
             </div>
 
             <!-- Created Date -->
@@ -126,7 +124,7 @@
               <HardDrive class="w-5 h-5 mr-2" />
               Storage
             </h3>
-            
+
             <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600">Database Name</span>
@@ -152,29 +150,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { db } from '@/db.js';
-import {
-  ArrowLeft,
-  Lock,
-  Database,
-  FileText,
-  Calendar,
-  HardDrive,
-  Shield,
-  Trash2,
-  Menu,
-  X,
-} from 'lucide-vue-next';
+import { ref, onMounted } from "vue";
+import { db } from "@/db.js";
+
+import { version } from "@/../package.json";
+
+import { ArrowLeft, Lock, Database, FileText, Calendar, HardDrive, Shield, Trash2, Menu, X } from "lucide-vue-next";
 
 const isLoading = ref(true);
 const mobileMenuOpen = ref(false);
 const stats = ref({
   totalNotes: 0,
   deletedNotes: 0,
-  oldestNoteDate: 'N/A',
-  dbName: '',
-  appVersion: '0.0.9',
+  oldestNoteDate: "N/A",
+  dbName: "",
+  appVersion: version,
 });
 
 const toggleMobileMenu = () => {
@@ -185,16 +175,12 @@ const loadStats = async () => {
   isLoading.value = true;
   try {
     // Get active notes
-    const notes = await db.notes
-      .filter(note => note.deletedAt === null || note.deletedAt === undefined)
-      .toArray();
+    const notes = await db.notes.filter((note) => note.deletedAt === null || note.deletedAt === undefined).toArray();
 
     stats.value.totalNotes = notes.length;
 
     // Get deleted notes
-    const deletedNotes = await db.notes
-      .filter(note => note.deletedAt !== null && note.deletedAt !== undefined)
-      .toArray();
+    const deletedNotes = await db.notes.filter((note) => note.deletedAt !== null && note.deletedAt !== undefined).toArray();
 
     stats.value.deletedNotes = deletedNotes.length;
 
@@ -208,7 +194,7 @@ const loadStats = async () => {
     // Get DB name
     stats.value.dbName = db.name;
   } catch (error) {
-    console.error('Error loading stats:', error);
+    console.error("Error loading stats:", error);
   } finally {
     isLoading.value = false;
   }
@@ -216,16 +202,16 @@ const loadStats = async () => {
 
 const formatFullDate = (timestamp) => {
   const date = new Date(timestamp);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric'
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
 const handleLogout = () => {
-  if (confirm('Are you sure you want to lock the app?')) {
-    sessionStorage.removeItem('ENCRYPTION_KEY');
+  if (confirm("Are you sure you want to lock the app?")) {
+    sessionStorage.removeItem("ENCRYPTION_KEY");
     location.reload();
   }
 };
