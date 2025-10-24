@@ -40,6 +40,11 @@
         </div>
 
         <p v-if="showWarning" class="mt-2 text-red-600 text-sm font-medium">⚠️ Warning: Your master password is {{ strengthInfo.label }}.</p>
+
+        <div v-if="AccountIdentifier" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-xs text-gray-600 mb-1">Account Identifier:</p>
+          <p class="text-sm font-mono text-blue-800">{{ AccountIdentifier }}</p>
+        </div>
       </div>
 
       <button
@@ -74,6 +79,115 @@ const pinInput = ref("");
 const passwordStrength = ref(0);
 
 const emit = defineEmits(["unlock"]);
+
+// Word lists for generating Account identifier
+const adjectives = [
+  "happy",
+  "bright",
+  "calm",
+  "swift",
+  "brave",
+  "gentle",
+  "proud",
+  "wise",
+  "kind",
+  "noble",
+  "quiet",
+  "bold",
+  "clever",
+  "eager",
+  "fancy",
+  "jolly",
+  "keen",
+  "lively",
+  "mighty",
+  "polite",
+  "witty",
+  "zealous",
+  "careful",
+  "daring",
+];
+
+const nouns = [
+  "ocean",
+  "mountain",
+  "river",
+  "forest",
+  "meadow",
+  "valley",
+  "garden",
+  "sunset",
+  "morning",
+  "eagle",
+  "dolphin",
+  "tiger",
+  "phoenix",
+  "dragon",
+  "wolf",
+  "falcon",
+  "star",
+  "moon",
+  "cloud",
+  "wind",
+  "thunder",
+  "rainbow",
+  "crystal",
+  "diamond",
+];
+
+const verbs = [
+  "dances",
+  "flows",
+  "shines",
+  "soars",
+  "runs",
+  "jumps",
+  "sings",
+  "flies",
+  "glides",
+  "whispers",
+  "roars",
+  "sparkles",
+  "glows",
+  "blooms",
+  "rises",
+  "falls",
+  "dreams",
+  "wonders",
+  "creates",
+  "explores",
+  "discovers",
+  "transforms",
+  "illuminates",
+  "unites",
+];
+
+const validatePin = () => {
+  // Ensure only numeric values
+  pinInput.value = pinInput.value.replace(/\D/g, "");
+};
+
+const AccountIdentifier = computed(() => {
+  if (!passwordInput.value && !pinInput.value) return "";
+
+  // Generate a hash from the current inputs
+  const combined = passwordInput.value + pinInput.value;
+  if (!combined) return "";
+
+  const hash = sha512("besoeasy" + combined).toString();
+
+  // Use hash to deterministically select words
+  const hashNum = parseInt(hash.substring(0, 8), 16);
+  const adjIndex = hashNum % adjectives.length;
+  const nounIndex = Math.floor(hashNum / adjectives.length) % nouns.length;
+  const verbIndex = Math.floor(hashNum / (adjectives.length * nouns.length)) % verbs.length;
+
+  const adj = adjectives[adjIndex];
+  const noun = nouns[nounIndex];
+  const verb = verbs[verbIndex];
+
+  return `The ${adj} ${noun} ${verb}`;
+});
 
 const checkPasswordStrength = () => {
   const password = passwordInput.value;
