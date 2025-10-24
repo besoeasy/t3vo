@@ -1,19 +1,25 @@
 <template>
   <LockScreen v-if="!isUnlocked" @unlock="handleUnlock" />
 
-  <template v-else>
-    <RouterView />
-  </template>
+  <Navbar v-else @newNote="handleNewNote">
+    <RouterView @newNote="handleNewNote" />
+  </Navbar>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import LockScreen from "@/components/LockScreen.vue";
+import Navbar from "@/components/Navbar.vue";
 
 const isUnlocked = ref(false);
 
 const handleUnlock = () => {
   location.reload();
+};
+
+const handleNewNote = () => {
+  // This will be forwarded to the dashboard component
+  // For now, we'll just emit it and let child components handle it
 };
 
 onMounted(() => {

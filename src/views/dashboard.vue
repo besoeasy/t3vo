@@ -1,190 +1,98 @@
 <template>
-  <div class="flex h-screen bg-white overflow-hidden">
-    <!-- Mobile Menu Toggle -->
-    <button
-      @click="toggleMobileMenu"
-      class="md:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg"
-      title="Menu"
-    >
-      <Menu v-if="!mobileMenuOpen" class="w-5 h-5" />
-      <X v-else class="w-5 h-5" />
-    </button>
+  <!-- Notes Grid View -->
+  <div v-if="!showEditor" class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
+    <!-- Search Bar -->
+    <div class="mb-6 md:mb-8">
+      <div class="relative">
+        <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search"
+          class="w-full pl-12 pr-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+      </div>
+    </div>
 
-    <!-- Overlay for mobile menu -->
-    <div
-      v-if="mobileMenuOpen"
-      @click="toggleMobileMenu"
-      class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-    ></div>
-
-    <!-- Left Sidebar -->
-    <aside
-      :class="[
-        'bg-white flex flex-col items-center transition-all duration-300',
-        'md:w-[80px] md:py-6 md:px-3 md:relative md:translate-x-0',
-        'fixed inset-y-0 left-0 z-40 w-[200px] py-8 px-4',
-        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-      ]"
-    >
-      <!-- App Branding -->
-      <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">T3VO</h1>
-
-      <!-- New Note Button -->
-      <button
-        @click="startNewNote"
-        class="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white hover:bg-gray-800 transition-colors shadow-md mb-8 md:mb-12"
-        title="New Note"
+    <!-- Notes Grid -->
+    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      <div
+        v-for="note in filteredNotes"
+        :key="note.id"
+        @click="openNote(note)"
+        class="group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col bg-[#F5C26B]"
       >
-        <Plus class="w-6 h-6" />
-      </button>
-
-      <!-- Spacer -->
-      <div class="flex-1"></div>
-
-      <!-- Sync Link -->
-      <router-link
-        to="/sync"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="Device Sync"
-      >
-        <Wifi class="w-5 h-5" />
-      </router-link>
-
-      <!-- Stats Link -->
-      <router-link
-        to="/stats"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="Statistics"
-      >
-        <BarChart3 class="w-5 h-5" />
-      </router-link>
-
-      <!-- Backup Link -->
-      <router-link
-        to="/backup"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="Backup & Restore"
-      >
-        <Database class="w-5 h-5" />
-      </router-link>
-
-      <!-- GitHub Link -->
-      <a
-        href="https://github.com/besoeasy/t3vo"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="GitHub Repository"
-      >
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            fill-rule="evenodd"
-            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </a>
-
-      <!-- Settings/Lock Button -->
-      <button
-        @click="handleLogout"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-        title="Lock App"
-      >
-        <Lock class="w-5 h-5" />
-      </button>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-auto">
-      <!-- Notes Grid View -->
-      <div v-if="!showEditor" class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
-        <!-- Search Bar -->
-        <div class="mb-6 md:mb-8">
-          <div class="relative">
-            <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search"
-              class="w-full pl-12 pr-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-          </div>
-        </div>
-
-        <!-- Notes Grid -->
-        <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          <div
-            v-for="note in filteredNotes"
-            :key="note.id"
-            @click="openNote(note)"
-            class="group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col bg-[#F5C26B]"
-          >
-            <!-- Note Content -->
-            <div class="flex-1">
-              <h3 v-if="note.parsed.title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                {{ note.parsed.title }}
-              </h3>
-              <p class="text-gray-800 text-sm line-clamp-4">
-                {{ note.parsed.content || "Empty note" }}
-              </p>
-            </div>
-
-            <!-- Note Footer -->
-            <div class="flex items-center justify-between mt-4 pt-4 border-t border-black border-opacity-10">
-              <span v-if="note.updatedAt" class="text-xs text-gray-700">
-                {{ formatDate(note.updatedAt) }}
-              </span>
-              <div class="flex items-center space-x-2">
-                <!-- Type Badge -->
-                <span v-if="note.parsed.type !== 'note'" class="flex items-center justify-center w-8 h-8 bg-gray-900 bg-opacity-80 rounded-full text-white">
-                  <Key v-if="note.parsed.type === 'password'" class="w-4 h-4" />
-                  <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-4 h-4" />
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loading -->
-        <div v-if="isLoading" class="flex justify-center items-center py-20">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="!isLoading && filteredNotes.length === 0" class="text-center py-20">
-          <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-sm">
-            <FileText class="w-10 h-10 text-gray-400" />
-          </div>
-          <h3 class="text-2xl font-semibold text-gray-900 mb-2">
-            {{ searchQuery ? "No notes found" : "No notes yet" }}
+        <!-- Note Content -->
+        <div class="flex-1">
+          <h3 v-if="note.parsed.title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+            {{ note.parsed.title }}
           </h3>
-          <p class="text-gray-600 mb-6">
-            {{ searchQuery ? "Try adjusting your search" : "Click the + button to create your first note" }}
+          <p class="text-gray-800 text-sm line-clamp-4">
+            {{ note.parsed.content || "Empty note" }}
           </p>
         </div>
-      </div>
 
-      <!-- Note Editor View -->
-      <NoteEditor
-        v-else
-        :initialContent="editingContent"
-        :isNew="isNewNote"
-        :noteId="editingNoteId"
-        @save="handleSave"
-        @cancel="closeEditor"
-        @delete="handleDelete"
-      />
-    </main>
+        <!-- Note Footer -->
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-black border-opacity-10">
+          <span v-if="note.updatedAt" class="text-xs text-gray-700">
+            {{ formatDate(note.updatedAt) }}
+          </span>
+          <div class="flex items-center space-x-2">
+            <!-- Type Badge -->
+            <span v-if="note.parsed.type !== 'note'" class="flex items-center justify-center w-8 h-8 bg-gray-900 bg-opacity-80 rounded-full text-white">
+              <Key v-if="note.parsed.type === 'password'" class="w-4 h-4" />
+              <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-4 h-4" />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-if="!isLoading && filteredNotes.length === 0" class="text-center py-20">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-sm">
+        <FileText class="w-10 h-10 text-gray-400" />
+      </div>
+      <h3 class="text-2xl font-semibold text-gray-900 mb-2">
+        {{ searchQuery ? "No notes found" : "No notes yet" }}
+      </h3>
+      <p class="text-gray-600 mb-6">
+        {{ searchQuery ? "Try adjusting your search" : "Click the + button to create your first note" }}
+      </p>
+    </div>
   </div>
+
+  <!-- Note Editor View -->
+  <NoteEditor
+    v-else
+    :initialContent="editingContent"
+    :isNew="isNewNote"
+    :noteId="editingNoteId"
+    @save="handleSave"
+    @cancel="closeEditor"
+    @delete="handleDelete"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 import { fetchNotes, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
-import { Plus, Search, Lock, FileText, Key, Bookmark, Database, BarChart3, Wifi, Menu, X } from "lucide-vue-next";
+import { Search, FileText, Key, Bookmark } from "lucide-vue-next";
 import NoteEditor from "@/components/NoteEditor.vue";
 import { format } from "timeago.js";
+
+const route = useRoute();
+
+// Props to receive newNote event from parent
+defineProps({
+  onNewNote: Function,
+});
 
 // State
 const searchQuery = ref("");
@@ -194,7 +102,13 @@ const showEditor = ref(false);
 const editingContent = ref("");
 const editingNoteId = ref(null);
 const isNewNote = ref(true);
-const mobileMenuOpen = ref(false);
+
+// Watch for route query changes to trigger new note
+watch(() => route.query.action, (action) => {
+  if (action === "new") {
+    startNewNote();
+  }
+});
 
 // Computed
 const filteredNotes = computed(() => {
@@ -222,24 +136,23 @@ const loadNotes = async () => {
   }
 };
 
-const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value;
-};
-
 const startNewNote = () => {
   editingContent.value = "";
   editingNoteId.value = null;
   isNewNote.value = true;
   showEditor.value = true;
-  mobileMenuOpen.value = false;
 };
+
+// Expose startNewNote to parent via event
+defineExpose({
+  startNewNote,
+});
 
 const openNote = (note) => {
   editingContent.value = note.content;
   editingNoteId.value = note.id;
   isNewNote.value = false;
   showEditor.value = true;
-  mobileMenuOpen.value = false;
 };
 
 const closeEditor = () => {
@@ -282,13 +195,6 @@ const handleDelete = async () => {
       console.error("Error deleting note:", error);
       alert("Failed to delete note. Please try again.");
     }
-  }
-};
-
-const handleLogout = () => {
-  if (confirm("Are you sure you want to lock the app?")) {
-    sessionStorage.removeItem("ENCRYPTION_KEY");
-    location.reload();
   }
 };
 
