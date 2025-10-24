@@ -1,5 +1,6 @@
 import Dexie from "dexie";
 import CryptoJS from "crypto-js";
+
 import { parseNote } from "@/utils/noteParser";
 
 const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
@@ -14,16 +15,21 @@ db.version(2).stores({
 });
 
 // Add attachments support in version 3 - store inline with note
-db.version(3).stores({
-  notes: "id, updatedAt, deletedAt",
-}).upgrade(tx => {
-  // Migration to add attachments field to existing notes
-  return tx.table("notes").toCollection().modify(note => {
-    if (!note.attachments) {
-      note.attachments = [];
-    }
+db.version(3)
+  .stores({
+    notes: "id, updatedAt, deletedAt",
+  })
+  .upgrade((tx) => {
+    // Migration to add attachments field to existing notes
+    return tx
+      .table("notes")
+      .toCollection()
+      .modify((note) => {
+        if (!note.attachments) {
+          note.attachments = [];
+        }
+      });
   });
-});
 
 const itemsPerPage = 60;
 
@@ -32,12 +38,12 @@ const getCurrentTime = () => Date.now();
 // Optimized match function - searches in raw content
 function matchesSearch(note, searchQuery) {
   if (!searchQuery) return true;
-  
+
   const lowerQuery = searchQuery.toLowerCase();
   const content = decryptData(note.content);
 
   if (!content) return false;
-  
+
   // Search in raw content (includes tags and text)
   return content.toLowerCase().includes(lowerQuery);
 }
@@ -45,11 +51,11 @@ function matchesSearch(note, searchQuery) {
 // Optimized hash function using built-in crypto when available
 function getSha256Hash(str, includeTimestamp = false) {
   // Use Web Crypto API if available (more efficient)
-  if (typeof crypto !== 'undefined' && crypto.subtle) {
+  if (typeof crypto !== "undefined" && crypto.subtle) {
     // For now, fallback to crypto-js for compatibility
     // Could be optimized further with Web Crypto API implementation
   }
-  
+
   // For database naming, we need consistent hashes (no timestamp)
   // For unique IDs, we include timestamp for uniqueness
   const hashInput = includeTimestamp ? str + Date.now() : str;
@@ -64,7 +70,7 @@ function getSha256Hash(str, includeTimestamp = false) {
  */
 export async function addNote(content, files = []) {
   const noteId = getSha256Hash(encryptData(content) + getCurrentTime(), true);
-  
+
   // Process attachments
   const attachments = [];
   for (const file of files) {
@@ -78,7 +84,7 @@ export async function addNote(content, files = []) {
       uploadedAt: getCurrentTime(),
     });
   }
-  
+
   const note = {
     id: noteId,
     content: encryptData(content),
@@ -100,13 +106,11 @@ export async function addNote(content, files = []) {
  */
 export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all") {
   let notes;
-  
+
   if (searchQuery || typeFilter !== "all") {
     // For search or filter, load all notes and filter client-side
-    notes = await db.notes
-      .filter(note => note.deletedAt === null || note.deletedAt === undefined)
-      .toArray();
-    
+    notes = await db.notes.filter((note) => note.deletedAt === null || note.deletedAt === undefined).toArray();
+
     // Decrypt and parse
     notes = notes.map((note) => {
       const content = decryptData(note.content);
@@ -117,20 +121,20 @@ export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all")
         parsed,
       };
     });
-    
+
     // Filter by search query
     if (searchQuery) {
       notes = notes.filter((note) => matchesSearch(note, searchQuery));
     }
-    
+
     // Filter by type
     if (typeFilter !== "all") {
       notes = notes.filter((note) => note.parsed.type === typeFilter);
     }
-    
+
     // Sort by updatedAt (newest first)
     notes.sort((a, b) => b.updatedAt - a.updatedAt);
-    
+
     // Apply pagination after filtering
     const offset = (page - 1) * itemsPerPage;
     notes = notes.slice(offset, offset + itemsPerPage);
@@ -138,12 +142,12 @@ export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all")
     // For non-search queries, use efficient database-level pagination
     const offset = (page - 1) * itemsPerPage;
     notes = await db.notes
-      .filter(note => note.deletedAt === null || note.deletedAt === undefined)
+      .filter((note) => note.deletedAt === null || note.deletedAt === undefined)
       .reverse()
       .sortBy("updatedAt");
-    
+
     notes = notes.slice(offset, offset + itemsPerPage);
-    
+
     // Decrypt and parse
     notes = notes.map((note) => {
       const content = decryptData(note.content);
@@ -184,24 +188,24 @@ export async function addAttachments(noteId, files) {
   if (!files || files.length === 0) {
     return [];
   }
-  
+
   const note = await db.notes.get(noteId);
   if (!note) {
     throw new Error("Note not found");
   }
-  
+
   const currentAttachments = note.attachments || [];
   const attachmentIds = [];
-  
+
   for (const file of files) {
     // Validate file size (10MB limit per file)
     if (file.size > 10 * 1024 * 1024) {
       throw new Error(`File ${file.name} is too large (max 10MB)`);
     }
-    
+
     const arrayBuffer = await file.arrayBuffer();
     const attachmentId = getSha256Hash(noteId + file.name + getCurrentTime(), true);
-    
+
     currentAttachments.push({
       id: attachmentId,
       name: file.name,
@@ -210,16 +214,16 @@ export async function addAttachments(noteId, files) {
       data: arrayBuffer,
       uploadedAt: getCurrentTime(),
     });
-    
+
     attachmentIds.push(attachmentId);
   }
-  
+
   // Update note with new attachments
   await db.notes.update(noteId, {
     attachments: currentAttachments,
     updatedAt: getCurrentTime(),
   });
-  
+
   return attachmentIds;
 }
 
@@ -242,7 +246,7 @@ export async function getAttachments(noteId) {
 export async function getAttachment(noteId, attachmentId) {
   const note = await db.notes.get(noteId);
   if (!note || !note.attachments) return null;
-  return note.attachments.find(att => att.id === attachmentId);
+  return note.attachments.find((att) => att.id === attachmentId);
 }
 
 /**
@@ -253,9 +257,9 @@ export async function getAttachment(noteId, attachmentId) {
 export async function deleteAttachment(noteId, attachmentId) {
   const note = await db.notes.get(noteId);
   if (!note || !note.attachments) return;
-  
+
   await db.notes.update(noteId, {
-    attachments: note.attachments.filter(a => a.id !== attachmentId),
+    attachments: note.attachments.filter((a) => a.id !== attachmentId),
     updatedAt: getCurrentTime(),
   });
 }
@@ -327,17 +331,17 @@ export function getDecryptionCacheSize() {
 
 export function decryptData(encryptedData) {
   if (!ENCRYPTION_KEY || !encryptedData) return encryptedData;
-  
+
   // Check cache first
   const cacheKey = getCacheKey(encryptedData);
   if (decryptionCache.has(cacheKey)) {
     return decryptionCache.get(cacheKey);
   }
-  
+
   try {
     const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-    
+
     // Cache the result, but limit cache size
     if (decryptionCache.size >= CACHE_MAX_SIZE) {
       // Remove oldest entry (first key)
@@ -345,7 +349,7 @@ export function decryptData(encryptedData) {
       decryptionCache.delete(firstKey);
     }
     decryptionCache.set(cacheKey, decrypted);
-    
+
     return decrypted;
   } catch (error) {
     console.error("Decryption error:", error);
@@ -354,27 +358,27 @@ export function decryptData(encryptedData) {
 }
 
 // Database maintenance - run periodically instead of randomly
-let lastMaintenanceRun = localStorage.getItem('lastDbMaintenance') || 0;
+let lastMaintenanceRun = localStorage.getItem("lastDbMaintenance") || 0;
 const MAINTENANCE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function performDatabaseMaintenance() {
   const now = Date.now();
-  
+
   if (now - lastMaintenanceRun < MAINTENANCE_INTERVAL) {
     return; // Skip if maintenance was run recently
   }
-  
+
   console.log("Performing database maintenance...");
-  
+
   try {
     // Remove notes older than 90 days (soft deleted items only)
     const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
     await db.notes.where("deletedAt").below(ninetyDaysAgo).delete();
-    
+
     // Clear decryption cache to free memory
     decryptionCache.clear();
-    
-    localStorage.setItem('lastDbMaintenance', now.toString());
+
+    localStorage.setItem("lastDbMaintenance", now.toString());
     console.log("Database maintenance completed");
   } catch (error) {
     console.error("Database maintenance failed:", error);
@@ -409,12 +413,12 @@ export async function mergeSyncData(localNotes, remoteNotes) {
     sent: localNotes.length,
     received: remoteNotes.length,
     updated: 0,
-    conflicts: 0
+    conflicts: 0,
   };
 
   try {
     // Create a map of local notes by ID for quick lookup
-    const localNotesMap = new Map(localNotes.map(note => [note.id, note]));
+    const localNotesMap = new Map(localNotes.map((note) => [note.id, note]));
 
     // Process each remote note
     for (const remoteNote of remoteNotes) {

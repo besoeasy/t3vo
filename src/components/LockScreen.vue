@@ -67,6 +67,8 @@
 import { ref, computed } from "vue";
 import { Lock, Unlock } from "lucide-vue-next";
 
+import sha512 from "crypto-js/sha512";
+
 const passwordInput = ref("");
 const pinInput = ref("");
 const passwordStrength = ref(0);
@@ -134,7 +136,9 @@ const unlockApp = () => {
     if (!confirmUse) return;
   }
 
-  const encryptionKey = passwordInput.value + pinInput.value;
+  // making the encryption key more complex by hashing with sha512 and adding a static salt, to prevent hackers from matching common passwords incase users use weak passwords
+  const encryptionKey = sha512("besoeasy" + passwordInput.value + pinInput.value);
+
   sessionStorage.setItem("ENCRYPTION_KEY", encryptionKey);
   passwordInput.value = "";
   pinInput.value = "";
