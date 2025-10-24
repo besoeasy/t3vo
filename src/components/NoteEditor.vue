@@ -1,43 +1,43 @@
 <template>
   <div class="h-full flex flex-col bg-white">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 px-8 py-4">
+    <div class="bg-white border-b border-gray-200 px-4 md:px-8 py-3 md:py-4">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
           <button
             @click="$emit('cancel')"
-            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            class="flex-shrink-0 p-2 md:p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
             title="Back to Notes"
           >
-            <ArrowLeft class="w-5 h-5" />
+            <ArrowLeft class="w-5 h-5 md:w-5 md:h-5" />
           </button>
-          <h2 class="text-2xl font-bold text-gray-900">
+          <h2 class="text-lg md:text-2xl font-bold text-gray-900 truncate">
             {{ isNew ? 'New Note' : (isEditMode ? 'Edit Note' : parsed?.title || 'Note') }}
           </h2>
           <span
             v-if="detectedType && !isEditMode"
-            class="px-3 py-1 text-xs font-medium rounded-full"
+            class="hidden sm:inline-block px-3 py-1 text-xs font-medium rounded-full flex-shrink-0"
             :class="typeClass"
           >
             {{ detectedType }}
           </span>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
           <!-- View Mode Buttons -->
           <template v-if="!isNew && !isEditMode">
             <button
               @click="isEditMode = true"
-              class="flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              class="flex items-center px-3 md:px-4 py-2 text-sm font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
             >
-              <FileText class="w-4 h-4 mr-2" />
-              Edit
+              <FileText class="w-4 h-4 md:mr-2" />
+              <span class="hidden md:inline">Edit</span>
             </button>
             <button
               @click="$emit('delete')"
-              class="flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              class="flex items-center px-3 md:px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors touch-manipulation"
             >
-              <Trash2 class="w-4 h-4 mr-2" />
-              Delete
+              <Trash2 class="w-4 h-4 md:mr-2" />
+              <span class="hidden md:inline">Delete</span>
             </button>
           </template>
           
@@ -46,24 +46,24 @@
             <button
               v-if="!isNew"
               @click="cancelEdit"
-              class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+              class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
             >
               Cancel
             </button>
             <button
               v-else
               @click="$emit('cancel')"
-              class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+              class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
             >
               Cancel
             </button>
             <button
               @click="handleSave"
               :disabled="!content.trim()"
-              class="flex items-center px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors"
+              class="flex items-center px-4 md:px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors touch-manipulation"
             >
-              <Save class="w-4 h-4 mr-2" />
-              Save
+              <Save class="w-4 h-4 md:mr-2" />
+              <span class="hidden md:inline">Save</span>
             </button>
           </template>
         </div>
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Reading View (for existing notes) -->
-    <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-12 max-w-5xl mx-auto">
+    <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-4 md:p-12 max-w-5xl mx-auto">
       <div class="space-y-8">
         <!-- Title -->
         <div v-if="parsed?.title">
@@ -211,9 +211,9 @@
     </div>
 
     <!-- Editor View (for new notes or edit mode) -->
-    <div v-else class="flex-1 overflow-hidden flex p-8 gap-8">
+    <div v-else class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8">
       <!-- Editor Panel -->
-      <div class="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div class="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden min-h-0">
         <!-- Toolbar -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div class="flex items-center justify-between">
@@ -407,7 +407,7 @@
       </div>
 
       <!-- Preview Panel -->
-      <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div class="hidden lg:flex lg:w-1/2 flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden min-h-0">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 class="text-sm font-semibold text-gray-900">Live Preview</h3>
         </div>

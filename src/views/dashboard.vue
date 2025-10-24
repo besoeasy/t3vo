@@ -1,14 +1,38 @@
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
+    <!-- Mobile Menu Toggle -->
+    <button
+      @click="toggleMobileMenu"
+      class="md:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg"
+      title="Menu"
+    >
+      <Menu v-if="!mobileMenuOpen" class="w-5 h-5" />
+      <X v-else class="w-5 h-5" />
+    </button>
+
+    <!-- Overlay for mobile menu -->
+    <div
+      v-if="mobileMenuOpen"
+      @click="toggleMobileMenu"
+      class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+    ></div>
+
     <!-- Left Sidebar -->
-    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4">
+    <aside
+      :class="[
+        'bg-white flex flex-col items-center transition-all duration-300',
+        'md:w-[80px] md:py-6 md:px-3 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 w-[200px] py-8 px-4',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      ]"
+    >
       <!-- App Branding -->
-      <h1 class="text-2xl font-semibold text-gray-900 mb-8 writing-mode-vertical transform -rotate-0">T3VO</h1>
+      <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">T3VO</h1>
 
       <!-- New Note Button -->
       <button
         @click="startNewNote"
-        class="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white hover:bg-gray-800 transition-colors shadow-md mb-12"
+        class="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white hover:bg-gray-800 transition-colors shadow-md mb-8 md:mb-12"
         title="New Note"
       >
         <Plus class="w-6 h-6" />
@@ -74,9 +98,9 @@
     <!-- Main Content Area -->
     <main class="flex-1 overflow-auto">
       <!-- Notes Grid View -->
-      <div v-if="!showEditor" class="w-full mx-auto p-8">
+      <div v-if="!showEditor" class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
         <!-- Search Bar -->
-        <div class="mb-8">
+        <div class="mb-6 md:mb-8">
           <div class="relative">
             <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -89,7 +113,7 @@
         </div>
 
         <!-- Notes Grid -->
-        <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           <div
             v-for="note in filteredNotes"
             :key="note.id"
@@ -158,7 +182,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { fetchNotes, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
-import { Plus, Search, Lock, FileText, Key, Bookmark, Database, BarChart3, Wifi } from "lucide-vue-next";
+import { Plus, Search, Lock, FileText, Key, Bookmark, Database, BarChart3, Wifi, Menu, X } from "lucide-vue-next";
 import NoteEditor from "@/components/NoteEditor.vue";
 import { format } from "timeago.js";
 
@@ -170,6 +194,7 @@ const showEditor = ref(false);
 const editingContent = ref("");
 const editingNoteId = ref(null);
 const isNewNote = ref(true);
+const mobileMenuOpen = ref(false);
 
 // Computed
 const filteredNotes = computed(() => {
@@ -197,11 +222,16 @@ const loadNotes = async () => {
   }
 };
 
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
 const startNewNote = () => {
   editingContent.value = "";
   editingNoteId.value = null;
   isNewNote.value = true;
   showEditor.value = true;
+  mobileMenuOpen.value = false;
 };
 
 const openNote = (note) => {
@@ -209,6 +239,7 @@ const openNote = (note) => {
   editingNoteId.value = note.id;
   isNewNote.value = false;
   showEditor.value = true;
+  mobileMenuOpen.value = false;
 };
 
 const closeEditor = () => {

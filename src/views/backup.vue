@@ -1,12 +1,37 @@
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
+    <!-- Mobile Menu Toggle -->
+    <button
+      @click="toggleMobileMenu"
+      class="md:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-lg"
+      title="Menu"
+    >
+      <Menu v-if="!mobileMenuOpen" class="w-5 h-5" />
+      <X v-else class="w-5 h-5" />
+    </button>
+
+    <!-- Overlay for mobile menu -->
+    <div
+      v-if="mobileMenuOpen"
+      @click="toggleMobileMenu"
+      class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+    ></div>
+
     <!-- Left Sidebar -->
-    <aside class="w-[120px] bg-white flex flex-col items-center py-8 px-4 border-r border-gray-200">
-      <h1 class="text-2xl font-semibold text-gray-900 mb-8">T3VO</h1>
+    <aside
+      :class="[
+        'bg-white flex flex-col items-center border-r border-gray-200 transition-all duration-300',
+        'md:w-[80px] md:py-6 md:px-3 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 w-[200px] py-8 px-4',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      ]"
+    >
+      <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">T3VO</h1>
       
       <!-- Back to Notes Button -->
       <router-link
         to="/dashboard"
+        @click="mobileMenuOpen = false"
         class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-900 hover:bg-gray-200 transition-colors mb-8"
         title="Back to Notes"
       >
@@ -18,6 +43,7 @@
       <!-- Stats Link -->
       <router-link
         to="/stats"
+        @click="mobileMenuOpen = false"
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
         title="Statistics"
       >
@@ -49,9 +75,9 @@
 
     <!-- Main Content -->
     <main class="flex-1 overflow-auto">
-      <div class="max-w-4xl mx-auto p-8">
+      <div class="max-w-4xl mx-auto p-4 md:p-8 pt-16 md:pt-8">
         <!-- Page Title -->
-        <h2 class="text-5xl font-bold text-gray-900 mb-8">Backup</h2>
+        <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 md:mb-8">Backup</h2>
 
         <div class="space-y-6">
           <!-- Backup Section -->
@@ -166,6 +192,8 @@ import {
   ArrowLeft,
   Lock,
   BarChart3,
+  Menu,
+  X,
 } from "lucide-vue-next";
 
 const fileInput = ref(null);
@@ -173,6 +201,11 @@ const isBackingUp = ref(false);
 const isRestoring = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
+const mobileMenuOpen = ref(false);
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
 
 const handleLogout = () => {
   sessionStorage.removeItem("masterPassword");
