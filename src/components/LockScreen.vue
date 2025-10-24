@@ -2,12 +2,6 @@
   <div class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
     <!-- Lock Icon -->
     <div class="max-w-md mx-auto w-full">
-      <div class="mb-8 flex justify-center">
-        <div class="p-6 bg-white rounded-full shadow-lg">
-          <Lock class="w-16 h-16 text-blue-600" />
-        </div>
-      </div>
-
       <h1 class="text-4xl font-bold text-gray-900 mb-2">T3VO</h1>
       <p class="text-gray-600 mb-8">Your Secure Note Vault</p>
 
