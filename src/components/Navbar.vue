@@ -137,9 +137,9 @@ const toggleMobileMenu = () => {
 
 const handleNewNote = () => {
   mobileMenuOpen.value = false;
-  // Generate a random ID for new note and navigate directly
+  // Generate a random ID for new note and navigate directly to edit mode
   const newNoteId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-  router.push(`/notes/${newNoteId}`);
+  router.push(`/notes/${newNoteId}/edit`);
 };
 
 const handleLogout = () => {
