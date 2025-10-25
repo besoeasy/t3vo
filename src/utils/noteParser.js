@@ -50,6 +50,12 @@ const CRYPTO_ADDRESS_PATTERNS = {
   bitcoinTaproot: /\b(bc1p[a-z0-9]{58})\b/gi,
   // Ethereum - 0x followed by 40 hex characters
   ethereum: /\b(0x[a-fA-F0-9]{40})\b/g,
+  // Solana - base58, 32-44 chars, usually 44
+  solana: /\b([1-9A-HJ-NP-Za-km-z]{32,44})\b/g,
+  // Litecoin Legacy (starts with L), SegWit (starts with M), Bech32 (ltc1)
+  litecoinLegacy: /\b(L[a-km-zA-HJ-NP-Z1-9]{26,33})\b/g,
+  litecoinSegWit: /\b(M[a-km-zA-HJ-NP-Z1-9]{26,33})\b/g,
+  litecoinBech32: /\b(ltc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59})\b/gi,
 };
 
 /**
@@ -302,6 +308,70 @@ function extractReferences(content) {
  * @returns {Array} - Array of crypto address objects
  */
 function extractCryptoAddresses(content) {
+  // Litecoin Legacy (L...)
+  const ltcLegacyMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.litecoinLegacy);
+  for (const match of ltcLegacyMatches) {
+    const address = match[1];
+    if (!seen.has(address)) {
+      seen.add(address);
+      addresses.push({
+        type: 'litecoin',
+        subtype: 'Legacy (L...)',
+        address,
+        currency: 'Litecoin',
+        icon: 'Ł',
+      });
+    }
+  }
+
+  // Litecoin SegWit (M...)
+  const ltcSegWitMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.litecoinSegWit);
+  for (const match of ltcSegWitMatches) {
+    const address = match[1];
+    if (!seen.has(address)) {
+      seen.add(address);
+      addresses.push({
+        type: 'litecoin',
+        subtype: 'SegWit (M...)',
+        address,
+        currency: 'Litecoin',
+        icon: 'Ł',
+      });
+    }
+  }
+
+  // Litecoin Bech32 (ltc1...)
+  const ltcBech32Matches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.litecoinBech32);
+  for (const match of ltcBech32Matches) {
+    const address = match[1];
+    if (!seen.has(address.toLowerCase())) {
+      seen.add(address.toLowerCase());
+      addresses.push({
+        type: 'litecoin',
+        subtype: 'Bech32 (ltc1...)',
+        address,
+        currency: 'Litecoin',
+        icon: 'Ł',
+      });
+    }
+  }
+
+  // Solana (base58, 32-44 chars, usually 44)
+  const solanaMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.solana);
+  for (const match of solanaMatches) {
+    const address = match[1];
+    // Solana addresses are base58, but to avoid false positives, require 32-44 chars
+    if (!seen.has(address) && address.length >= 32 && address.length <= 44) {
+      seen.add(address);
+      addresses.push({
+        type: 'solana',
+        subtype: 'Base58',
+        address,
+        currency: 'Solana',
+        icon: '◎',
+      });
+    }
+  }
   const addresses = [];
   const seen = new Set(); // To avoid duplicates
 
