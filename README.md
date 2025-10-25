@@ -4,6 +4,8 @@
 
 T3VO is a secure, offline-first note-taking app with smart tag-based organization and rich features. Everything is a note—use simple tags to automatically organize passwords, bookmarks, and regular notes with markdown support, file attachments, and media references.
 
+https://github.com/user-attachments/assets/69c97452-6241-4602-8548-3ec5d74c4018
+
 ## ✨ Key Features
 
 ### Core Features
