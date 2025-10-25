@@ -212,94 +212,13 @@ export function getTagSuggestions() {
  * @returns {Array} - Array of reference objects
  */
 function extractReferences(content) {
-  const references = [];
-  const seen = new Set(); // To avoid duplicates
-
-  // YouTube
-  URL_PATTERNS.youtube.forEach((pattern) => {
-    const matches = content.matchAll(pattern);
-    for (const match of matches) {
-      const videoId = match[1];
-      const url = match[0].startsWith('http') ? match[0] : `https://youtube.com/watch?v=${videoId}`;
-      const key = `youtube:${videoId}`;
-      
-      if (!seen.has(key)) {
-        seen.add(key);
-        references.push({
-          type: 'youtube',
-          url,
-          videoId,
-          platform: 'YouTube',
-        });
-      }
-    }
-  });
-
-  // Instagram
-  URL_PATTERNS.instagram.forEach((pattern) => {
-    const matches = content.matchAll(pattern);
-    for (const match of matches) {
-      const postId = match[1];
-      const url = match[0].startsWith('http') ? match[0] : `https://instagram.com/p/${postId}`;
-      const key = `instagram:${postId}`;
-      
-      if (!seen.has(key)) {
-        seen.add(key);
-        references.push({
-          type: 'instagram',
-          url,
-          postId,
-          platform: 'Instagram',
-        });
-      }
-    }
-  });
-
-  // Twitter/X
-  URL_PATTERNS.twitter.forEach((pattern) => {
-    const matches = content.matchAll(pattern);
-    for (const match of matches) {
-      const username = match[1];
-      const tweetId = match[2];
-      const url = match[0].startsWith('http') ? match[0] : `https://twitter.com/${username}/status/${tweetId}`;
-      const key = `twitter:${tweetId}`;
-      
-      if (!seen.has(key)) {
-        seen.add(key);
-        references.push({
-          type: 'twitter',
-          url,
-          tweetId,
-          username,
-          platform: 'Twitter/X',
-        });
-      }
-    }
-  });
-
-  // Reddit
-  URL_PATTERNS.reddit.forEach((pattern) => {
-    const matches = content.matchAll(pattern);
-    for (const match of matches) {
-      const subreddit = match[1];
-      const postId = match[2];
-      const url = match[0].startsWith('http') ? match[0] : `https://reddit.com/r/${subreddit}/comments/${postId}`;
-      const key = `reddit:${postId}`;
-      
-      if (!seen.has(key)) {
-        seen.add(key);
-        references.push({
-          type: 'reddit',
-          url,
-          postId,
-          subreddit,
-          platform: 'Reddit',
-        });
-      }
-    }
-  });
-
-  return references;
+  // Simple URL regex (matches http/https URLs)
+  const urlRegex = /https?:\/\/[\w.-]+(?:\.[\w\.-]+)+(?:[\w\-\._~:/?#[\]@!$&'()*+,;=]*)/gi;
+  const matches = content.match(urlRegex) || [];
+  // Remove duplicates
+  const unique = Array.from(new Set(matches));
+  // Return as array of objects for compatibility
+  return unique.map(url => ({ url }));
 }
 
 /**
