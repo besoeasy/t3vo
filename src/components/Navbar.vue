@@ -127,7 +127,7 @@ const route = useRoute();
 const router = useRouter();
 const mobileMenuOpen = ref(false);
 
-const isDashboard = computed(() => route.path === "/dashboard");
+const isDashboard = computed(() => route.path === "/dashboard" || route.path === "/");
 
 const emit = defineEmits(["newNote"]);
 
@@ -137,13 +137,9 @@ const toggleMobileMenu = () => {
 
 const handleNewNote = () => {
   mobileMenuOpen.value = false;
-  // Navigate to dashboard and trigger new note
-  if (route.path === "/dashboard") {
-    // Emit event for dashboard component
-    router.push({ path: "/dashboard", query: { action: "new", t: Date.now() } });
-  } else {
-    router.push({ path: "/dashboard", query: { action: "new" } });
-  }
+  // Generate a random ID for new note and navigate directly
+  const newNoteId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  router.push(`/notes/${newNoteId}`);
 };
 
 const handleLogout = () => {

@@ -66,10 +66,11 @@ function getSha256Hash(str, includeTimestamp = false) {
  * Add a new note to the database
  * @param {string} content - Raw note content with tags
  * @param {Array} files - Optional array of File/Blob objects
+ * @param {string} customId - Optional custom note ID (if not provided, generates hash)
  * @returns {string} - Note ID
  */
-export async function addNote(content, files = []) {
-  const noteId = getSha256Hash(encryptData(content) + getCurrentTime(), true);
+export async function addNote(content, files = [], customId = null) {
+  const noteId = customId || getSha256Hash(encryptData(content) + getCurrentTime(), true);
 
   // Process attachments
   const attachments = [];
@@ -304,6 +305,15 @@ export async function getNoteById(id) {
     content,
     parsed,
   };
+}
+
+/**
+ * Fetch a note by ID (alias for compatibility)
+ * @param {string} id - Note ID
+ * @returns {Object|null} - Note with parsed data or null
+ */
+export async function fetchNoteById(id) {
+  return getNoteById(id);
 }
 
 export function encryptData(data) {

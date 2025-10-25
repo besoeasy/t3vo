@@ -1,6 +1,6 @@
 <template>
   <!-- Notes Grid View -->
-  <div v-if="!showEditor" class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
+  <div class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
     <!-- Search Bar -->
     <div class="mb-6 md:mb-8">
       <div class="relative">
@@ -75,52 +75,21 @@
       </p>
     </div>
   </div>
-
-  <!-- Note Editor View -->
-  <NoteEditor
-    v-else
-    :initialContent="editingContent"
-    :isNew="isNewNote"
-    :noteId="editingNoteId"
-    @save="handleSave"
-    @cancel="closeEditor"
-    @delete="handleDelete"
-  />
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
-import { fetchNotes, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { fetchNotes } from "@/db";
 import { Search, FileText, Key, Bookmark } from "lucide-vue-next";
-import NoteEditor from "@/components/NoteEditor.vue";
 import { format } from "timeago.js";
 
-const route = useRoute();
-
-// Props to receive newNote event from parent
-defineProps({
-  onNewNote: Function,
-});
+const router = useRouter();
 
 // State
 const searchQuery = ref("");
 const isLoading = ref(false);
 const notes = ref([]);
-const showEditor = ref(false);
-const editingContent = ref("");
-const editingNoteId = ref(null);
-const isNewNote = ref(true);
-
-// Watch for route query changes to trigger new note
-watch(
-  () => route.query.action,
-  (action) => {
-    if (action === "new") {
-      startNewNote();
-    }
-  }
-);
 
 // Computed
 const filteredNotes = computed(() => {
@@ -157,10 +126,9 @@ const loadNotes = async () => {
 };
 
 const startNewNote = () => {
-  editingContent.value = "";
-  editingNoteId.value = null;
-  isNewNote.value = true;
-  showEditor.value = true;
+  // Generate a random ID for new note
+  const newNoteId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  router.push(`/notes/${newNoteId}`);
 };
 
 // Expose startNewNote to parent via event
@@ -169,53 +137,7 @@ defineExpose({
 });
 
 const openNote = (note) => {
-  editingContent.value = note.content;
-  editingNoteId.value = note.id;
-  isNewNote.value = false;
-  showEditor.value = true;
-};
-
-const closeEditor = () => {
-  showEditor.value = false;
-  editingContent.value = "";
-  editingNoteId.value = null;
-};
-
-const handleSave = async (content, attachments = []) => {
-  try {
-    if (isNewNote.value) {
-      // Extract File objects from attachments
-      const files = attachments.map((att) => att.file).filter((f) => f);
-      await addNote(content, files);
-    } else {
-      await updateNote(editingNoteId.value, content);
-      // Handle attachments for existing notes
-      if (attachments.length > 0) {
-        const files = attachments.map((att) => att.file).filter((f) => f);
-        await addAttachments(editingNoteId.value, files);
-      }
-    }
-    await loadNotes();
-    closeEditor();
-  } catch (error) {
-    console.error("Error saving note:", error);
-    alert(`Failed to save note: ${error.message}`);
-  }
-};
-
-const handleDelete = async () => {
-  if (!editingNoteId.value) return;
-
-  if (confirm("Are you sure you want to delete this note?")) {
-    try {
-      await softDeleteNote(editingNoteId.value);
-      await loadNotes();
-      closeEditor();
-    } catch (error) {
-      console.error("Error deleting note:", error);
-      alert("Failed to delete note. Please try again.");
-    }
-  }
+  router.push(`/notes/${note.id}`);
 };
 
 const formatDate = (timestamp) => {
@@ -225,11 +147,6 @@ const formatDate = (timestamp) => {
 // Lifecycle
 onMounted(() => {
   loadNotes();
-});
-
-// Debounced search
-watch(searchQuery, () => {
-  // Search is computed, no need to reload
 });
 </script>
 

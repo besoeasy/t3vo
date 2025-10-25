@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import Dashboard from "@/views/dashboard.vue";
+import Note from "@/views/note.vue";
 import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
 import Sync from "@/views/sync.vue";
@@ -16,6 +17,11 @@ const router = createRouter({
       path: "/dashboard",
       name: "dashboard",
       component: Dashboard,
+    },
+    {
+      path: "/notes/:id",
+      name: "note",
+      component: Note,
     },
     {
       path: "/backup",

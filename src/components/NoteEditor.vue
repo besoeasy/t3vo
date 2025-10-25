@@ -71,7 +71,7 @@
     </div>
 
     <!-- Reading View (for existing notes) -->
-    <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-4 md:p-12 max-w-5xl mx-auto">
+    <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-4 md:p-12 mx-auto">
       <div class="space-y-8">
         <!-- Title -->
         <div v-if="parsed?.title">
@@ -140,7 +140,7 @@
         </div>
 
         <!-- Note Content (Markdown Parsed) -->
-        <div v-if="parsed?.content" class="prose prose-lg max-w-none">
+        <div v-if="parsed?.content" class="prose prose-lg">
           <div 
             class="markdown-body text-gray-800"
             v-html="renderedMarkdown"
