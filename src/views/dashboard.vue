@@ -21,45 +21,42 @@
         :key="note.id"
         @click="openNote(note)"
         :class="[
-          'group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col relative',
+          'group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[180px] flex flex-col relative',
           getCardColorClass(note),
         ]"
       >
-        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-xl">📌</div>
+        <!-- Pin Indicator -->
+        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">
+          📌
+        </div>
 
-        <div class="flex-1">
-          <h3 v-if="note.parsed.title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 flex items-center gap-2">
-            <span class="flex-1">{{ note.parsed.title }}</span>
+        <!-- Content -->
+        <div class="flex-1 mb-3">
+          <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
+            {{ note.parsed.title }}
           </h3>
-
-          <p class="text-gray-800 text-sm line-clamp-4">
+          
+          <p class="text-sm text-gray-600 line-clamp-3">
             {{ note.parsed.content || "Empty note" }}
           </p>
         </div>
 
-        <!-- Note Footer -->
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-black border-opacity-10">
-          <div class="flex items-center gap-2 flex-wrap">
-            <!-- Icon and Tags -->
-
-            <span v-for="tag in note.parsed.customTags" :key="tag" class="text-xs font-medium px-2 py-1 bg-gray-900 text-white">
+        <!-- Footer -->
+        <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
+          <div class="flex items-center gap-1.5">
+            <span v-if="note.parsed.icon">{{ note.parsed.icon }}</span>
+            <span v-for="tag in note.parsed.customTags.slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-black/80 text-white rounded">
               {{ tag }}
             </span>
+            <span v-if="note.parsed.customTags.length > 2">+{{ note.parsed.customTags.length - 2 }}</span>
           </div>
-
-          <span v-if="note.updatedAt" class="text-xs text-gray-700">
-            {{ formatDate(note.updatedAt) }}
-          </span>
-
-          <div class="flex items-center space-x-2">
-            <span v-if="note.parsed.icon" class="text-base w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              {{ note.parsed.icon }}
+          
+          <div class="flex items-center gap-1.5">
+            <span v-if="note.parsed.type !== 'note'">
+              <Key v-if="note.parsed.type === 'password'" class="w-3 h-3" />
+              <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-3 h-3" />
             </span>
-            <!-- Type Badge -->
-            <span v-if="note.parsed.type !== 'note'" class="flex items-center justify-center w-8 h-8 bg-white bg-opacity-80 rounded-full text-black">
-              <Key v-if="note.parsed.type === 'password'" class="w-4 h-4" />
-              <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-4 h-4" />
-            </span>
+            <span>{{ formatDate(note.updatedAt) }}</span>
           </div>
         </div>
       </div>
