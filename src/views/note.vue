@@ -143,6 +143,12 @@
                         <span class="text-gray-600">24h Volume</span>
                         <span class="font-bold text-gray-900">{{ formatLargeNumber(crypto.total_volume) }}</span>
                       </div>
+                      <div v-if="crypto.high_24h && crypto.low_24h" class="flex items-center justify-between">
+                        <span class="text-gray-600">24h Range</span>
+                        <span class="font-bold text-gray-900">
+                          {{ formatCryptoPrice(crypto.low_24h) }} - {{ formatCryptoPrice(crypto.high_24h) }}
+                        </span>
+                      </div>
                       <div v-if="crypto.price_change_7d !== null && crypto.price_change_7d !== undefined" class="flex items-center justify-between pt-2 border-t border-gray-100">
                         <span class="text-gray-600">7d Change</span>
                         <span :class="getPriceChangeColor(crypto.price_change_7d)" class="font-bold">
@@ -154,6 +160,21 @@
                         <span :class="getPriceChangeColor(crypto.price_change_30d)" class="font-bold">
                           {{ crypto.price_change_30d >= 0 ? '+' : '' }}{{ crypto.price_change_30d.toFixed(1) }}%
                         </span>
+                      </div>
+                      
+                      <!-- CoinGecko Link -->
+                      <div class="pt-2 border-t border-gray-100">
+                        <a 
+                          :href="`https://www.coingecko.com/en/coins/${crypto.id}`" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                          </svg>
+                          <span>View on CoinGecko</span>
+                        </a>
                       </div>
                     </div>
                   </div>
