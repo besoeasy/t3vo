@@ -68,6 +68,9 @@
             <!-- Bookmark -->
             <TagBookmark v-if="parsed?.tags?.bookmark" :parsed="parsed" />
 
+            <!-- QR Code -->
+            <TagQRCode v-if="parsed?.tags?.qrcode" :value="parsed.tags.qrcode" :parsed="parsed" />
+
             <!-- Crypto -->
             <TagCrypto v-if="parsed?.tags?.crypto" :value="parsed.tags.crypto" :parsed="parsed" />
 
@@ -127,6 +130,7 @@ import TagCrypto from "@/components/tags/TagCrypto.vue";
 import TagAttachments from "@/components/tags/TagAttachments.vue";
 import TagReferences from "@/components/tags/TagReferences.vue";
 import TagDomains from "@/components/tags/TagDomains.vue";
+import TagQRCode from "@/components/tags/TagQRCode.vue";
 
 const route = useRoute();
 const router = useRouter();

@@ -24,6 +24,10 @@ T3VO uses a simple tag system (`#@tag=value`) that automatically organizes your 
 
 - `#@bookmark=` or `#@url=` - Website URL
 
+### Utility Tags
+
+- `#@qrcode=` - Generate QR code from text
+
 ## Example
 
 ### Password Note
@@ -54,12 +58,23 @@ Official Vue 3 documentation.
 ```
 #@title=Meeting Notes
 #@tags=work,project-alpha
-#@icon=�
+#@icon=📝
 
 Q3 planning meeting:
 - Launch new feature
 - Review timeline
 - Assign tasks
+```
+
+### QR Code Note
+
+```
+#@title=WiFi Access
+#@qrcode=WIFI:T:WPA;S:MyNetwork;P:MyPassword123;;
+#@tags=network,access
+#@icon=📶
+
+WiFi credentials for office network.
 ```
 
 ## ⚡ Quick Tips

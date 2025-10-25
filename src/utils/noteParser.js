@@ -9,6 +9,7 @@
  * - #@2fa=... or #@totp=... - TOTP secret
  * - #@domains=... - Comma-separated domains for password
  * - #@crypto=... - Cryptocurrency tracking (e.g., bitcoin,ethereum)
+ * - #@qrcode=... - Generates QR code from text
  * - #@pin=true|false - Pin note to top
  * - #@icon=... - Custom emoji icon for card
  * - #@tags=... - Comma-separated tags

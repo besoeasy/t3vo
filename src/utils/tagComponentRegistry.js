@@ -11,6 +11,7 @@ import TagAttachments from '@/components/tags/TagAttachments.vue'
 import TagReferences from '@/components/tags/TagReferences.vue'
 import TagDomains from '@/components/tags/TagDomains.vue'
 import TagUrl from '@/components/tags/TagUrl.vue'
+import TagQRCode from '@/components/tags/TagQRCode.vue'
 
 /**
  * Component registry mapping tag names to Vue components
@@ -34,6 +35,9 @@ export const TAG_COMPONENTS = {
   
   // Domains
   domains: TagDomains,
+  
+  // QR Code
+  qrcode: TagQRCode,
 }
 
 /**
