@@ -20,7 +20,7 @@
         v-for="note in filteredNotes"
         :key="note.id"
         @click="openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[180px] flex flex-col relative bg-white border border-black"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[200px] flex flex-col relative bg-[#64B3EB]"
       >
         <!-- Pin Indicator -->
         <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
@@ -28,6 +28,7 @@
         <!-- Content -->
         <div class="flex-1 mb-3">
           <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
+            <span v-if="note.parsed.icon" class="bg-white rounded-full p-2">{{ note.parsed.icon }}</span>
             {{ note.parsed.title }}
           </h3>
 
@@ -39,7 +40,6 @@
         <!-- Footer -->
         <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
           <div class="flex items-center gap-1.5">
-            <span v-if="note.parsed.icon">{{ note.parsed.icon }}</span>
             <span v-for="tag in note.parsed.customTags.slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-black/80 text-white rounded">
               {{ tag }}
             </span>
