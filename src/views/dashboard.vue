@@ -15,12 +15,12 @@
     </div>
 
     <!-- Notes Grid -->
-    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
       <div
         v-for="note in filteredNotes"
         :key="note.id"
         @click="openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[200px] flex flex-col relative"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[250px] flex flex-col relative"
         :class="getCardColor(note)"
       >
         <!-- Pin Indicator -->
