@@ -169,9 +169,6 @@ Automatically extract and display links from:
 - **🔒 Encrypted data transfer**: Notes stay encrypted during sync
 - **🌐 Works across different networks**: Uses public STUN servers
 
-👉 **[Complete P2P Sync Documentation](./P2P_SYNC_INDEX.md)** - Start here for all sync docs  
-📖 Quick links: [Guide](./P2P_SYNC_GUIDE.md) | [Quick Ref](./P2P_SYNC_QUICKREF.md) | [Diagrams](./P2P_SYNC_DIAGRAMS.md) | [Testing](./P2P_SYNC_TESTING.md)
-
 ### Backup & Restore
 
 - Export all notes as encrypted JSON
