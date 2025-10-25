@@ -10,9 +10,7 @@
  * - #@domains=... - Comma-separated domains for password
  * - #@pin=true|false - Pin note to top
  * - #@icon=... - Custom emoji icon for card
- * - #@color=... - Card color theme (blue, red, green, yellow, purple, pink, gray)
  * - #@tags=... - Comma-separated tags
- * - #@category=... - Category/folder for organization
  */
 
 const TAG_REGEX = /#@([a-zA-Z0-9]+)=([^\n]+)/g;
@@ -77,9 +75,7 @@ export function parseNote(content) {
   // Parse special organizational tags
   const pinned = tags.pin === 'true' || tags.pin === '1';
   const icon = tags.icon || null;
-  const color = parseColor(tags.color);
   const customTags = tags.tags ? tags.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-  const category = tags.category || null;
 
   return {
     raw: content,
@@ -90,24 +86,8 @@ export function parseNote(content) {
     references,
     pinned,
     icon,
-    color,
     customTags,
-    category,
   };
-}
-
-/**
- * Parse and validate color tag
- * @param {string} color - Color value from tag
- * @returns {string|null} - Valid color or null
- */
-function parseColor(color) {
-  if (!color) return null;
-  
-  const validColors = ['blue', 'red', 'green', 'yellow', 'purple', 'pink', 'gray', 'indigo', 'teal', 'orange'];
-  const normalized = color.toLowerCase().trim();
-  
-  return validColors.includes(normalized) ? normalized : null;
 }
 
 /**
@@ -177,11 +157,9 @@ function getTitle(tags, content) {
 export function getTagSuggestions() {
   return [
     { tag: '#@title=', description: 'Title for the note', type: 'all' },
-    { tag: '#@category=', description: 'Category/folder for organization', type: 'all' },
     { tag: '#@tags=', description: 'Comma-separated tags', type: 'all' },
     { tag: '#@pin=true', description: 'Pin note to top', type: 'all' },
     { tag: '#@icon=', description: 'Custom emoji icon', type: 'all' },
-    { tag: '#@color=', description: 'Card color (blue, red, green, yellow, purple, pink, gray)', type: 'all' },
     { tag: '#@bookmark=', description: 'URL for bookmark', type: 'bookmark' },
     { tag: '#@url=', description: 'Alternative to bookmark', type: 'bookmark' },
     { tag: '#@email=', description: 'Email for login', type: 'password' },

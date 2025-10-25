@@ -12,7 +12,6 @@ T3VO uses a simple tag system (`#@tag=value`) that automatically organizes your 
 - `#@tags=` - Comma-separated tags (e.g., `work,urgent`)
 - `#@pin=true` - Pin to top
 - `#@icon=` - Emoji icon (e.g., `🔑`)
-- `#@color=` - Card color (blue, red, green, yellow, purple, pink, gray, orange)
 
 ### Password Tags
 
@@ -28,14 +27,12 @@ T3VO uses a simple tag system (`#@tag=value`) that automatically organizes your 
 ## Example
 
 ### Password Note
-
 ```
 #@title=GitHub Account
 #@email=dev@example.com
 #@password=SecurePass123!
 #@2fa=JBSWY3DPEHPK3PXP
 #@tags=work,important
-#@color=blue
 #@icon=💻
 #@pin=true
 
@@ -43,12 +40,10 @@ Main dev account with 2FA enabled.
 ```
 
 ### Bookmark Note
-
 ```
 #@title=Vue.js Docs
 #@bookmark=https://vuejs.org/guide/
 #@tags=reference,tutorial
-#@color=green
 #@icon=📚
 
 Official Vue 3 documentation.
@@ -73,7 +68,6 @@ Q3 planning meeting:
 - Tags can be placed **anywhere** in the note
 - **Pinned notes** appear at the top automatically
 - Use **icons** for quick visual identification
-- **Color coding** helps organize similar notes
 - Tags are **hidden** in the rendered view
 
 ## 🔍 How It Works
@@ -101,7 +95,7 @@ Q3 planning meeting:
 
 1. Always use `#@title=` for clarity
 2. Pin only important notes
-3. Use consistent color coding (e.g., red = urgent)
-4. Add icons for quick scanning
+3. Use consistent icons for similar note types
+4. Add tags for quick filtering
 5. Tag notes you'll search for later
 6. Keep password domains updated

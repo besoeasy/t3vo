@@ -20,22 +20,17 @@
         v-for="note in filteredNotes"
         :key="note.id"
         @click="openNote(note)"
-        :class="[
-          'group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[180px] flex flex-col relative',
-          getCardColorClass(note),
-        ]"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[180px] flex flex-col relative bg-white border border-black"
       >
         <!-- Pin Indicator -->
-        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">
-          📌
-        </div>
+        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
 
         <!-- Content -->
         <div class="flex-1 mb-3">
           <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
             {{ note.parsed.title }}
           </h3>
-          
+
           <p class="text-sm text-gray-600 line-clamp-3">
             {{ note.parsed.content || "Empty note" }}
           </p>
@@ -50,7 +45,7 @@
             </span>
             <span v-if="note.parsed.customTags.length > 2">+{{ note.parsed.customTags.length - 2 }}</span>
           </div>
-          
+
           <div class="flex items-center gap-1.5">
             <span v-if="note.parsed.type !== 'note'">
               <Key v-if="note.parsed.type === 'password'" class="w-3 h-3" />
@@ -225,31 +220,6 @@ const handleDelete = async () => {
 
 const formatDate = (timestamp) => {
   return format(timestamp);
-};
-
-// Get card color class based on custom color or default
-const getCardColorClass = (note) => {
-  const color = note.parsed.color;
-
-  if (!color) {
-    return "bg-[#F5C26B]"; // Default yellow color
-  }
-
-  const colorMap = {
-    blue: "bg-blue-100",
-    red: "bg-red-100",
-    green: "bg-green-100",
-    yellow: "bg-yellow-100",
-    purple: "bg-purple-100",
-    pink: "bg-pink-100",
-    gray: "bg-gray-100",
-    indigo: "bg-indigo-100",
-    teal: "bg-teal-100",
-    orange: "bg-orange-100",
-    amber: "bg-amber-100",
-  };
-
-  return colorMap[color] || "bg-[#F5C26B]";
 };
 
 // Lifecycle
