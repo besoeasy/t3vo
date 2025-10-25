@@ -313,8 +313,201 @@
           </div>
         </div>
 
+        <!-- Crypto View -->
+        <div v-else-if="parsed?.type === 'crypto'">
+          <!-- Crypto Cards -->
+          <div v-if="cryptoData.length > 0" class="space-y-4">
+            <div
+              v-for="crypto in cryptoData"
+              :key="crypto.id"
+              class="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+            >
+              <div v-if="crypto.error" class="p-6">
+                <div class="text-center text-red-600">
+                  <p class="font-semibold">Failed to load {{ crypto.id }}</p>
+                  <p class="text-sm">{{ crypto.message }}</p>
+                </div>
+              </div>
+              
+              <div v-else>
+                <!-- Header with logo and name -->
+                <div class="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 border-b border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                      <img v-if="crypto.image" :src="crypto.image" :alt="crypto.name" class="w-16 h-16 rounded-full shadow-md" />
+                      <div>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ crypto.name }}</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class="text-lg text-gray-600 font-mono">{{ crypto.symbol }}</span>
+                          <span v-if="crypto.market_cap_rank" class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+                            #{{ crypto.market_cap_rank }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-3xl font-bold text-gray-900">{{ formatCryptoPrice(crypto.current_price) }}</div>
+                      <div v-if="crypto.price_change_24h !== null && crypto.price_change_24h !== undefined" class="flex items-center justify-end gap-1 mt-1">
+                        <span :class="getPriceChangeColor(crypto.price_change_24h)" class="text-sm font-semibold">
+                          {{ crypto.price_change_24h >= 0 ? '▲' : '▼' }}
+                          {{ Math.abs(crypto.price_change_24h).toFixed(2) }}%
+                        </span>
+                        <span class="text-xs text-gray-500">24h</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Price Changes Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50">
+                  <div v-if="crypto.price_change_24h !== null && crypto.price_change_24h !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_24h)">
+                    <div class="text-xs text-gray-600 font-medium mb-1">24 Hours</div>
+                    <div :class="getPriceChangeColor(crypto.price_change_24h)" class="text-lg font-bold">
+                      {{ crypto.price_change_24h >= 0 ? '+' : '' }}{{ crypto.price_change_24h.toFixed(2) }}%
+                    </div>
+                  </div>
+                  
+                  <div v-if="crypto.price_change_7d !== null && crypto.price_change_7d !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_7d)">
+                    <div class="text-xs text-gray-600 font-medium mb-1">7 Days</div>
+                    <div :class="getPriceChangeColor(crypto.price_change_7d)" class="text-lg font-bold">
+                      {{ crypto.price_change_7d >= 0 ? '+' : '' }}{{ crypto.price_change_7d.toFixed(2) }}%
+                    </div>
+                  </div>
+                  
+                  <div v-if="crypto.price_change_30d !== null && crypto.price_change_30d !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_30d)">
+                    <div class="text-xs text-gray-600 font-medium mb-1">30 Days</div>
+                    <div :class="getPriceChangeColor(crypto.price_change_30d)" class="text-lg font-bold">
+                      {{ crypto.price_change_30d >= 0 ? '+' : '' }}{{ crypto.price_change_30d.toFixed(2) }}%
+                    </div>
+                  </div>
+                  
+                  <div v-if="crypto.price_change_1y !== null && crypto.price_change_1y !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_1y)">
+                    <div class="text-xs text-gray-600 font-medium mb-1">1 Year</div>
+                    <div :class="getPriceChangeColor(crypto.price_change_1y)" class="text-lg font-bold">
+                      {{ crypto.price_change_1y >= 0 ? '+' : '' }}{{ crypto.price_change_1y.toFixed(2) }}%
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Market Stats -->
+                <div class="p-6 border-t border-gray-200 space-y-3">
+                  <div v-if="crypto.market_cap" class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 font-medium">Market Cap</span>
+                    <span class="text-sm font-bold text-gray-900">{{ formatLargeNumber(crypto.market_cap) }}</span>
+                  </div>
+                  
+                  <div v-if="crypto.total_volume" class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 font-medium">24h Volume</span>
+                    <span class="text-sm font-bold text-gray-900">{{ formatLargeNumber(crypto.total_volume) }}</span>
+                  </div>
+                  
+                  <div v-if="crypto.high_24h && crypto.low_24h" class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 font-medium">24h Range</span>
+                    <span class="text-sm font-bold text-gray-900">
+                      {{ formatCryptoPrice(crypto.low_24h) }} - {{ formatCryptoPrice(crypto.high_24h) }}
+                    </span>
+                  </div>
+
+                  <div v-if="crypto.website" class="pt-3 border-t border-gray-200">
+                    <a :href="crypto.website" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
+                      <ExternalLink class="w-4 h-4" />
+                      Official Website
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div v-else-if="isLoadingCrypto" class="flex items-center justify-center py-20">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+              <p class="text-gray-600">Loading crypto data...</p>
+            </div>
+          </div>
+
+          <!-- Notes/Content -->
+          <div v-if="parsed.content" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div class="text-sm font-semibold text-gray-600 mb-3">Notes</div>
+            <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
+          </div>
+
+          <!-- Attachments -->
+          <div v-if="note.attachments && note.attachments.length > 0" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
+            <div class="space-y-2">
+              <div
+                v-for="attachment in note.attachments"
+                :key="attachment.id"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+              >
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="flex-shrink-0">
+                    <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
+                    <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
+                  </div>
+                </div>
+                <button
+                  @click="downloadAttachment(attachment)"
+                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- References -->
+          <div v-if="parsed?.references && parsed.references.length > 0" class="mt-4 p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
+            <div class="text-sm font-semibold text-purple-700 mb-3">Related Links ({{ parsed.references.length }})</div>
+            <div class="space-y-2">
+              <a
+                v-for="(ref, index) in parsed.references"
+                :key="index"
+                :href="ref.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
+              >
+                <div class="flex-shrink-0 mr-3">
+                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
+                    <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
+                    <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                  </div>
+                  <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
+                  <p v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">r/{{ ref.subreddit }}</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
         <!-- Regular Note View -->
-        <div v-else>
+        <div v-else-if="parsed?.type === 'note'">
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
             <div v-if="parsed?.content" class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
             <div v-else class="text-gray-400 italic text-center py-8">This note is empty</div>
@@ -406,6 +599,7 @@ import { ArrowLeft, Edit, Trash2, ExternalLink, Youtube, Instagram, Twitter, Mes
 import { format } from "timeago.js";
 import { Marked } from "marked";
 import * as OTPAuth from "otpauth";
+import { fetchCryptoData, formatCryptoPrice, formatLargeNumber, getPriceChangeColor, getPriceChangeBgColor } from "@/utils/cryptoApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -419,6 +613,10 @@ const showPassword = ref(false);
 const totpCode = ref("");
 const totpTimeRemaining = ref(30);
 let totpInterval = null;
+
+// Crypto state
+const cryptoData = ref([]);
+const isLoadingCrypto = ref(false);
 
 // Initialize marked
 const markedInstance = new Marked({
@@ -447,6 +645,7 @@ const typeClass = computed(() => {
   const classes = {
     password: "bg-blue-100 text-blue-800",
     bookmark: "bg-purple-100 text-purple-800",
+    crypto: "bg-orange-100 text-orange-800",
     note: "bg-gray-100 text-gray-800",
   };
 
@@ -527,6 +726,11 @@ onMounted(async () => {
     // Start TOTP if note has 2FA
     if (parsed.value?.tags?.["2fa"] || parsed.value?.tags?.totp) {
       startTOTPUpdates();
+    }
+
+    // Load crypto data if note is crypto type
+    if (parsed.value?.type === 'crypto' && parsed.value?.tags?.crypto) {
+      await loadCryptoData();
     }
   } catch (error) {
     console.error("Error loading note:", error);
@@ -618,6 +822,29 @@ const getPlatformColorClass = (type) => {
       return "bg-gray-100 text-gray-600";
   }
 };
+
+// Load crypto data
+const loadCryptoData = async () => {
+  isLoadingCrypto.value = true;
+  cryptoData.value = [];
+
+  try {
+    const cryptoIds = parsed.value?.tags?.crypto?.split(',').map(id => id.trim()).filter(Boolean);
+    
+    if (!cryptoIds || cryptoIds.length === 0) {
+      console.warn('No crypto IDs found');
+      return;
+    }
+
+    const data = await fetchCryptoData(cryptoIds);
+    cryptoData.value = data;
+  } catch (error) {
+    console.error('Error loading crypto data:', error);
+  } finally {
+    isLoadingCrypto.value = false;
+  }
+};
+
 </script>
 
 <style scoped>

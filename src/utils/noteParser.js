@@ -8,6 +8,7 @@
  * - #@password=... - Password value
  * - #@2fa=... or #@totp=... - TOTP secret
  * - #@domains=... - Comma-separated domains for password
+ * - #@crypto=... - Cryptocurrency tracking (e.g., bitcoin,ethereum)
  * - #@pin=true|false - Pin note to top
  * - #@icon=... - Custom emoji icon for card
  * - #@tags=... - Comma-separated tags
@@ -93,9 +94,14 @@ export function parseNote(content) {
 /**
  * Detect note type based on available tags
  * @param {Object} tags - Extracted tags
- * @returns {string} - 'password', 'bookmark', or 'note'
+ * @returns {string} - 'password', 'bookmark', 'crypto', or 'note'
  */
 function detectNoteType(tags) {
+  // Check for crypto indicators
+  if (tags.crypto) {
+    return 'crypto';
+  }
+
   // Check for password indicators
   const hasPasswordTags = 
     tags.password || 
@@ -168,6 +174,7 @@ export function getTagSuggestions() {
     { tag: '#@2fa=', description: 'TOTP secret for 2FA', type: 'password' },
     { tag: '#@totp=', description: 'Alternative to 2fa', type: 'password' },
     { tag: '#@domains=', description: 'Comma-separated domains', type: 'password' },
+    { tag: '#@crypto=', description: 'Cryptocurrency symbols (e.g., bitcoin,ethereum)', type: 'crypto' },
   ];
 }
 
