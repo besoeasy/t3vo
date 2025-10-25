@@ -172,10 +172,10 @@
       <!-- Preview Panel - Detected Tags -->
       <div class="hidden lg:flex lg:w-1/2 flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 class="text-sm font-semibold text-gray-900">Detected Tags</h3>
+          <h3 class="text-sm font-semibold text-gray-900">Live Preview</h3>
         </div>
         <div class="flex-1 p-6 overflow-auto">
-          <div v-if="parsed && noteContent.trim()" class="space-y-3">
+          <div v-if="parsed && noteContent.trim()" class="space-y-4">
             <!-- Type Badge -->
             <div v-if="detectedType" class="flex items-center gap-2 mb-4">
               <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full" :class="typeClass">
@@ -184,15 +184,12 @@
               </span>
             </div>
 
-            <!-- Tags List -->
-            <div class="space-y-2">
-              <div v-for="(value, key) in parsed.tags" :key="key" class="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex-1">
-                  <code class="text-xs font-semibold text-gray-700">#@{{ key }}</code>
-                  <p class="text-sm text-gray-900 break-all mt-1" style="font-family: 'SF Mono', monospace">{{ value }}</p>
-                </div>
-              </div>
-            </div>
+            <!-- Tag Components -->
+            <TagBookmark v-if="parsed.tags?.bookmark" :parsed="parsed" />
+            <TagCrypto v-if="parsed.tags?.crypto" :value="parsed.tags.crypto" :parsed="parsed" />
+            <TagPassword v-if="hasPasswordTags" :parsed="parsed" />
+            <TagTOTP v-if="parsed.tags?.['2fa'] || parsed.tags?.totp" :parsed="parsed" />
+            <TagDomains v-if="parsed.tags?.domains" :value="parsed.tags.domains" :parsed="parsed" />
 
             <!-- Attachments/References Count -->
             <div v-if="attachments.length > 0" class="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
@@ -205,8 +202,8 @@
           <div v-else class="flex items-center justify-center h-full text-gray-400">
             <div class="text-center">
               <FileText class="w-16 h-16 mx-auto mb-3 opacity-50" />
-              <p class="text-sm font-medium">Tags will appear here</p>
-              <p class="text-xs mt-1">Start typing to see detected tags</p>
+              <p class="text-sm font-medium">Preview will appear here</p>
+              <p class="text-xs mt-1">Start typing to see your note</p>
             </div>
           </div>
         </div>
@@ -227,6 +224,11 @@ import {
   ArrowLeft, Save, Key, Bookmark, FileText, HelpCircle, AlertCircle,
   Paperclip, Upload, File, X
 } from 'lucide-vue-next';
+import TagBookmark from "@/components/tags/TagBookmark.vue";
+import TagPassword from "@/components/tags/TagPassword.vue";
+import TagTOTP from "@/components/tags/TagTOTP.vue";
+import TagCrypto from "@/components/tags/TagCrypto.vue";
+import TagDomains from "@/components/tags/TagDomains.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -293,6 +295,14 @@ const typeClass = computed(() => {
 
 const tagCount = computed(() => Object.keys(parsed.value?.tags || {}).length);
 const warnings = computed(() => noteContent.value ? validateNote(noteContent.value) : []);
+
+const hasPasswordTags = computed(() => {
+  return !!(
+    parsed.value?.tags?.password ||
+    parsed.value?.tags?.email ||
+    parsed.value?.tags?.username
+  );
+});
 
 // Templates
 const insertTemplate = (type) => {
