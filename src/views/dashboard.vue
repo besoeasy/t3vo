@@ -20,7 +20,8 @@
         v-for="note in filteredNotes"
         :key="note.id"
         @click="openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[200px] flex flex-col relative bg-[#64B3EB]"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[200px] flex flex-col relative"
+        :class="getCardColor(note)"
       >
         <!-- Pin Indicator -->
         <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
@@ -28,22 +29,22 @@
         <!-- Content -->
         <div class="flex-1 mb-3">
           <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
-            <span v-if="note.parsed.icon" class="bg-white rounded-full p-2">{{ note.parsed.icon }}</span>
+            <span v-if="note.parsed.icon" class="mr-2 text-xl">{{ note.parsed.icon }}</span>
             {{ note.parsed.title }}
           </h3>
 
-          <p class="text-sm text-gray-600 line-clamp-3">
+          <p class="text-sm text-gray-800 line-clamp-3">
             {{ note.parsed.content || "Empty note" }}
           </p>
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
+        <div class="flex items-center justify-between text-xs text-gray-700 mt-auto">
           <div class="flex items-center gap-1.5">
-            <span v-for="tag in note.parsed.customTags.slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-black/80 text-white rounded">
+            <span v-for="tag in note.parsed.customTags.slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-gray-900/95 text-white rounded">
               {{ tag }}
             </span>
-            <span v-if="note.parsed.customTags.length > 2">+{{ note.parsed.customTags.length - 2 }}</span>
+            <span v-if="note.parsed.customTags.length > 2" class="font-medium">+{{ note.parsed.customTags.length - 2 }}</span>
           </div>
 
           <div class="flex items-center gap-1.5">
@@ -51,7 +52,7 @@
               <Key v-if="note.parsed.type === 'password'" class="w-3 h-3" />
               <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-3 h-3" />
             </span>
-            <span>{{ formatDate(note.updatedAt) }}</span>
+            <span class="font-medium">{{ formatDate(note.updatedAt) }}</span>
           </div>
         </div>
       </div>
@@ -142,6 +143,30 @@ const openNote = (note) => {
 
 const formatDate = (timestamp) => {
   return format(timestamp);
+};
+
+// Color palette for note cards - vibrant colors inspired by modern note apps
+const cardColors = [
+  'bg-[#FF9D76] hover:shadow-xl',      // Coral/Salmon
+  'bg-[#FFD666] hover:shadow-xl',      // Yellow/Amber
+  'bg-[#A78BFA] hover:shadow-xl',      // Purple/Violet
+  'bg-[#D4F17E] hover:shadow-xl',      // Lime Green
+  'bg-[#67E8F9] hover:shadow-xl',      // Cyan/Turquoise
+  'bg-[#FCA5A5] hover:shadow-xl',      // Light Red/Pink
+  'bg-[#A7F3D0] hover:shadow-xl',      // Mint Green
+  'bg-[#F9A8D4] hover:shadow-xl',      // Pink
+  'bg-[#93C5FD] hover:shadow-xl',      // Sky Blue
+  'bg-[#FDE68A] hover:shadow-xl',      // Light Yellow
+];
+
+const getCardColor = (note) => {
+  // Use hash-based color for consistency
+  const hash = note.id.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+  
+  const colorIndex = Math.abs(hash) % cardColors.length;
+  return cardColors[colorIndex];
 };
 
 // Lifecycle
