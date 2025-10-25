@@ -22,8 +22,8 @@
       :class="[
         'bg-white flex flex-col items-center transition-all duration-300',
         isDashboard ? '' : 'border-r border-gray-200',
-        'md:w-[80px] md:py-6 md:px-3 md:relative md:translate-x-0',
-        'fixed inset-y-0 left-0 z-40 w-[200px] py-8 px-4',
+        'md:w-[120px] md:py-6 md:px-4 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 w-[240px] py-8 px-4',
         mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       ]"
     >
