@@ -10,26 +10,9 @@ const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY, false) : null;
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
 // Simplified schema - everything is a note
-db.version(2).stores({
-  notes: "id, updatedAt, deletedAt",
+db.version(1).stores({
+  notes: "id, attachments, updatedAt, deletedAt",
 });
-
-// Add attachments support in version 3 - store inline with note
-db.version(3)
-  .stores({
-    notes: "id, updatedAt, deletedAt",
-  })
-  .upgrade((tx) => {
-    // Migration to add attachments field to existing notes
-    return tx
-      .table("notes")
-      .toCollection()
-      .modify((note) => {
-        if (!note.attachments) {
-          note.attachments = [];
-        }
-      });
-  });
 
 const itemsPerPage = 60;
 
