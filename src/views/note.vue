@@ -60,530 +60,258 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-auto bg-gray-50">
-      <div class="max-w-4xl mx-auto p-6 md:p-12">
-        <!-- Password/Credentials View -->
-        <div v-if="parsed?.type === 'password'" class="space-y-4">
-          <!-- Email -->
-          <div v-if="parsed.tags.email" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-2">Email</div>
-            <div class="text-lg text-gray-900 font-mono select-all">
-              {{ parsed.tags.email }}
-            </div>
-          </div>
-
-          <!-- Username -->
-          <div v-if="parsed.tags.username" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-2">Username</div>
-            <div class="text-lg text-gray-900 font-mono select-all">
-              {{ parsed.tags.username }}
-            </div>
-          </div>
-
-          <!-- Password -->
-          <div v-if="parsed.tags.password" class="p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
-            <div class="text-sm font-semibold text-blue-700 mb-2">Password</div>
-            <div class="flex items-center justify-between gap-4">
-              <div class="text-lg text-blue-900 font-mono font-bold select-all flex-1 break-all">
-                {{ showPassword ? parsed.tags.password : "••••••••••••" }}
-              </div>
-              <button
-                @click="showPassword = !showPassword"
-                class="px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
+      <div class="max-w-7xl mx-auto p-6 md:p-12">
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left Column - Tags & Metadata -->
+          <div class="lg:col-span-1 space-y-4">
+            <!-- Bookmark Hero (if bookmark tag exists) -->
+            <div v-if="parsed?.tags?.bookmark">
+              <a 
+                :href="parsed.tags.bookmark" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="block p-5 bg-white border border-gray-200 rounded-xl hover:border-violet-400 hover:shadow-md transition-all duration-200 group"
               >
-                {{ showPassword ? "Hide" : "Show" }}
-              </button>
-            </div>
-          </div>
-
-          <!-- 2FA/TOTP -->
-          <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-6 bg-green-50 rounded-xl border border-green-200 shadow-sm">
-            <div class="text-sm font-semibold text-green-700 mb-3">2FA Code</div>
-            <div v-if="totpCode && totpCode !== 'Invalid Secret'">
-              <div class="text-5xl font-bold text-green-900 tracking-wider mb-3 font-mono">{{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}</div>
-              <div class="flex items-center justify-between">
-                <div class="text-xs text-green-600">Refreshes in {{ totpTimeRemaining }}s</div>
-                <div class="w-24 h-1.5 bg-green-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-green-600 transition-all duration-1000" :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"></div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-red-600 text-sm">Invalid 2FA secret</div>
-          </div>
-
-          <!-- URL/Website -->
-          <div v-if="parsed.tags.url" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-2">Website</div>
-            <a :href="parsed.tags.url" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">
-              {{ parsed.tags.url }}
-            </a>
-          </div>
-
-          <!-- Domains -->
-          <div v-if="parsed.tags.domains" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-2">Associated Domains</div>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="domain in parsed.tags.domains.split(',').map((d) => d.trim())"
-                :key="domain"
-                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-              >
-                {{ domain }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Additional notes/content for password entries -->
-          <div v-if="parsed.content" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Notes</div>
-            <div class="prose prose-sm max-w-none" v-html="renderedMarkdown"></div>
-          </div>
-
-          <!-- Attachments -->
-          <div v-if="note.attachments && note.attachments.length > 0" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
-            <div class="space-y-2">
-              <div
-                v-for="attachment in note.attachments"
-                :key="attachment.id"
-                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="flex-shrink-0">
-                    <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      ></path>
+                <!-- Icon and Label -->
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center group-hover:bg-violet-200 transition-colors">
+                    <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                     </svg>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
-                    <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
-                  </div>
+                  <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Bookmark</span>
                 </div>
-                <button
-                  @click="downloadAttachment(attachment)"
-                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
-                >
-                  Download
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- References -->
-          <div v-if="parsed?.references && parsed.references.length > 0" class="p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">References ({{ parsed.references.length }})</div>
-            <div class="space-y-2">
-              <a
-                v-for="(ref, index) in parsed.references"
-                :key="index"
-                :href="ref.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
-              >
-                <div class="flex-shrink-0 mr-3">
-                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
-                    <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
-                    <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                  </div>
-                  <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
-                  <p v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">r/{{ ref.subreddit }}</p>
+                
+                <!-- URL -->
+                <div class="flex items-center gap-2 text-sm text-gray-900 font-medium">
+                  <span class="truncate flex-1">{{ parsed.tags.bookmark.replace(/^https?:\/\//,'').replace(/\/$/,'') }}</span>
+                  <svg class="w-4 h-4 text-gray-400 group-hover:text-violet-600 group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
                 </div>
               </a>
             </div>
-          </div>
-        </div>
 
-        <!-- Bookmark View -->
-        <div v-else-if="parsed?.type === 'bookmark'" class="space-y-4">
-          <!-- Main Bookmark Card -->
-          <div class="p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 shadow-lg">
-            <a :href="parsed.tags.url || parsed.tags.bookmark" target="_blank" rel="noopener noreferrer" class="group block">
-              <div class="flex items-start gap-4">
-                <div class="flex-shrink-0">
-                  <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-                    <ExternalLink class="w-8 h-8 text-purple-600" />
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-2xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                    {{ parsed.title || "Bookmark" }}
-                  </h3>
-                  <p class="text-lg text-purple-600 break-all group-hover:underline font-medium">
-                    {{ parsed.tags.url || parsed.tags.bookmark }}
-                  </p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <!-- Description/Notes -->
-          <div v-if="parsed.content" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Description</div>
-            <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
-          </div>
-
-          <!-- Attachments -->
-          <div v-if="note.attachments && note.attachments.length > 0" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
-            <div class="space-y-2">
-              <div
-                v-for="attachment in note.attachments"
-                :key="attachment.id"
-                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="flex-shrink-0">
-                    <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      ></path>
-                    </svg>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
-                    <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
-                  </div>
-                </div>
-                <button
-                  @click="downloadAttachment(attachment)"
-                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+            <!-- Crypto Cards (if crypto tag exists) -->
+            <div v-if="parsed?.tags?.crypto">
+              <div v-if="cryptoData.length > 0" class="space-y-4">
+                <div
+                  v-for="crypto in cryptoData"
+                  :key="crypto.id"
+                  class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  Download
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- References -->
-          <div v-if="parsed?.references && parsed.references.length > 0" class="p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">Related Links ({{ parsed.references.length }})</div>
-            <div class="space-y-2">
-              <a
-                v-for="(ref, index) in parsed.references"
-                :key="index"
-                :href="ref.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
-              >
-                <div class="flex-shrink-0 mr-3">
-                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
-                    <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
+                  <div v-if="crypto.error" class="p-4">
+                    <div class="text-center text-red-600">
+                      <p class="font-semibold text-sm">Failed to load {{ crypto.id }}</p>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
-                    <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                  </div>
-                  <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
-                  <p v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">r/{{ ref.subreddit }}</p>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Crypto View -->
-        <div v-else-if="parsed?.type === 'crypto'">
-          <!-- Crypto Cards -->
-          <div v-if="cryptoData.length > 0" class="space-y-4">
-            <div
-              v-for="crypto in cryptoData"
-              :key="crypto.id"
-              class="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-            >
-              <div v-if="crypto.error" class="p-6">
-                <div class="text-center text-red-600">
-                  <p class="font-semibold">Failed to load {{ crypto.id }}</p>
-                  <p class="text-sm">{{ crypto.message }}</p>
-                </div>
-              </div>
-              
-              <div v-else>
-                <!-- Header with logo and name -->
-                <div class="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 border-b border-gray-200">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                      <img v-if="crypto.image" :src="crypto.image" :alt="crypto.name" class="w-16 h-16 rounded-full shadow-md" />
-                      <div>
-                        <h3 class="text-2xl font-bold text-gray-900">{{ crypto.name }}</h3>
-                        <div class="flex items-center gap-2 mt-1">
-                          <span class="text-lg text-gray-600 font-mono">{{ crypto.symbol }}</span>
-                          <span v-if="crypto.market_cap_rank" class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
-                            #{{ crypto.market_cap_rank }}
-                          </span>
+                  
+                  <div v-else>
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 border-b border-gray-200">
+                      <div class="flex items-center gap-3 mb-3">
+                        <img v-if="crypto.image" :src="crypto.image" :alt="crypto.name" class="w-10 h-10 rounded-full shadow-sm" />
+                        <div class="flex-1 min-w-0">
+                          <h4 class="text-lg font-bold text-gray-900 truncate">{{ crypto.name }}</h4>
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-600 font-mono uppercase">{{ crypto.symbol }}</span>
+                            <span v-if="crypto.market_cap_rank" class="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded">
+                              #{{ crypto.market_cap_rank }}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-3xl font-bold text-gray-900">{{ formatCryptoPrice(crypto.current_price) }}</div>
-                      <div v-if="crypto.price_change_24h !== null && crypto.price_change_24h !== undefined" class="flex items-center justify-end gap-1 mt-1">
-                        <span :class="getPriceChangeColor(crypto.price_change_24h)" class="text-sm font-semibold">
+                      <div class="text-2xl font-bold text-gray-900">{{ formatCryptoPrice(crypto.current_price) }}</div>
+                      <div v-if="crypto.price_change_24h !== null && crypto.price_change_24h !== undefined" class="flex items-center gap-1 mt-1">
+                        <span :class="getPriceChangeColor(crypto.price_change_24h)" class="text-xs font-semibold">
                           {{ crypto.price_change_24h >= 0 ? '▲' : '▼' }}
                           {{ Math.abs(crypto.price_change_24h).toFixed(2) }}%
                         </span>
                         <span class="text-xs text-gray-500">24h</span>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <!-- Price Changes Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50">
-                  <div v-if="crypto.price_change_24h !== null && crypto.price_change_24h !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_24h)">
-                    <div class="text-xs text-gray-600 font-medium mb-1">24 Hours</div>
-                    <div :class="getPriceChangeColor(crypto.price_change_24h)" class="text-lg font-bold">
-                      {{ crypto.price_change_24h >= 0 ? '+' : '' }}{{ crypto.price_change_24h.toFixed(2) }}%
+                    <!-- Stats -->
+                    <div class="p-4 space-y-2 text-xs">
+                      <div v-if="crypto.market_cap" class="flex items-center justify-between">
+                        <span class="text-gray-600">Market Cap</span>
+                        <span class="font-bold text-gray-900">{{ formatLargeNumber(crypto.market_cap) }}</span>
+                      </div>
+                      <div v-if="crypto.total_volume" class="flex items-center justify-between">
+                        <span class="text-gray-600">24h Volume</span>
+                        <span class="font-bold text-gray-900">{{ formatLargeNumber(crypto.total_volume) }}</span>
+                      </div>
+                      <div v-if="crypto.price_change_7d !== null && crypto.price_change_7d !== undefined" class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <span class="text-gray-600">7d Change</span>
+                        <span :class="getPriceChangeColor(crypto.price_change_7d)" class="font-bold">
+                          {{ crypto.price_change_7d >= 0 ? '+' : '' }}{{ crypto.price_change_7d.toFixed(1) }}%
+                        </span>
+                      </div>
+                      <div v-if="crypto.price_change_30d !== null && crypto.price_change_30d !== undefined" class="flex items-center justify-between">
+                        <span class="text-gray-600">30d Change</span>
+                        <span :class="getPriceChangeColor(crypto.price_change_30d)" class="font-bold">
+                          {{ crypto.price_change_30d >= 0 ? '+' : '' }}{{ crypto.price_change_30d.toFixed(1) }}%
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div v-if="crypto.price_change_7d !== null && crypto.price_change_7d !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_7d)">
-                    <div class="text-xs text-gray-600 font-medium mb-1">7 Days</div>
-                    <div :class="getPriceChangeColor(crypto.price_change_7d)" class="text-lg font-bold">
-                      {{ crypto.price_change_7d >= 0 ? '+' : '' }}{{ crypto.price_change_7d.toFixed(2) }}%
-                    </div>
-                  </div>
-                  
-                  <div v-if="crypto.price_change_30d !== null && crypto.price_change_30d !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_30d)">
-                    <div class="text-xs text-gray-600 font-medium mb-1">30 Days</div>
-                    <div :class="getPriceChangeColor(crypto.price_change_30d)" class="text-lg font-bold">
-                      {{ crypto.price_change_30d >= 0 ? '+' : '' }}{{ crypto.price_change_30d.toFixed(2) }}%
-                    </div>
-                  </div>
-                  
-                  <div v-if="crypto.price_change_1y !== null && crypto.price_change_1y !== undefined" class="text-center p-3 rounded-lg" :class="getPriceChangeBgColor(crypto.price_change_1y)">
-                    <div class="text-xs text-gray-600 font-medium mb-1">1 Year</div>
-                    <div :class="getPriceChangeColor(crypto.price_change_1y)" class="text-lg font-bold">
-                      {{ crypto.price_change_1y >= 0 ? '+' : '' }}{{ crypto.price_change_1y.toFixed(2) }}%
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Market Stats -->
-                <div class="p-6 border-t border-gray-200 space-y-3">
-                  <div v-if="crypto.market_cap" class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 font-medium">Market Cap</span>
-                    <span class="text-sm font-bold text-gray-900">{{ formatLargeNumber(crypto.market_cap) }}</span>
-                  </div>
-                  
-                  <div v-if="crypto.total_volume" class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 font-medium">24h Volume</span>
-                    <span class="text-sm font-bold text-gray-900">{{ formatLargeNumber(crypto.total_volume) }}</span>
-                  </div>
-                  
-                  <div v-if="crypto.high_24h && crypto.low_24h" class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 font-medium">24h Range</span>
-                    <span class="text-sm font-bold text-gray-900">
-                      {{ formatCryptoPrice(crypto.low_24h) }} - {{ formatCryptoPrice(crypto.high_24h) }}
-                    </span>
-                  </div>
-
-                  <div v-if="crypto.website" class="pt-3 border-t border-gray-200">
-                    <a :href="crypto.website" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
-                      <ExternalLink class="w-4 h-4" />
-                      Official Website
-                    </a>
                   </div>
                 </div>
               </div>
+
+              <!-- Loading State -->
+              <div v-else-if="isLoadingCrypto" class="flex items-center justify-center py-12 bg-white rounded-xl border border-gray-200">
+                <div class="text-center">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
+                  <p class="text-gray-600 text-sm">Loading...</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Loading State -->
-          <div v-else-if="isLoadingCrypto" class="flex items-center justify-center py-20">
-            <div class="text-center">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-              <p class="text-gray-600">Loading crypto data...</p>
+            <!-- Password/Credentials Fields -->
+            <div v-if="parsed?.tags?.password || parsed?.tags?.email || parsed?.tags?.username || parsed?.tags?.['2fa'] || parsed?.tags?.totp" class="space-y-3">
+              <!-- Email -->
+              <div v-if="parsed.tags.email" class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Email</div>
+                <div class="text-sm text-gray-900 font-mono select-all break-all">
+                  {{ parsed.tags.email }}
+                </div>
+              </div>
+
+              <!-- Username -->
+              <div v-if="parsed.tags.username" class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Username</div>
+                <div class="text-sm text-gray-900 font-mono select-all">
+                  {{ parsed.tags.username }}
+                </div>
+              </div>
+
+              <!-- Password -->
+              <div v-if="parsed.tags.password" class="p-4 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
+                <div class="text-xs font-semibold text-blue-600 mb-2 uppercase tracking-wide">Password</div>
+                <div class="flex items-center justify-between gap-3">
+                  <div class="text-sm text-blue-900 font-mono font-bold select-all flex-1 break-all">
+                    {{ showPassword ? parsed.tags.password : "••••••••••••" }}
+                  </div>
+                  <button
+                    @click="showPassword = !showPassword"
+                    class="px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    {{ showPassword ? "Hide" : "Show" }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2FA/TOTP -->
+              <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-4 bg-green-50 rounded-xl border border-green-200 shadow-sm">
+                <div class="text-xs font-semibold text-green-600 mb-3 uppercase tracking-wide">2FA Code</div>
+                <div v-if="totpCode && totpCode !== 'Invalid Secret'">
+                  <div class="text-3xl font-bold text-green-900 tracking-wider mb-2 font-mono">{{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}</div>
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs text-green-600">{{ totpTimeRemaining }}s</div>
+                    <div class="w-20 h-1 bg-green-200 rounded-full overflow-hidden">
+                      <div class="h-full bg-green-600 transition-all duration-1000" :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"></div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-red-600 text-xs">Invalid secret</div>
+              </div>
+
+              <!-- URL/Website -->
+              <div v-if="parsed.tags.url" class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Website</div>
+                <a :href="parsed.tags.url" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:underline break-all">
+                  {{ parsed.tags.url }}
+                </a>
+              </div>
+
+              <!-- Domains -->
+              <div v-if="parsed.tags.domains" class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Domains</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span
+                    v-for="domain in parsed.tags.domains.split(',').map((d) => d.trim())"
+                    :key="domain"
+                    class="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs"
+                  >
+                    {{ domain }}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Notes/Content -->
-          <div v-if="parsed.content" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Notes</div>
-            <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
-          </div>
-
-          <!-- Attachments -->
-          <div v-if="note.attachments && note.attachments.length > 0" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
-            <div class="space-y-2">
-              <div
-                v-for="attachment in note.attachments"
-                :key="attachment.id"
-                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3 flex-1 min-w-0">
+            <!-- Attachments -->
+            <div v-if="note.attachments && note.attachments.length > 0" class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Attachments ({{ note.attachments.length }})</div>
+              <div class="space-y-2">
+                <div
+                  v-for="attachment in note.attachments"
+                  :key="attachment.id"
+                  class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors group cursor-pointer"
+                  @click="downloadAttachment(attachment)"
+                >
                   <div class="flex-shrink-0">
-                    <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      ></path>
+                    <svg v-if="attachment.type.startsWith('image/')" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      ></path>
+                    <svg v-else class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
+                    <div class="text-xs font-medium text-gray-900 truncate">{{ attachment.name }}</div>
                     <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
                   </div>
                 </div>
-                <button
-                  @click="downloadAttachment(attachment)"
-                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
-                >
-                  Download
-                </button>
               </div>
             </div>
-          </div>
 
-          <!-- References -->
-          <div v-if="parsed?.references && parsed.references.length > 0" class="mt-4 p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">Related Links ({{ parsed.references.length }})</div>
-            <div class="space-y-2">
-              <a
-                v-for="(ref, index) in parsed.references"
-                :key="index"
-                :href="ref.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
-              >
-                <div class="flex-shrink-0 mr-3">
-                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
-                    <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
-                    <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                  </div>
-                  <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
-                  <p v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">r/{{ ref.subreddit }}</p>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Regular Note View -->
-        <div v-else-if="parsed?.type === 'note'">
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
-            <div v-if="parsed?.content" class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
-            <div v-else class="text-gray-400 italic text-center py-8">This note is empty</div>
-          </div>
-
-          <!-- Attachments for regular notes -->
-          <div v-if="note.attachments && note.attachments.length > 0" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
-            <div class="space-y-2">
-              <div
-                v-for="attachment in note.attachments"
-                :key="attachment.id"
-                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3 flex-1 min-w-0">
+            <!-- References -->
+            <div v-if="parsed?.references && parsed.references.length > 0" class="p-4 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
+              <div class="text-xs font-semibold text-purple-700 mb-3 uppercase tracking-wide">Links ({{ parsed.references.length }})</div>
+              <div class="space-y-2">
+                <a
+                  v-for="(ref, index) in parsed.references"
+                  :key="index"
+                  :href="ref.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-center gap-2 p-2 bg-white rounded-lg border border-purple-200 hover:border-purple-400 transition-all group"
+                >
                   <div class="flex-shrink-0">
-                    <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      ></path>
-                    </svg>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
+                      <component :is="getPlatformIcon(ref.type)" class="w-4 h-4" />
+                    </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
-                    <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
+                    <div class="text-xs font-semibold text-gray-900 truncate">{{ ref.platform }}</div>
+                    <p class="text-xs text-gray-500 truncate">{{ ref.url }}</p>
                   </div>
-                </div>
-                <button
-                  @click="downloadAttachment(attachment)"
-                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
-                >
-                  Download
-                </button>
+                </a>
               </div>
             </div>
           </div>
 
-          <!-- References -->
-          <div v-if="parsed?.references && parsed.references.length > 0" class="mt-4 p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">References ({{ parsed.references.length }})</div>
-            <div class="space-y-2">
-              <a
-                v-for="(ref, index) in parsed.references"
-                :key="index"
-                :href="ref.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
-              >
-                <div class="flex-shrink-0 mr-3">
-                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
-                    <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
-                    <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                  </div>
-                  <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
-                  <p v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">r/{{ ref.subreddit }}</p>
-                </div>
-              </a>
+          <!-- Right Column - Content -->
+          <div class="lg:col-span-2">
+            <!-- Bookmark content goes in the card on left, so show full markdown here -->
+            <div v-if="parsed?.tags?.bookmark && parsed?.content" class="p-8 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px]">
+              <div class="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Description</div>
+              <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
+            </div>
+            
+            <!-- Regular content display -->
+            <div v-else-if="parsed?.content" class="p-8 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px]">
+              <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
+            </div>
+            
+            <!-- Empty state -->
+            <div v-else class="p-8 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px] flex items-center justify-center">
+              <div class="text-gray-400 italic text-center">No content</div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -728,8 +456,8 @@ onMounted(async () => {
       startTOTPUpdates();
     }
 
-    // Load crypto data if note is crypto type
-    if (parsed.value?.type === 'crypto' && parsed.value?.tags?.crypto) {
+    // Load crypto data if crypto tag exists
+    if (parsed.value?.tags?.crypto) {
       await loadCryptoData();
     }
   } catch (error) {
