@@ -4,29 +4,18 @@
     <div class="bg-white border-b border-gray-200 px-4 md:px-8 py-3 md:py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
-          <button
-            @click="handleCancel"
-            class="flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Back"
-          >
+          <button @click="handleCancel" class="flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Back">
             <ArrowLeft class="w-5 h-5" />
           </button>
           <h2 class="text-lg md:text-2xl font-bold text-gray-900 truncate">
-            {{ isNewNote ? 'New Note' : 'Edit Note' }}
+            {{ isNewNote ? "New Note" : "Edit Note" }}
           </h2>
-          <span
-            v-if="detectedType"
-            class="hidden sm:inline-block px-3 py-1 text-xs font-medium rounded-full flex-shrink-0"
-            :class="typeClass"
-          >
+          <span v-if="detectedType" class="hidden sm:inline-block px-3 py-1 text-xs font-medium rounded-full flex-shrink-0" :class="typeClass">
             {{ detectedType }}
           </span>
         </div>
         <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
-          <button
-            @click="handleCancel"
-            class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-          >
+          <button @click="handleCancel" class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
             Cancel
           </button>
           <button
@@ -54,7 +43,7 @@
                 @click="showTagHelp = !showTagHelp"
                 :class="[
                   'flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
-                  showTagHelp ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-200'
+                  showTagHelp ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-200',
                 ]"
               >
                 <HelpCircle class="w-3.5 h-3.5 mr-1.5" />
@@ -98,6 +87,8 @@
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@2fa=</code> 2FA</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@domains=</code> Domains</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@bookmark=</code> URL</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@crypto=</code> Crypto</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@qrcode=</code> QR Code</div>
             </div>
           </div>
 
@@ -144,10 +135,7 @@
           <!-- Attachments List -->
           <div v-if="attachments.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div v-for="(att, index) in attachments" :key="index" class="relative p-3 bg-white rounded-lg border border-gray-200">
-              <button
-                @click="removeAttachment(index)"
-                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-              >
+              <button @click="removeAttachment(index)" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
                 <X class="w-3 h-3" />
               </button>
               <div v-if="att.preview" class="w-full h-20 rounded overflow-hidden mb-2">
@@ -165,7 +153,7 @@
         <!-- Footer -->
         <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
           <span>{{ noteContent.length }} characters</span>
-          <span v-if="tagCount > 0">{{ tagCount }} tag{{ tagCount !== 1 ? 's' : '' }}</span>
+          <span v-if="tagCount > 0">{{ tagCount }} tag{{ tagCount !== 1 ? "s" : "" }}</span>
         </div>
       </div>
 
@@ -195,7 +183,7 @@
             <div v-if="attachments.length > 0" class="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
               <div class="flex items-center gap-2">
                 <Paperclip class="w-4 h-4 text-emerald-700" />
-                <span class="text-sm font-medium text-emerald-900">{{ attachments.length }} attachment{{ attachments.length !== 1 ? 's' : '' }}</span>
+                <span class="text-sm font-medium text-emerald-900">{{ attachments.length }} attachment{{ attachments.length !== 1 ? "s" : "" }}</span>
               </div>
             </div>
           </div>
@@ -219,11 +207,8 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchNoteById, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
-import { parseNote, validateNote } from '@/utils/noteParser';
-import {
-  ArrowLeft, Save, Key, Bookmark, FileText, HelpCircle, AlertCircle,
-  Paperclip, Upload, File, X
-} from 'lucide-vue-next';
+import { parseNote, validateNote } from "@/utils/noteParser";
+import { ArrowLeft, Save, Key, Bookmark, FileText, HelpCircle, AlertCircle, Paperclip, Upload, File, X } from "lucide-vue-next";
 import TagBookmark from "@/components/tags/TagBookmark.vue";
 import TagPassword from "@/components/tags/TagPassword.vue";
 import TagTOTP from "@/components/tags/TagTOTP.vue";
@@ -243,7 +228,7 @@ const attachments = ref([]);
 
 onMounted(async () => {
   noteId.value = route.params.id;
-  
+
   try {
     const note = await fetchNoteById(noteId.value);
     if (note) {
@@ -258,9 +243,9 @@ onMounted(async () => {
     noteContent.value = "";
     isNewNote.value = true;
   }
-  
+
   isLoaded.value = true;
-  
+
   // Focus textarea
   setTimeout(() => {
     if (textareaRef.value) {
@@ -275,33 +260,35 @@ const parsed = computed(() => {
   return parseNote(noteContent.value);
 });
 
-const detectedType = computed(() => parsed.value?.type || 'note');
+const detectedType = computed(() => parsed.value?.type || "note");
 
 const typeIcon = computed(() => {
   switch (detectedType.value) {
-    case 'password': return Key;
-    case 'bookmark': return Bookmark;
-    default: return FileText;
+    case "password":
+      return Key;
+    case "bookmark":
+      return Bookmark;
+    default:
+      return FileText;
   }
 });
 
 const typeClass = computed(() => {
   switch (detectedType.value) {
-    case 'password': return 'bg-blue-100 text-blue-700';
-    case 'bookmark': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-green-100 text-green-700';
+    case "password":
+      return "bg-blue-100 text-blue-700";
+    case "bookmark":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-green-100 text-green-700";
   }
 });
 
 const tagCount = computed(() => Object.keys(parsed.value?.tags || {}).length);
-const warnings = computed(() => noteContent.value ? validateNote(noteContent.value) : []);
+const warnings = computed(() => (noteContent.value ? validateNote(noteContent.value) : []));
 
 const hasPasswordTags = computed(() => {
-  return !!(
-    parsed.value?.tags?.password ||
-    parsed.value?.tags?.email ||
-    parsed.value?.tags?.username
-  );
+  return !!(parsed.value?.tags?.password || parsed.value?.tags?.email || parsed.value?.tags?.username);
 });
 
 // Templates
@@ -340,7 +327,7 @@ const handleTab = (e) => {
   const end = e.target.selectionEnd;
   const value = noteContent.value;
 
-  noteContent.value = value.substring(0, start) + '  ' + value.substring(end);
+  noteContent.value = value.substring(0, start) + "  " + value.substring(end);
   setTimeout(() => {
     e.target.selectionStart = e.target.selectionEnd = start + 2;
   }, 0);
@@ -350,7 +337,7 @@ const handleTab = (e) => {
 const handleFileSelect = async (event) => {
   const files = Array.from(event.target.files || []);
   await processFiles(files);
-  if (event.target) event.target.value = '';
+  if (event.target) event.target.value = "";
 };
 
 const processFiles = async (files) => {
@@ -368,7 +355,7 @@ const processFiles = async (files) => {
       preview: null,
     };
 
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       attachment.preview = await generateImagePreview(file);
     }
 
@@ -387,38 +374,38 @@ const generateImagePreview = (file) => {
 
 const removeAttachment = async (index) => {
   const attachment = attachments.value[index];
-  
+
   if (attachment.existing && attachment.id && noteId.value) {
     try {
-      const { deleteAttachment } = await import('@/db');
+      const { deleteAttachment } = await import("@/db");
       await deleteAttachment(noteId.value, attachment.id);
     } catch (error) {
       console.error("Error deleting attachment:", error);
       return;
     }
   }
-  
+
   attachments.value.splice(index, 1);
 };
 
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
 const loadExistingAttachments = async () => {
   if (!noteId.value || isNewNote.value) return;
-  
+
   try {
-    const { getAttachments } = await import('@/db');
+    const { getAttachments } = await import("@/db");
     const existing = await getAttachments(noteId.value);
-    
+
     for (const att of existing) {
       const blob = new Blob([att.data], { type: att.type });
-      
+
       const attachment = {
         file: blob,
         id: att.id,
@@ -428,11 +415,11 @@ const loadExistingAttachments = async () => {
         preview: null,
         existing: true,
       };
-      
-      if (att.type.startsWith('image/')) {
+
+      if (att.type.startsWith("image/")) {
         attachment.preview = URL.createObjectURL(blob);
       }
-      
+
       attachments.value.push(attachment);
     }
   } catch (error) {
@@ -449,7 +436,7 @@ const handleSaveClick = async () => {
       router.push(`/notes/${noteId.value}`);
     } else {
       await updateNote(noteId.value, noteContent.value);
-      const newAttachments = attachments.value.filter(att => !att.existing);
+      const newAttachments = attachments.value.filter((att) => !att.existing);
       if (newAttachments.length > 0) {
         const files = newAttachments.map((att) => att.file).filter((f) => f);
         await addAttachments(noteId.value, files);
