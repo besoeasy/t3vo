@@ -4,10 +4,18 @@
       'break-inside-avoid mb-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 overflow-hidden group card-hover relative cursor-pointer',
       cardSizeClass,
       cardThemeClass,
-      isRecent ? 'ring-2 ring-blue-200 ring-opacity-50' : ''
+      cardColorClass,
+      isRecent ? 'ring-2 ring-blue-200 ring-opacity-50' : '',
+      parsed.pinned ? 'ring-2 ring-yellow-300' : ''
     ]"
     @click="$emit('click')"
   >
+    <!-- Pin indicator -->
+    <div v-if="parsed.pinned" class="absolute top-2 left-2 px-2 py-1 bg-yellow-400 text-yellow-900 rounded-full text-xs font-bold shadow-sm z-10 flex items-center space-x-1">
+      <span>📌</span>
+      <span>PINNED</span>
+    </div>
+
     <!-- Recently updated indicator -->
     <div v-if="isRecent" class="absolute top-2 right-2 w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-sm animate-pulse z-10"></div>
 
@@ -17,19 +25,27 @@
       <div v-if="parsed.type === 'password'" class="space-y-4 h-full flex flex-col">
         <div class="flex items-start justify-between">
           <div class="flex items-center space-x-3">
-            <div class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
-              <Key class="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+            <div :class="['p-3 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300', iconBackgroundClass]">
+              <component :is="cardIcon" v-if="cardIcon" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" :class="iconColorClass" />
+              <Key v-else class="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
-                {{ parsed.title }}
+              <h3 class="font-bold text-gray-900 truncate text-xl mb-1 flex items-center space-x-2">
+                <span v-if="parsed.icon" class="text-2xl">{{ parsed.icon }}</span>
+                <span>{{ parsed.title }}</span>
               </h3>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-2 flex-wrap gap-1">
+                <span v-if="parsed.category" class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                  {{ parsed.category }}
+                </span>
                 <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full group-hover:bg-blue-200 transition-colors duration-300">
                   Password
                 </span>
                 <span v-if="totpCode" class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full group-hover:bg-green-200 transition-colors duration-300 animate-pulse">
                   2FA
+                </span>
+                <span v-for="tag in parsed.customTags" :key="tag" class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                  {{ tag }}
                 </span>
               </div>
             </div>
@@ -72,16 +88,26 @@
       <div v-else-if="parsed.type === 'bookmark'" class="space-y-4 h-full flex flex-col">
         <div class="flex items-start justify-between">
           <div class="flex items-center space-x-3">
-            <div class="p-3 bg-gradient-to-br from-amber-50 to-orange-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
-              <Bookmark class="w-6 h-6 text-amber-600 group-hover:scale-110 transition-transform duration-300" />
+            <div :class="['p-3 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300', iconBackgroundClass]">
+              <component :is="cardIcon" v-if="cardIcon" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" :class="iconColorClass" />
+              <Bookmark v-else class="w-6 h-6 text-amber-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
-                {{ parsed.title }}
+              <h3 class="font-bold text-gray-900 truncate text-xl mb-1 flex items-center space-x-2">
+                <span v-if="parsed.icon" class="text-2xl">{{ parsed.icon }}</span>
+                <span>{{ parsed.title }}</span>
               </h3>
-              <span class="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full group-hover:bg-amber-200 transition-colors duration-300">
-                Bookmark
-              </span>
+              <div class="flex items-center space-x-2 flex-wrap gap-1">
+                <span v-if="parsed.category" class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                  {{ parsed.category }}
+                </span>
+                <span class="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full group-hover:bg-amber-200 transition-colors duration-300">
+                  Bookmark
+                </span>
+                <span v-for="tag in parsed.customTags" :key="tag" class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                  {{ tag }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -105,16 +131,26 @@
       <div v-else class="space-y-4 h-full flex flex-col">
         <div class="flex items-start justify-between">
           <div class="flex items-center space-x-3">
-            <div class="p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300">
-              <FileText class="w-6 h-6 text-green-600 group-hover:scale-110 transition-transform duration-300" />
+            <div :class="['p-3 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-300', iconBackgroundClass]">
+              <component :is="cardIcon" v-if="cardIcon" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" :class="iconColorClass" />
+              <FileText v-else class="w-6 h-6 text-green-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-gray-900 truncate text-xl mb-1">
-                {{ parsed.title }}
+              <h3 class="font-bold text-gray-900 truncate text-xl mb-1 flex items-center space-x-2">
+                <span v-if="parsed.icon" class="text-2xl">{{ parsed.icon }}</span>
+                <span>{{ parsed.title }}</span>
               </h3>
-              <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full group-hover:bg-green-200 transition-colors duration-300">
-                Note
-              </span>
+              <div class="flex items-center space-x-2 flex-wrap gap-1">
+                <span v-if="parsed.category" class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                  {{ parsed.category }}
+                </span>
+                <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full group-hover:bg-green-200 transition-colors duration-300">
+                  Note
+                </span>
+                <span v-for="tag in parsed.customTags" :key="tag" class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                  {{ tag }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -211,6 +247,9 @@ const cardSizeClass = computed(() => {
 
 // Card theme based on type
 const cardThemeClass = computed(() => {
+  // Don't apply default border color if custom color is set
+  if (parsed.value.color) return '';
+  
   switch (parsed.value.type) {
     case 'password':
       return 'border-l-4 border-l-blue-500 hover:border-l-blue-600';
@@ -221,6 +260,91 @@ const cardThemeClass = computed(() => {
     default:
       return 'border-l-4 border-l-gray-500 hover:border-l-gray-600';
   }
+});
+
+// Card color class based on custom color tag
+const cardColorClass = computed(() => {
+  const color = parsed.value.color;
+  if (!color) return '';
+  
+  const colorMap = {
+    blue: 'border-l-4 border-l-blue-500 hover:border-l-blue-600 bg-blue-50/30',
+    red: 'border-l-4 border-l-red-500 hover:border-l-red-600 bg-red-50/30',
+    green: 'border-l-4 border-l-green-500 hover:border-l-green-600 bg-green-50/30',
+    yellow: 'border-l-4 border-l-yellow-500 hover:border-l-yellow-600 bg-yellow-50/30',
+    purple: 'border-l-4 border-l-purple-500 hover:border-l-purple-600 bg-purple-50/30',
+    pink: 'border-l-4 border-l-pink-500 hover:border-l-pink-600 bg-pink-50/30',
+    gray: 'border-l-4 border-l-gray-500 hover:border-l-gray-600 bg-gray-50/30',
+    indigo: 'border-l-4 border-l-indigo-500 hover:border-l-indigo-600 bg-indigo-50/30',
+    teal: 'border-l-4 border-l-teal-500 hover:border-l-teal-600 bg-teal-50/30',
+    orange: 'border-l-4 border-l-orange-500 hover:border-l-orange-600 bg-orange-50/30',
+  };
+  
+  return colorMap[color] || '';
+});
+
+// Icon background class based on color
+const iconBackgroundClass = computed(() => {
+  const color = parsed.value.color;
+  if (!color) {
+    // Default based on type
+    switch (parsed.value.type) {
+      case 'password': return 'bg-gradient-to-br from-blue-50 to-blue-100';
+      case 'bookmark': return 'bg-gradient-to-br from-amber-50 to-orange-100';
+      case 'note': return 'bg-gradient-to-br from-green-50 to-emerald-100';
+      default: return 'bg-gradient-to-br from-gray-50 to-gray-100';
+    }
+  }
+  
+  const colorMap = {
+    blue: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    red: 'bg-gradient-to-br from-red-50 to-red-100',
+    green: 'bg-gradient-to-br from-green-50 to-green-100',
+    yellow: 'bg-gradient-to-br from-yellow-50 to-yellow-100',
+    purple: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    pink: 'bg-gradient-to-br from-pink-50 to-pink-100',
+    gray: 'bg-gradient-to-br from-gray-50 to-gray-100',
+    indigo: 'bg-gradient-to-br from-indigo-50 to-indigo-100',
+    teal: 'bg-gradient-to-br from-teal-50 to-teal-100',
+    orange: 'bg-gradient-to-br from-orange-50 to-orange-100',
+  };
+  
+  return colorMap[color] || 'bg-gradient-to-br from-gray-50 to-gray-100';
+});
+
+// Icon color class
+const iconColorClass = computed(() => {
+  const color = parsed.value.color;
+  if (!color) {
+    // Default based on type
+    switch (parsed.value.type) {
+      case 'password': return 'text-blue-600';
+      case 'bookmark': return 'text-amber-600';
+      case 'note': return 'text-green-600';
+      default: return 'text-gray-600';
+    }
+  }
+  
+  const colorMap = {
+    blue: 'text-blue-600',
+    red: 'text-red-600',
+    green: 'text-green-600',
+    yellow: 'text-yellow-600',
+    purple: 'text-purple-600',
+    pink: 'text-pink-600',
+    gray: 'text-gray-600',
+    indigo: 'text-indigo-600',
+    teal: 'text-teal-600',
+    orange: 'text-orange-600',
+  };
+  
+  return colorMap[color] || 'text-gray-600';
+});
+
+// Card icon - use lucide icon if no custom icon
+const cardIcon = computed(() => {
+  // Return null to use default icons in template
+  return null;
 });
 
 // TOTP generation

@@ -246,6 +246,14 @@
                 <Bookmark class="w-3.5 h-3.5 mr-1.5" />
                 Bookmark
               </button>
+              <button
+                @click="insertTemplate('note')"
+                class="flex items-center px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                title="Insert Note Template"
+              >
+                <FileText class="w-3.5 h-3.5 mr-1.5" />
+                Note
+              </button>
             </div>
           </div>
 
@@ -257,6 +265,11 @@
             <p class="font-semibold text-blue-900 mb-3">Available Tags:</p>
             <div class="grid grid-cols-2 gap-3 text-blue-800">
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@title=</code> Title</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@category=</code> Category</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@tags=</code> Tags (comma-separated)</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@pin=true</code> Pin to top</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@icon=</code> Custom emoji</div>
+              <div><code class="bg-white px-2 py-1 rounded font-mono">#@color=</code> Card color</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@email=</code> Email</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@username=</code> Username</div>
               <div><code class="bg-white px-2 py-1 rounded font-mono">#@password=</code> Password</div>
@@ -783,12 +796,29 @@ const insertTemplate = (type) => {
 #@password=
 #@2fa=
 #@domains=example.com
+#@category=
+#@tags=
+#@color=blue
+#@icon=🔑
+#@pin=false
 
 Notes about this account...`,
     bookmark: `#@title=Useful Website
 #@bookmark=https://example.com
+#@category=
+#@tags=
+#@color=amber
+#@icon=🔖
 
 Description of the website...`,
+    note: `#@title=My Note
+#@category=
+#@tags=
+#@color=green
+#@icon=📝
+#@pin=false
+
+Your note content here...`,
   };
 
   if (templates[type]) {

@@ -12,6 +12,11 @@ Write naturally, add tags for structure. No forms, no mode switching—just pure
 
 ### Universal Tags
 - `#@title=Your Title` - Sets the title for any note type
+- `#@category=Work` - Organize notes into categories/folders
+- `#@tags=urgent,review-later,personal` - Add comma-separated tags for filtering
+- `#@pin=true` - Pin note to the top of your list
+- `#@icon=🔑` - Add a custom emoji icon to your note card
+- `#@color=blue` - Set card color theme (blue, red, green, yellow, purple, pink, gray, indigo, teal, orange)
 
 ### Password Tags
 Use these tags to store login credentials:
@@ -75,27 +80,40 @@ T3VO automatically detects note type based on tags:
 #@password=SuperSecret2024!
 #@2fa=ORODSHBYMZ2NT5RBRRJKDLSGWNP65BXD
 #@domains=github.com,*.github.com
+#@category=Development
+#@tags=work,important
+#@color=blue
+#@icon=💻
+#@pin=true
 
 Main development account. Enable 2FA with authenticator app.
 ```
 
-**Displays as:** Password card with email, hidden password, live 2FA code, and notes
+**Displays as:** Pinned password card with blue theme, computer icon, category badge, custom tags, email, hidden password, live 2FA code, and notes
 
 ### Example 2: Bookmark
 
 ```
 #@title=Vue.js Documentation
 #@bookmark=https://vuejs.org/guide/introduction.html
+#@category=Development
+#@tags=reference,tutorial
+#@color=green
+#@icon=📚
 
 Official Vue 3 docs - great for learning composition API
 ```
 
-**Displays as:** Bookmark card with clickable URL and description
+**Displays as:** Green bookmark card with book icon, category, tags, clickable URL and description
 
 ### Example 3: Simple Note
 
 ```
 #@title=Grocery List
+#@category=Personal
+#@tags=shopping,urgent
+#@color=yellow
+#@icon=🛒
 
 - Milk
 - Eggs
@@ -103,12 +121,16 @@ Official Vue 3 docs - great for learning composition API
 - Coffee
 ```
 
-**Displays as:** Note card with content
+**Displays as:** Yellow note card with shopping cart icon, category, and custom tags
 
 ### Example 4: Mixed Content Note
 
 ```
 #@title=Project Resources
+#@category=Work
+#@tags=project-alpha,resources
+#@color=purple
+#@pin=true
 
 GitHub Repo: https://github.com/user/repo
 API Key: abc123xyz (stored separately)
@@ -116,7 +138,7 @@ API Key: abc123xyz (stored separately)
 Remember to update dependencies weekly.
 ```
 
-**Displays as:** Regular note (no special tags detected)
+**Displays as:** Pinned purple regular note with category and tags (no special type tags detected)
 
 ## ⚡ Quick Tips
 
@@ -125,6 +147,11 @@ Remember to update dependencies weekly.
 3. **One value per tag**: Don't repeat the same tag multiple times
 4. **Clean formatting**: Tags are hidden in the rendered view
 5. **Use templates**: Click template buttons in editor for quick start
+6. **Pin important notes**: Use `#@pin=true` to keep notes at the top
+7. **Color code your notes**: Use `#@color=` for visual organization
+8. **Add custom icons**: Use any emoji with `#@icon=` for personality
+9. **Organize with categories**: Group related notes with `#@category=`
+10. **Tag for filtering**: Use `#@tags=` to create your own organization system
 
 ## 🎨 Editor Features
 
@@ -201,6 +228,11 @@ A: This shouldn't happen - tags are automatically hidden. Try refreshing.
 3. **Add Context**: Write notes below tags for additional info
 4. **Use Domains**: For passwords, list all related domains
 5. **Update Regularly**: Keep notes current, especially passwords
+6. **Color Code Wisely**: Use consistent colors for similar types (e.g., red for urgent)
+7. **Pin Sparingly**: Only pin truly important notes to avoid clutter
+8. **Tag Strategically**: Use tags for things you'll search for later
+9. **Categorize Logically**: Create a category system that works for you
+10. **Use Icons**: Add visual cues with emojis for quick scanning
 
 ## 📱 Coming Soon
 

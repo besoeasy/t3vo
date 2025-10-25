@@ -20,13 +20,18 @@
         v-for="note in filteredNotes"
         :key="note.id"
         @click="openNote(note)"
-        class="group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col bg-[#F5C26B]"
+        :class="[
+          'group cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[200px] flex flex-col relative',
+          getCardColorClass(note),
+        ]"
       >
-        <!-- Note Content -->
+        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-xl">📌</div>
+
         <div class="flex-1">
-          <h3 v-if="note.parsed.title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-            {{ note.parsed.title }}
+          <h3 v-if="note.parsed.title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 flex items-center gap-2">
+            <span class="flex-1">{{ note.parsed.title }}</span>
           </h3>
+
           <p class="text-gray-800 text-sm line-clamp-4">
             {{ note.parsed.content || "Empty note" }}
           </p>
@@ -34,12 +39,24 @@
 
         <!-- Note Footer -->
         <div class="flex items-center justify-between mt-4 pt-4 border-t border-black border-opacity-10">
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Icon and Tags -->
+
+            <span v-for="tag in note.parsed.customTags" :key="tag" class="text-xs font-medium px-2 py-1 bg-gray-900 text-white">
+              {{ tag }}
+            </span>
+          </div>
+
           <span v-if="note.updatedAt" class="text-xs text-gray-700">
             {{ formatDate(note.updatedAt) }}
           </span>
+
           <div class="flex items-center space-x-2">
+            <span v-if="note.parsed.icon" class="text-base w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              {{ note.parsed.icon }}
+            </span>
             <!-- Type Badge -->
-            <span v-if="note.parsed.type !== 'note'" class="flex items-center justify-center w-8 h-8 bg-gray-900 bg-opacity-80 rounded-full text-white">
+            <span v-if="note.parsed.type !== 'note'" class="flex items-center justify-center w-8 h-8 bg-white bg-opacity-80 rounded-full text-black">
               <Key v-if="note.parsed.type === 'password'" class="w-4 h-4" />
               <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-4 h-4" />
             </span>
@@ -104,11 +121,14 @@ const editingNoteId = ref(null);
 const isNewNote = ref(true);
 
 // Watch for route query changes to trigger new note
-watch(() => route.query.action, (action) => {
-  if (action === "new") {
-    startNewNote();
+watch(
+  () => route.query.action,
+  (action) => {
+    if (action === "new") {
+      startNewNote();
+    }
   }
-});
+);
 
 // Computed
 const filteredNotes = computed(() => {
@@ -120,7 +140,15 @@ const filteredNotes = computed(() => {
     filtered = filtered.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
 
-  return filtered;
+  // Sort: pinned notes first, then by updatedAt
+  return filtered.sort((a, b) => {
+    // Pinned notes come first
+    if (a.parsed.pinned && !b.parsed.pinned) return -1;
+    if (!a.parsed.pinned && b.parsed.pinned) return 1;
+
+    // Otherwise sort by updatedAt (newest first)
+    return b.updatedAt - a.updatedAt;
+  });
 });
 
 // Methods
@@ -200,6 +228,31 @@ const handleDelete = async () => {
 
 const formatDate = (timestamp) => {
   return format(timestamp);
+};
+
+// Get card color class based on custom color or default
+const getCardColorClass = (note) => {
+  const color = note.parsed.color;
+
+  if (!color) {
+    return "bg-[#F5C26B]"; // Default yellow color
+  }
+
+  const colorMap = {
+    blue: "bg-blue-100",
+    red: "bg-red-100",
+    green: "bg-green-100",
+    yellow: "bg-yellow-100",
+    purple: "bg-purple-100",
+    pink: "bg-pink-100",
+    gray: "bg-gray-100",
+    indigo: "bg-indigo-100",
+    teal: "bg-teal-100",
+    orange: "bg-orange-100",
+    amber: "bg-amber-100",
+  };
+
+  return colorMap[color] || "bg-[#F5C26B]";
 };
 
 // Lifecycle
