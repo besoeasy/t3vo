@@ -116,7 +116,6 @@ Attach presentation.pdf, mockups.png for reference.
 
 👉 See [TAGS.md](./TAGS.md) for complete tag documentation
 
-
 ## 📱 Features in Detail
 
 ### Markdown Support
