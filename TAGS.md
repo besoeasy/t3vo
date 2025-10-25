@@ -77,6 +77,20 @@ Q3 planning meeting:
 WiFi credentials for office network.
 ```
 
+### Crypto Address Note
+
+```
+#@title=Wallet Addresses
+#@tags=crypto,wallet
+#@icon=₿
+
+Bitcoin Legacy: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+Ethereum: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
+Bitcoin Bech32: bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4
+
+Note: Crypto addresses are automatically detected and displayed with Blockchair links.
+```
+
 ## ⚡ Quick Tips
 
 - Tags are **case-insensitive**
@@ -84,6 +98,8 @@ WiFi credentials for office network.
 - **Pinned notes** appear at the top automatically
 - Use **icons** for quick visual identification
 - Tags are **hidden** in the rendered view
+- **Crypto addresses** (Bitcoin & Ethereum) are automatically detected
+- **Media URLs** (YouTube, Instagram, Twitter, Reddit) are auto-linked
 
 ## 🔍 How It Works
 

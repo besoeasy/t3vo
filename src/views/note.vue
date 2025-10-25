@@ -86,6 +86,9 @@
             <!-- Attachments -->
             <TagAttachments v-if="note.attachments?.length" :attachments="note.attachments" />
 
+            <!-- Crypto Addresses -->
+            <TagCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
+
             <!-- References -->
             <TagReferences v-if="parsed?.references?.length" :references="parsed.references" />
           </div>
@@ -131,6 +134,7 @@ import TagAttachments from "@/components/tags/TagAttachments.vue";
 import TagReferences from "@/components/tags/TagReferences.vue";
 import TagDomains from "@/components/tags/TagDomains.vue";
 import TagQRCode from "@/components/tags/TagQRCode.vue";
+import TagCryptoAddresses from "@/components/tags/TagCryptoAddresses.vue";
 
 const route = useRoute();
 const router = useRouter();

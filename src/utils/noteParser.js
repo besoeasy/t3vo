@@ -37,6 +37,22 @@ const URL_PATTERNS = {
 };
 
 /**
+ * Cryptocurrency address patterns
+ */
+const CRYPTO_ADDRESS_PATTERNS = {
+  // Bitcoin Legacy (P2PKH) - starts with 1
+  bitcoinLegacy: /\b(1[a-km-zA-HJ-NP-Z1-9]{25,34})\b/g,
+  // Bitcoin SegWit (P2SH) - starts with 3
+  bitcoinSegWit: /\b(3[a-km-zA-HJ-NP-Z1-9]{25,34})\b/g,
+  // Bitcoin Bech32 (Native SegWit) - starts with bc1
+  bitcoinBech32: /\b(bc1[a-z0-9]{39,59})\b/gi,
+  // Bitcoin Taproot - starts with bc1p
+  bitcoinTaproot: /\b(bc1p[a-z0-9]{58})\b/gi,
+  // Ethereum - 0x followed by 40 hex characters
+  ethereum: /\b(0x[a-fA-F0-9]{40})\b/g,
+};
+
+/**
  * Parse a note and extract all #@ tags
  * @param {string} content - Raw note content
  * @returns {Object} Parsed note with tags and cleaned content
@@ -50,6 +66,7 @@ export function parseNote(content) {
       type: 'note',
       title: '',
       references: [],
+      cryptoAddresses: [],
     };
   }
 
@@ -74,6 +91,9 @@ export function parseNote(content) {
   // Extract media references
   const references = extractReferences(content);
 
+  // Extract crypto addresses
+  const cryptoAddresses = extractCryptoAddresses(content);
+
   // Parse special organizational tags
   const pinned = tags.pin === 'true' || tags.pin === '1';
   const icon = tags.icon || null;
@@ -86,6 +106,7 @@ export function parseNote(content) {
     type,
     title,
     references,
+    cryptoAddresses,
     pinned,
     icon,
     customTags,
@@ -273,6 +294,98 @@ function extractReferences(content) {
   });
 
   return references;
+}
+
+/**
+ * Extract cryptocurrency addresses from note content
+ * @param {string} content - Raw note content
+ * @returns {Array} - Array of crypto address objects
+ */
+function extractCryptoAddresses(content) {
+  const addresses = [];
+  const seen = new Set(); // To avoid duplicates
+
+  // Bitcoin Legacy (P2PKH)
+  const legacyMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.bitcoinLegacy);
+  for (const match of legacyMatches) {
+    const address = match[1];
+    if (!seen.has(address)) {
+      seen.add(address);
+      addresses.push({
+        type: 'bitcoin',
+        subtype: 'Legacy (P2PKH)',
+        address,
+        currency: 'Bitcoin',
+        icon: '₿',
+      });
+    }
+  }
+
+  // Bitcoin SegWit (P2SH)
+  const segwitMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.bitcoinSegWit);
+  for (const match of segwitMatches) {
+    const address = match[1];
+    if (!seen.has(address)) {
+      seen.add(address);
+      addresses.push({
+        type: 'bitcoin',
+        subtype: 'SegWit (P2SH)',
+        address,
+        currency: 'Bitcoin',
+        icon: '₿',
+      });
+    }
+  }
+
+  // Bitcoin Bech32 (Native SegWit)
+  const bech32Matches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.bitcoinBech32);
+  for (const match of bech32Matches) {
+    const address = match[1];
+    if (!seen.has(address.toLowerCase())) {
+      seen.add(address.toLowerCase());
+      addresses.push({
+        type: 'bitcoin',
+        subtype: 'Bech32 (Native SegWit)',
+        address,
+        currency: 'Bitcoin',
+        icon: '₿',
+      });
+    }
+  }
+
+  // Bitcoin Taproot
+  const taprootMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.bitcoinTaproot);
+  for (const match of taprootMatches) {
+    const address = match[1];
+    if (!seen.has(address.toLowerCase())) {
+      seen.add(address.toLowerCase());
+      addresses.push({
+        type: 'bitcoin',
+        subtype: 'Taproot',
+        address,
+        currency: 'Bitcoin',
+        icon: '₿',
+      });
+    }
+  }
+
+  // Ethereum
+  const ethereumMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.ethereum);
+  for (const match of ethereumMatches) {
+    const address = match[1];
+    if (!seen.has(address.toLowerCase())) {
+      seen.add(address.toLowerCase());
+      addresses.push({
+        type: 'ethereum',
+        subtype: 'ERC-20',
+        address,
+        currency: 'Ethereum',
+        icon: 'Ξ',
+      });
+    }
+  }
+
+  return addresses;
 }
 
 /**
