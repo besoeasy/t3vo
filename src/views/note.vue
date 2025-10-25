@@ -9,10 +9,7 @@
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 mb-2">Note not found</h2>
       <p class="text-gray-600 mb-6">This note doesn't exist or has been deleted.</p>
-      <router-link
-        to="/dashboard"
-        class="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-      >
+      <router-link to="/dashboard" class="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
         Back to Dashboard
       </router-link>
     </div>
@@ -23,20 +20,12 @@
     <!-- Header -->
     <div class="bg-white border-b border-gray-200 px-4 md:px-8 py-4">
       <div class="flex items-center gap-3 mb-3">
-        <router-link
-          to="/dashboard"
-          class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-          title="Back to Dashboard"
-        >
+        <router-link to="/dashboard" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Back to Dashboard">
           <ArrowLeft class="w-5 h-5" />
         </router-link>
         <div class="flex items-center gap-2 flex-1 min-w-0">
           <span v-if="parsed?.icon" class="text-2xl flex-shrink-0">{{ parsed.icon }}</span>
-          <span
-            v-if="parsed?.type && parsed.type !== 'note'"
-            class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0"
-            :class="typeClass"
-          >
+          <span v-if="parsed?.type && parsed.type !== 'note'" class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0" :class="typeClass">
             {{ parsed.type }}
           </span>
         </div>
@@ -48,34 +37,22 @@
             <Edit class="w-4 h-4" />
             <span class="hidden md:inline">Edit</span>
           </router-link>
-          <button
-            @click="handleDelete"
-            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete Note"
-          >
+          <button @click="handleDelete" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Note">
             <Trash2 class="w-5 h-5" />
           </button>
         </div>
       </div>
-      
+
       <!-- Title and Metadata -->
       <div class="ml-14">
         <h1 v-if="parsed?.title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
           {{ parsed.title }}
         </h1>
-        <h1 v-else class="text-3xl md:text-4xl font-bold text-gray-400 mb-2 italic">
-          Untitled Note
-        </h1>
+        <h1 v-else class="text-3xl md:text-4xl font-bold text-gray-400 mb-2 italic">Untitled Note</h1>
         <div class="flex items-center gap-3 text-sm text-gray-500">
           <span>{{ formatDate(note.updatedAt) }}</span>
           <span v-if="parsed?.customTags.length" class="flex gap-2">
-            <span
-              v-for="tag in parsed.customTags"
-              :key="tag"
-              class="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"
-            >
-              #{{ tag }}
-            </span>
+            <span v-for="tag in parsed.customTags" :key="tag" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"> #{{ tag }} </span>
           </span>
         </div>
       </div>
@@ -84,10 +61,8 @@
     <!-- Content -->
     <div class="flex-1 overflow-auto bg-gray-50">
       <div class="max-w-4xl mx-auto p-6 md:p-12">
-
         <!-- Password/Credentials View -->
         <div v-if="parsed?.type === 'password'" class="space-y-4">
-          
           <!-- Email -->
           <div v-if="parsed.tags.email" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
             <div class="text-sm font-semibold text-gray-600 mb-2">Email</div>
@@ -109,13 +84,13 @@
             <div class="text-sm font-semibold text-blue-700 mb-2">Password</div>
             <div class="flex items-center justify-between gap-4">
               <div class="text-lg text-blue-900 font-mono font-bold select-all flex-1 break-all">
-                {{ showPassword ? parsed.tags.password : '••••••••••••' }}
+                {{ showPassword ? parsed.tags.password : "••••••••••••" }}
               </div>
               <button
                 @click="showPassword = !showPassword"
                 class="px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
               >
-                {{ showPassword ? 'Hide' : 'Show' }}
+                {{ showPassword ? "Hide" : "Show" }}
               </button>
             </div>
           </div>
@@ -124,35 +99,21 @@
           <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-6 bg-green-50 rounded-xl border border-green-200 shadow-sm">
             <div class="text-sm font-semibold text-green-700 mb-3">2FA Code</div>
             <div v-if="totpCode && totpCode !== 'Invalid Secret'">
-              <div class="text-5xl font-bold text-green-900 tracking-wider mb-3 font-mono">
-                {{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}
-              </div>
+              <div class="text-5xl font-bold text-green-900 tracking-wider mb-3 font-mono">{{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}</div>
               <div class="flex items-center justify-between">
-                <div class="text-xs text-green-600">
-                  Refreshes in {{ totpTimeRemaining }}s
-                </div>
+                <div class="text-xs text-green-600">Refreshes in {{ totpTimeRemaining }}s</div>
                 <div class="w-24 h-1.5 bg-green-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-green-600 transition-all duration-1000"
-                    :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"
-                  ></div>
+                  <div class="h-full bg-green-600 transition-all duration-1000" :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"></div>
                 </div>
               </div>
             </div>
-            <div v-else class="text-red-600 text-sm">
-              Invalid 2FA secret
-            </div>
+            <div v-else class="text-red-600 text-sm">Invalid 2FA secret</div>
           </div>
 
           <!-- URL/Website -->
           <div v-if="parsed.tags.url" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
             <div class="text-sm font-semibold text-gray-600 mb-2">Website</div>
-            <a
-              :href="parsed.tags.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-blue-600 hover:underline break-all"
-            >
+            <a :href="parsed.tags.url" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">
               {{ parsed.tags.url }}
             </a>
           </div>
@@ -162,7 +123,7 @@
             <div class="text-sm font-semibold text-gray-600 mb-2">Associated Domains</div>
             <div class="flex flex-wrap gap-2">
               <span
-                v-for="domain in parsed.tags.domains.split(',').map(d => d.trim())"
+                v-for="domain in parsed.tags.domains.split(',').map((d) => d.trim())"
                 :key="domain"
                 class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
               >
@@ -170,7 +131,7 @@
               </span>
             </div>
           </div>
-          
+
           <!-- Additional notes/content for password entries -->
           <div v-if="parsed.content" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
             <div class="text-sm font-semibold text-gray-600 mb-3">Notes</div>
@@ -179,9 +140,7 @@
 
           <!-- Attachments -->
           <div v-if="note.attachments && note.attachments.length > 0" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">
-              Attachments ({{ note.attachments.length }})
-            </div>
+            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
             <div class="space-y-2">
               <div
                 v-for="attachment in note.attachments"
@@ -191,10 +150,20 @@
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                   <div class="flex-shrink-0">
                     <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      ></path>
                     </svg>
                     <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
                     </svg>
                   </div>
                   <div class="flex-1 min-w-0">
@@ -214,9 +183,7 @@
 
           <!-- References -->
           <div v-if="parsed?.references && parsed.references.length > 0" class="p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">
-              References ({{ parsed.references.length }})
-            </div>
+            <div class="text-sm font-semibold text-purple-700 mb-3">References ({{ parsed.references.length }})</div>
             <div class="space-y-2">
               <a
                 v-for="(ref, index) in parsed.references"
@@ -227,10 +194,7 @@
                 class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
               >
                 <div class="flex-shrink-0 mr-3">
-                  <div
-                    class="w-10 h-10 rounded-lg flex items-center justify-center"
-                    :class="getPlatformColorClass(ref.type)"
-                  >
+                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
                     <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
                   </div>
                 </div>
@@ -249,52 +213,69 @@
 
         <!-- Bookmark View -->
         <div v-else-if="parsed?.type === 'bookmark'" class="space-y-4">
-          <h2 v-if="parsed.title" class="text-2xl font-bold text-gray-900 mb-6">{{ parsed.title }}</h2>
-          
-          <div v-if="parsed.tags.url" class="p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
-            <div class="text-sm font-semibold text-blue-700 mb-2">URL</div>
-            <a
-              :href="parsed.tags.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-lg text-blue-600 hover:underline break-all font-medium"
-            >
-              {{ parsed.tags.url }}
+          <!-- Main Bookmark Card -->
+          <div class="p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 shadow-lg">
+            <a :href="parsed.tags.url || parsed.tags.bookmark" target="_blank" rel="noopener noreferrer" class="group block">
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                  <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                    <ExternalLink class="w-8 h-8 text-purple-600" />
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-2xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+                    {{ parsed.title || "Bookmark" }}
+                  </h3>
+                  <p class="text-lg text-purple-600 break-all group-hover:underline font-medium">
+                    {{ parsed.tags.url || parsed.tags.bookmark }}
+                  </p>
+                </div>
+              </div>
             </a>
           </div>
 
+          <!-- Description/Notes -->
           <div v-if="parsed.content" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div class="text-sm font-semibold text-gray-600 mb-3">Description</div>
             <div class="prose prose-lg max-w-none" v-html="renderedMarkdown"></div>
           </div>
 
           <!-- Attachments -->
           <div v-if="note.attachments && note.attachments.length > 0" class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-blue-700 mb-3">
-              Attachments ({{ note.attachments.length }})
-            </div>
+            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
             <div class="space-y-2">
               <div
                 v-for="attachment in note.attachments"
                 :key="attachment.id"
-                class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
               >
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                   <div class="flex-shrink-0">
                     <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      ></path>
                     </svg>
-                    <svg v-else class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
                     </svg>
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium text-gray-900 truncate">{{ attachment.name }}</div>
-                    <div class="text-xs text-blue-600">{{ formatFileSize(attachment.size) }}</div>
+                    <div class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</div>
                   </div>
                 </div>
                 <button
                   @click="downloadAttachment(attachment)"
-                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-200 rounded-lg transition-colors flex-shrink-0"
+                  class="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
                 >
                   Download
                 </button>
@@ -304,9 +285,7 @@
 
           <!-- References -->
           <div v-if="parsed?.references && parsed.references.length > 0" class="p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">
-              References ({{ parsed.references.length }})
-            </div>
+            <div class="text-sm font-semibold text-purple-700 mb-3">Related Links ({{ parsed.references.length }})</div>
             <div class="space-y-2">
               <a
                 v-for="(ref, index) in parsed.references"
@@ -317,10 +296,7 @@
                 class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
               >
                 <div class="flex-shrink-0 mr-3">
-                  <div
-                    class="w-10 h-10 rounded-lg flex items-center justify-center"
-                    :class="getPlatformColorClass(ref.type)"
-                  >
+                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
                     <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
                   </div>
                 </div>
@@ -346,9 +322,7 @@
 
           <!-- Attachments for regular notes -->
           <div v-if="note.attachments && note.attachments.length > 0" class="mt-4 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div class="text-sm font-semibold text-gray-600 mb-3">
-              Attachments ({{ note.attachments.length }})
-            </div>
+            <div class="text-sm font-semibold text-gray-600 mb-3">Attachments ({{ note.attachments.length }})</div>
             <div class="space-y-2">
               <div
                 v-for="attachment in note.attachments"
@@ -358,10 +332,20 @@
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                   <div class="flex-shrink-0">
                     <svg v-if="attachment.type.startsWith('image/')" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      ></path>
                     </svg>
                     <svg v-else class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
                     </svg>
                   </div>
                   <div class="flex-1 min-w-0">
@@ -381,9 +365,7 @@
 
           <!-- References -->
           <div v-if="parsed?.references && parsed.references.length > 0" class="mt-4 p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <div class="text-sm font-semibold text-purple-700 mb-3">
-              References ({{ parsed.references.length }})
-            </div>
+            <div class="text-sm font-semibold text-purple-700 mb-3">References ({{ parsed.references.length }})</div>
             <div class="space-y-2">
               <a
                 v-for="(ref, index) in parsed.references"
@@ -394,10 +376,7 @@
                 class="flex items-center p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
               >
                 <div class="flex-shrink-0 mr-3">
-                  <div
-                    class="w-10 h-10 rounded-lg flex items-center justify-center"
-                    :class="getPlatformColorClass(ref.type)"
-                  >
+                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getPlatformColorClass(ref.type)">
                     <component :is="getPlatformIcon(ref.type)" class="w-5 h-5" />
                   </div>
                 </div>
@@ -453,40 +432,40 @@ const parsed = computed(() => {
 });
 
 const renderedMarkdown = computed(() => {
-  if (!parsed.value?.content) return '';
+  if (!parsed.value?.content) return "";
   try {
     return markedInstance.parse(parsed.value.content);
   } catch (error) {
-    console.error('Markdown rendering error:', error);
+    console.error("Markdown rendering error:", error);
     return parsed.value.content;
   }
 });
 
 const typeClass = computed(() => {
-  if (!parsed.value?.type) return '';
-  
+  if (!parsed.value?.type) return "";
+
   const classes = {
-    password: 'bg-blue-100 text-blue-800',
-    bookmark: 'bg-purple-100 text-purple-800',
-    note: 'bg-gray-100 text-gray-800',
+    password: "bg-blue-100 text-blue-800",
+    bookmark: "bg-purple-100 text-purple-800",
+    note: "bg-gray-100 text-gray-800",
   };
-  
+
   return classes[parsed.value.type] || classes.note;
 });
 
 // Generate TOTP code
 const generateTOTP = () => {
-  const secret = parsed.value?.tags?.['2fa'] || parsed.value?.tags?.totp;
-  
+  const secret = parsed.value?.tags?.["2fa"] || parsed.value?.tags?.totp;
+
   if (!secret) {
-    totpCode.value = '';
+    totpCode.value = "";
     return;
   }
 
   try {
     // Create TOTP instance
     const totp = new OTPAuth.TOTP({
-      secret: OTPAuth.Secret.fromBase32(secret.replace(/\s/g, '')),
+      secret: OTPAuth.Secret.fromBase32(secret.replace(/\s/g, "")),
       digits: 6,
       period: 30,
     });
@@ -498,8 +477,8 @@ const generateTOTP = () => {
     const now = Math.floor(Date.now() / 1000);
     totpTimeRemaining.value = 30 - (now % 30);
   } catch (error) {
-    console.error('TOTP generation error:', error);
-    totpCode.value = 'Invalid Secret';
+    console.error("TOTP generation error:", error);
+    totpCode.value = "Invalid Secret";
   }
 };
 
@@ -510,7 +489,7 @@ const startTOTPUpdates = () => {
   }
 
   generateTOTP();
-  
+
   totpInterval = setInterval(() => {
     const now = Math.floor(Date.now() / 1000);
     totpTimeRemaining.value = 30 - (now % 30);
@@ -523,27 +502,30 @@ const startTOTPUpdates = () => {
 };
 
 // Watch for note changes to restart TOTP
-watch(() => parsed.value?.tags?.['2fa'] || parsed.value?.tags?.totp, (newSecret) => {
-  if (newSecret) {
-    startTOTPUpdates();
-  } else {
-    if (totpInterval) {
-      clearInterval(totpInterval);
-      totpInterval = null;
+watch(
+  () => parsed.value?.tags?.["2fa"] || parsed.value?.tags?.totp,
+  (newSecret) => {
+    if (newSecret) {
+      startTOTPUpdates();
+    } else {
+      if (totpInterval) {
+        clearInterval(totpInterval);
+        totpInterval = null;
+      }
+      totpCode.value = "";
     }
-    totpCode.value = '';
   }
-});
+);
 
 onMounted(async () => {
   noteId.value = route.params.id;
-  
+
   try {
     const loadedNote = await fetchNoteById(noteId.value);
     note.value = loadedNote;
-    
+
     // Start TOTP if note has 2FA
-    if (parsed.value?.tags?.['2fa'] || parsed.value?.tags?.totp) {
+    if (parsed.value?.tags?.["2fa"] || parsed.value?.tags?.totp) {
       startTOTPUpdates();
     }
   } catch (error) {
@@ -565,11 +547,11 @@ const formatDate = (timestamp) => {
 };
 
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
 const downloadAttachment = (attachment) => {
@@ -577,20 +559,20 @@ const downloadAttachment = (attachment) => {
     // Create blob from array buffer
     const blob = new Blob([attachment.data], { type: attachment.type });
     const url = URL.createObjectURL(blob);
-    
+
     // Create temporary download link
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = attachment.name;
     document.body.appendChild(link);
     link.click();
-    
+
     // Cleanup
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Error downloading attachment:', error);
-    alert('Failed to download attachment');
+    console.error("Error downloading attachment:", error);
+    alert("Failed to download attachment");
   }
 };
 
@@ -609,13 +591,13 @@ const handleDelete = async () => {
 // Helper functions for references
 const getPlatformIcon = (type) => {
   switch (type) {
-    case 'youtube':
+    case "youtube":
       return Youtube;
-    case 'instagram':
+    case "instagram":
       return Instagram;
-    case 'twitter':
+    case "twitter":
       return Twitter;
-    case 'reddit':
+    case "reddit":
       return MessageCircle;
     default:
       return ExternalLink;
@@ -624,16 +606,16 @@ const getPlatformIcon = (type) => {
 
 const getPlatformColorClass = (type) => {
   switch (type) {
-    case 'youtube':
-      return 'bg-red-100 text-red-600';
-    case 'instagram':
-      return 'bg-pink-100 text-pink-600';
-    case 'twitter':
-      return 'bg-blue-100 text-blue-600';
-    case 'reddit':
-      return 'bg-orange-100 text-orange-600';
+    case "youtube":
+      return "bg-red-100 text-red-600";
+    case "instagram":
+      return "bg-pink-100 text-pink-600";
+    case "twitter":
+      return "bg-blue-100 text-blue-600";
+    case "reddit":
+      return "bg-orange-100 text-orange-600";
     default:
-      return 'bg-gray-100 text-gray-600';
+      return "bg-gray-100 text-gray-600";
   }
 };
 </script>
@@ -644,7 +626,10 @@ const getPlatformColorClass = (type) => {
   color: #1f2937;
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4 {
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
   font-weight: 700;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
@@ -685,7 +670,8 @@ const getPlatformColorClass = (type) => {
   color: inherit;
 }
 
-.prose ul, .prose ol {
+.prose ul,
+.prose ol {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
 }
