@@ -12,10 +12,10 @@
             <ArrowLeft class="w-5 h-5 md:w-5 md:h-5" />
           </button>
           <h2 class="text-lg md:text-2xl font-bold text-gray-900 truncate">
-            {{ isNew ? 'New Note' : (isEditMode ? 'Edit Note' : parsed?.title || 'Note') }}
+            {{ isNew ? 'New Note' : 'Edit Note' }}
           </h2>
           <span
-            v-if="detectedType && !isEditMode"
+            v-if="detectedType"
             class="hidden sm:inline-block px-3 py-1 text-xs font-medium rounded-full flex-shrink-0"
             :class="typeClass"
           >
@@ -23,195 +23,26 @@
           </span>
         </div>
         <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
-          <!-- View Mode Buttons -->
-          <template v-if="!isNew && !isEditMode">
-            <button
-              @click="isEditMode = true"
-              class="flex items-center px-3 md:px-4 py-2 text-sm font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
-            >
-              <FileText class="w-4 h-4 md:mr-2" />
-              <span class="hidden md:inline">Edit</span>
-            </button>
-            <button
-              @click="$emit('delete')"
-              class="flex items-center px-3 md:px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors touch-manipulation"
-            >
-              <Trash2 class="w-4 h-4 md:mr-2" />
-              <span class="hidden md:inline">Delete</span>
-            </button>
-          </template>
-          
-          <!-- Edit Mode Buttons -->
-          <template v-else>
-            <button
-              v-if="!isNew"
-              @click="cancelEdit"
-              class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
-            >
-              Cancel
-            </button>
-            <button
-              v-else
-              @click="$emit('cancel')"
-              class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
-            >
-              Cancel
-            </button>
-            <button
-              @click="handleSave"
-              :disabled="!content.trim()"
-              class="flex items-center px-4 md:px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors touch-manipulation"
-            >
-              <Save class="w-4 h-4 md:mr-2" />
-              <span class="hidden md:inline">Save</span>
-            </button>
-          </template>
+          <button
+            @click="$emit('cancel')"
+            class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation"
+          >
+            Cancel
+          </button>
+          <button
+            @click="handleSave"
+            :disabled="!content.trim()"
+            class="flex items-center px-4 md:px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors touch-manipulation"
+          >
+            <Save class="w-4 h-4 md:mr-2" />
+            <span class="hidden md:inline">Save</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Reading View (for existing notes) -->
-    <div v-if="!isNew && !isEditMode" class="flex-1 overflow-auto p-4 md:p-12 mx-auto">
-      <div class="space-y-8">
-        <!-- Title -->
-        <div v-if="parsed?.title">
-          <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ parsed.title }}</h1>
-        </div>
-
-        <!-- Notes Structure (Credentials or Bookmark) -->
-        <!-- Password Fields -->
-        <div v-if="parsed?.type === 'password'" class="space-y-4">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Credentials</h3>
-          
-          <div v-if="parsed.tags.email || parsed.tags.username" class="p-6 bg-gray-50 rounded-xl border border-gray-200">
-            <span class="text-sm text-gray-600 font-semibold">{{ parsed.tags.email ? 'Email' : 'Username' }}</span>
-            <p class="text-lg text-gray-900 mt-2" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags.email || parsed.tags.username }}</p>
-          </div>
-
-          <div v-if="parsed.tags.password" class="p-6 bg-blue-50 rounded-xl border border-blue-200">
-            <span class="text-sm text-blue-700 font-semibold">Password</span>
-            <p class="text-lg text-blue-900 mt-2 font-bold" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags.password }}</p>
-          </div>
-
-          <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-6 bg-green-50 rounded-xl border border-green-200">
-            <span class="text-sm text-green-700 font-semibold mb-2 block">2FA Code</span>
-            <div v-if="totpCode && totpCode !== 'Invalid Secret'">
-              <p class="text-5xl font-bold text-green-900 tracking-wider mb-2" style="font-family: 'SF Mono', 'Monaco', monospace">
-                {{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}
-              </p>
-              <div class="flex items-center gap-2 text-sm text-green-600">
-                <div class="flex-1 h-2 bg-green-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-green-600 transition-all duration-1000 ease-linear"
-                    :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"
-                  ></div>
-                </div>
-                <span>{{ totpTimeRemaining }}s</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="parsed.tags.domains" class="p-6 bg-gray-50 rounded-xl border border-gray-200">
-            <span class="text-sm text-gray-600 font-semibold">Domains</span>
-            <p class="text-base text-gray-900 mt-2">{{ parsed.tags.domains }}</p>
-          </div>
-        </div>
-
-        <!-- Bookmark URL -->
-        <div v-if="parsed?.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)">
-          <div class="p-6 bg-blue-50 rounded-xl border border-blue-200">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <span class="text-sm text-blue-700 font-semibold block mb-2">Bookmark URL</span>
-                <p class="text-base text-blue-700 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
-              </div>
-              <a
-                :href="parsed.tags.bookmark || parsed.tags.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex-shrink-0 flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
-                title="Open in new tab"
-              >
-                <ExternalLink class="w-4 h-4 mr-2" />
-                Open
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Note Content (Markdown Parsed) -->
-        <div v-if="parsed?.content" class="prose prose-lg">
-          <div 
-            class="markdown-body text-gray-800"
-            v-html="renderedMarkdown"
-          ></div>
-        </div>
-
-        <!-- Attachments -->
-        <div v-if="attachments.length > 0">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Attachments ({{ attachments.length }})</h3>
-          <div class="grid grid-cols-3 gap-4">
-            <div
-              v-for="(attachment, index) in attachments"
-              :key="index"
-              class="p-4 bg-white rounded-xl border border-gray-200 hover:border-emerald-400 transition-colors"
-            >
-              <div v-if="attachment.preview" class="w-full h-32 rounded overflow-hidden mb-3">
-                <img :src="attachment.preview" :alt="attachment.name" class="w-full h-full object-cover" />
-              </div>
-              <div v-else class="w-full h-32 rounded bg-gray-100 flex items-center justify-center mb-3">
-                <File class="w-12 h-12 text-gray-400" />
-              </div>
-              <p class="text-sm font-medium text-gray-900 truncate mb-1">{{ attachment.name }}</p>
-              <div class="flex items-center justify-between">
-                <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
-                <button
-                  @click="downloadAttachment(attachment)"
-                  class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                  title="Download"
-                >
-                  <Download class="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- References -->
-        <div v-if="parsed?.references && parsed.references.length > 0">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">References ({{ parsed.references.length }})</h3>
-          <div class="space-y-3">
-            <a
-              v-for="(ref, index) in parsed.references"
-              :key="index"
-              :href="ref.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-purple-400 hover:shadow-lg transition-all group"
-            >
-              <div class="flex-shrink-0 mr-4">
-                <div
-                  class="w-12 h-12 rounded-xl flex items-center justify-center"
-                  :class="getPlatformColorClass(ref.type)"
-                >
-                  <component :is="getPlatformIcon(ref.type)" class="w-6 h-6" />
-                </div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-semibold text-gray-900">{{ ref.platform }}</span>
-                  <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                </div>
-                <p class="text-sm text-gray-600 truncate">{{ ref.url }}</p>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Editor View (for new notes or edit mode) -->
-    <div v-else class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8">
+    <!-- Editor View -->
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8">
       <!-- Editor Panel -->
       <div class="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden min-h-0">
         <!-- Toolbar -->
@@ -417,177 +248,59 @@
         </div>
       </div>
 
-      <!-- Preview Panel -->
+      <!-- Preview Panel - Detected Tags -->
       <div class="hidden lg:flex lg:w-1/2 flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden min-h-0">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 class="text-sm font-semibold text-gray-900">Live Preview</h3>
+          <h3 class="text-sm font-semibold text-gray-900">Detected Tags</h3>
         </div>
         <div class="flex-1 p-6 overflow-auto">
-          <div
-            v-if="parsed && content.trim()"
-            class="space-y-6"
-          >
-            <!-- Title (Always at top) -->
-            <div v-if="parsed.title">
-              <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ parsed.title }}</h3>
-              <div class="flex items-center gap-2 mb-4">
-                <span
-                  class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full"
-                  :class="typeClass"
-                >
-                  <component :is="typeIcon" class="w-3.5 h-3.5 mr-1.5" />
-                  {{ detectedType }}
+          <div v-if="parsed && content.trim()" class="space-y-3">
+            <!-- Type Badge -->
+            <div v-if="detectedType" class="flex items-center gap-2 mb-4">
+              <span
+                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full"
+                :class="typeClass"
+              >
+                <component :is="typeIcon" class="w-4 h-4 mr-1.5" />
+                {{ detectedType }}
+              </span>
+            </div>
+
+            <!-- Tags List -->
+            <div class="space-y-2">
+              <div
+                v-for="(value, key) in parsed.tags"
+                :key="key"
+                class="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+              >
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <code class="text-xs font-semibold text-gray-700">#@{{ key }}</code>
+                  </div>
+                  <p class="text-sm text-gray-900 break-all" style="font-family: 'SF Mono', 'Monaco', monospace">
+                    {{ value }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attachments Count -->
+            <div v-if="attachments.length > 0" class="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+              <div class="flex items-center gap-2">
+                <Paperclip class="w-4 h-4 text-emerald-700" />
+                <span class="text-sm font-medium text-emerald-900">
+                  {{ attachments.length }} attachment{{ attachments.length !== 1 ? 's' : '' }}
                 </span>
               </div>
             </div>
 
-            <!-- Content/Notes Body (Second - main content) -->
-            <div v-if="parsed.content" class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <span class="text-xs text-gray-600 font-semibold mb-3 block">{{ parsed.type === 'note' ? 'Content' : 'Notes' }}</span>
-              <div 
-                class="text-sm text-gray-900 markdown-body"
-                v-html="renderedMarkdown"
-              ></div>
-            </div>
-
-            <!-- Password Fields -->
-            <div v-if="parsed.type === 'password'" class="space-y-3 mt-6">
-              <div v-if="parsed.tags.email || parsed.tags.username" class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <span class="text-xs text-gray-600 font-semibold">{{ parsed.tags.email ? 'Email' : 'Username' }}</span>
-                <p class="text-sm text-gray-900 mt-1.5" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags.email || parsed.tags.username }}</p>
-              </div>
-
-              <div v-if="parsed.tags.password" class="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <span class="text-xs text-blue-700 font-semibold">Password</span>
-                <p class="text-sm text-blue-900 mt-1.5 font-bold" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags.password }}</p>
-              </div>
-
-              <div v-if="parsed.tags['2fa'] || parsed.tags.totp" class="p-4 bg-green-50 rounded-xl border border-green-200">
-                <span class="text-xs text-green-700 font-semibold">2FA Secret</span>
-                <p class="text-xs text-green-900 mt-1.5 break-all" style="font-family: 'SF Mono', 'Monaco', monospace">{{ parsed.tags['2fa'] || parsed.tags.totp }}</p>
-                
-                <!-- TOTP Code -->
-                <div v-if="totpCode && totpCode !== 'Invalid Secret'" class="mt-3 pt-3 border-t border-green-300">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs text-green-700 font-semibold">Current Code</span>
-                    <span class="text-xs text-green-600">{{ totpTimeRemaining }}s</span>
-                  </div>
-                  <p class="text-3xl font-bold text-green-900 tracking-wider" style="font-family: 'SF Mono', 'Monaco', monospace">
-                    {{ totpCode.slice(0, 3) }} {{ totpCode.slice(3, 6) }}
-                  </p>
-                  <div class="mt-2 h-1 bg-green-200 rounded-full overflow-hidden">
-                    <div 
-                      class="h-full bg-green-600 transition-all duration-1000 ease-linear"
-                      :style="{ width: `${(totpTimeRemaining / 30) * 100}%` }"
-                    ></div>
-                  </div>
-                </div>
-                <div v-else-if="totpCode === 'Invalid Secret'" class="mt-3 pt-3 border-t border-green-300">
-                  <p class="text-xs text-red-600">Invalid 2FA secret format</p>
-                </div>
-              </div>
-
-              <div v-if="parsed.tags.domains" class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <span class="text-xs text-gray-600 font-semibold">Domains</span>
-                <p class="text-sm text-gray-900 mt-1.5">{{ parsed.tags.domains }}</p>
-              </div>
-            </div>
-
-            <!-- Attachments Preview -->
-            <div v-if="attachments.length > 0" class="mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-              <div class="flex items-center mb-3">
-                <Paperclip class="w-4 h-4 text-emerald-700 mr-2" />
-                <span class="text-xs text-emerald-700 font-semibold">Attachments ({{ attachments.length }})</span>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div
-                  v-for="(attachment, index) in attachments"
-                  :key="index"
-                  class="relative group p-2 bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 transition-colors"
-                >
-                  <div v-if="attachment.preview" class="w-full h-24 rounded overflow-hidden mb-2">
-                    <img :src="attachment.preview" :alt="attachment.name" class="w-full h-full object-cover" />
-                  </div>
-                  <div v-else class="w-full h-24 rounded bg-gray-100 flex items-center justify-center mb-2">
-                    <File class="w-8 h-8 text-gray-400" />
-                  </div>
-                  <p class="text-xs font-medium text-gray-900 truncate">{{ attachment.name }}</p>
-                  <div class="flex items-center justify-between">
-                    <p class="text-xs text-gray-500">{{ formatFileSize(attachment.size) }}</p>
-                    <button
-                      @click="downloadAttachment(attachment)"
-                      class="p-1 text-emerald-600 hover:bg-emerald-100 rounded transition-colors"
-                      title="Download"
-                    >
-                      <Download class="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- References Section -->
-            <div v-if="parsed.references && parsed.references.length > 0" class="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
-              <div class="flex items-center mb-3">
-                <Link2 class="w-4 h-4 text-purple-700 mr-2" />
-                <span class="text-xs text-purple-700 font-semibold">References ({{ parsed.references.length }})</span>
-              </div>
-              <div class="space-y-2">
-                <a
-                  v-for="(ref, index) in parsed.references"
-                  :key="index"
-                  :href="ref.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex items-start p-3 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
-                >
-                  <!-- Platform Icon -->
-                  <div class="flex-shrink-0 mr-3">
-                    <div
-                      class="w-8 h-8 rounded-lg flex items-center justify-center"
-                      :class="getPlatformColorClass(ref.type)"
-                    >
-                      <component :is="getPlatformIcon(ref.type)" class="w-4 h-4" />
-                    </div>
-                  </div>
-                  
-                  <!-- Reference Info -->
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="text-xs font-semibold text-gray-900">{{ ref.platform }}</span>
-                      <ExternalLink class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                    </div>
-                    <p class="text-xs text-gray-600 truncate">{{ ref.url }}</p>
-                    <div v-if="ref.subreddit" class="text-xs text-gray-500 mt-1">
-                      r/{{ ref.subreddit }}
-                    </div>
-                    <div v-if="ref.username" class="text-xs text-gray-500 mt-1">
-                      @{{ ref.username }}
-                    </div>
-                  </div>
-                </a>
-              </div>
-            </div>
-
-            <!-- Bookmark Fields (Bottom) -->
-            <div v-if="parsed.type === 'bookmark' && (parsed.tags.bookmark || parsed.tags.url)">
-              <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex-1 min-w-0">
-                    <span class="text-xs text-blue-700 font-semibold">URL</span>
-                    <p class="text-sm text-blue-700 mt-1.5 break-all">{{ parsed.tags.bookmark || parsed.tags.url }}</p>
-                  </div>
-                  <a
-                    :href="parsed.tags.bookmark || parsed.tags.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex-shrink-0 flex items-center px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
-                    title="Open in new tab"
-                  >
-                    <ExternalLink class="w-3.5 h-3.5 mr-1.5" />
-                    Open
-                  </a>
-                </div>
+            <!-- References Count -->
+            <div v-if="parsed.references && parsed.references.length > 0" class="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <div class="flex items-center gap-2">
+                <Link2 class="w-4 h-4 text-purple-700" />
+                <span class="text-sm font-medium text-purple-900">
+                  {{ parsed.references.length }} reference{{ parsed.references.length !== 1 ? 's' : '' }}
+                </span>
               </div>
             </div>
           </div>
@@ -645,6 +358,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  forceEditMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['save', 'cancel', 'delete']);
@@ -662,7 +379,7 @@ const attachments = ref([]);
 const isDragging = ref(false);
 
 // Edit mode state
-const isEditMode = ref(props.isNew); // Start in edit mode for new notes
+const isEditMode = ref(true); // Always in edit mode
 const originalContent = ref(props.initialContent);
 
 // Parse content in real-time
@@ -857,12 +574,6 @@ const handleSave = () => {
     isEditMode.value = false;
     originalContent.value = content.value;
   }
-};
-
-// Cancel edit handler
-const cancelEdit = () => {
-  content.value = originalContent.value;
-  isEditMode.value = false;
 };
 
 // Attachment handlers

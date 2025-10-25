@@ -5,6 +5,7 @@
       :initialContent="noteContent"
       :isNew="isNewNote"
       :noteId="noteId"
+      :forceEditMode="true"
       @save="handleSave"
       @cancel="handleCancel"
       @delete="handleDelete"
