@@ -4,71 +4,78 @@
     <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-2">Statistics</h2>
     <p class="text-gray-600 mb-6 md:mb-8">Overview of your notes and app status</p>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="flex justify-center items-center py-20">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div v-else class="space-y-6">
+      <!-- Overview Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Total Notes -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Total Notes</h3>
+            <FileText class="w-5 h-5 text-blue-600" />
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.totalNotes }}</p>
         </div>
 
-        <!-- Stats Grid -->
-        <div v-else class="space-y-6">
-          <!-- Overview Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Total Notes -->
-            <div class="bg-white rounded-xl border border-gray-200 p-6">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Total Notes</h3>
-                <FileText class="w-5 h-5 text-blue-600" />
-              </div>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.totalNotes }}</p>
-            </div>
-
-            <!-- Deleted Notes -->
-            <div class="bg-white rounded-xl border border-gray-200 p-6">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Deleted Notes</h3>
-                <Trash2 class="w-5 h-5 text-red-600" />
-              </div>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.deletedNotes }}</p>
-              <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">Automatically purged after 90 days</p>
-            </div>
-
-            <!-- Created Date -->
-            <div class="bg-white rounded-xl border border-gray-200 p-6">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">First Note Created</h3>
-                <Calendar class="w-5 h-5 text-green-600" />
-              </div>
-              <p class="text-lg font-semibold text-gray-900">{{ stats.oldestNoteDate }}</p>
-            </div>
+        <!-- Deleted Notes -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Deleted Notes</h3>
+            <Trash2 class="w-5 h-5 text-red-600" />
           </div>
+          <p class="text-3xl font-bold text-gray-900">{{ stats.deletedNotes }}</p>
+          <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">Automatically purged after 90 days</p>
+        </div>
 
-          <!-- Storage Info -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <HardDrive class="w-5 h-5 mr-2" />
-              Storage
-            </h3>
+        <!-- Created Date -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">First Note Created</h3>
+            <Calendar class="w-5 h-5 text-green-600" />
+          </div>
+          <p class="text-lg font-semibold text-gray-900">{{ stats.oldestNoteDate }}</p>
+        </div>
+      </div>
 
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Database Name</span>
-                <span class="text-sm font-mono font-medium text-gray-900">{{ stats.dbName }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">App Version</span>
-                <span class="text-sm font-medium text-gray-900">{{ stats.appVersion }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Encryption</span>
-                <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                  <Shield class="w-3 h-3 mr-1" />
-                  Active
-                </span>
-              </div>
-            </div>
+      <!-- Storage Info -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+          <HardDrive class="w-5 h-5 mr-2" />
+          Storage
+        </h3>
+
+        <!-- Database Size - Large Display -->
+        <div class="mb-6 p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100">
+          <div class="text-sm font-medium text-gray-600 mb-2">Database Size</div>
+          <div class="text-5xl font-bold text-gray-900 mb-1">{{ stats.dbSize.value }}</div>
+          <div class="text-2xl font-semibold text-gray-600">{{ stats.dbSize.unit }}</div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Database Name</span>
+            <span class="text-sm font-mono font-medium text-gray-900">{{ stats.dbName }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">App Version</span>
+            <span class="text-sm font-medium text-gray-900">{{ stats.appVersion }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Encryption</span>
+            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+              <Shield class="w-3 h-3 mr-1" />
+              Active
+            </span>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -86,6 +93,7 @@ const stats = ref({
   oldestNoteDate: "N/A",
   dbName: "",
   appVersion: version,
+  dbSize: { value: 0, unit: "KB" },
 });
 
 const loadStats = async () => {
@@ -110,11 +118,59 @@ const loadStats = async () => {
 
     // Get DB name
     stats.value.dbName = db.name;
+
+    // Calculate database size
+    await calculateDatabaseSize();
   } catch (error) {
     console.error("Error loading stats:", error);
   } finally {
     isLoading.value = false;
   }
+};
+
+const calculateDatabaseSize = async () => {
+  try {
+    // Get all data from the database
+    const notes = await db.notes.toArray();
+
+    // Calculate size by stringifying all data
+    let totalSize = 0;
+
+    // Size of notes
+    totalSize += new Blob([JSON.stringify(notes)]).size;
+
+    // Get attachments if they exist
+    if (db.attachments) {
+      const attachments = await db.attachments.toArray();
+      for (const attachment of attachments) {
+        if (attachment.data) {
+          totalSize += attachment.data.byteLength || 0;
+        }
+      }
+    }
+
+    // Convert bytes to human-readable format
+    stats.value.dbSize = formatBytes(totalSize);
+  } catch (error) {
+    console.error("Error calculating database size:", error);
+    stats.value.dbSize = { value: 0, unit: "KB" };
+  }
+};
+
+const formatBytes = (bytes) => {
+  if (bytes === 0) return { value: 0, unit: "KB" };
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  // Round to 2 decimal places
+  const value = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+
+  return {
+    value: value,
+    unit: sizes[i],
+  };
 };
 
 const formatFullDate = (timestamp) => {
