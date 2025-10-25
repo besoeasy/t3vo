@@ -1,6 +1,3 @@
-<img width="2357" height="1391" alt="Screenshot From 2025-10-26 00-53-50" src="https://github.com/user-attachments/assets/828cac85-415c-480e-9085-127c09f47a39" />
-
-
 > **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). The reason is that the app auto-updates with new features, which you may not want immediately. By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
 # T3VO - Unified Note Vault
