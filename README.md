@@ -116,16 +116,6 @@ Attach presentation.pdf, mockups.png for reference.
 
 👉 See [TAGS.md](./TAGS.md) for complete tag documentation
 
-## 🛠️ Technology Stack
-
-- **Vue 3**: Composition API for reactive UI
-- **Vite**: Lightning-fast build tool
-- **IndexedDB**: Client-side database via Dexie.js
-- **CryptoJS**: AES encryption for security
-- **Marked**: Markdown parsing and rendering
-- **PeerJS**: WebRTC for peer-to-peer sync
-- **Tailwind CSS**: Utility-first styling
-- **Lucide Icons**: Beautiful icon set
 
 ## 📱 Features in Detail
 
@@ -145,15 +135,6 @@ Write notes using full markdown syntax:
 - Preview thumbnails for images
 - Download attachments anytime
 - Stored encrypted in your local database
-
-### Media References
-
-Automatically extract and display links from:
-
-- **YouTube**: Video links with YouTube icon
-- **Instagram**: Post links with Instagram icon
-- **Twitter/X**: Tweet links with Twitter icon
-- **Reddit**: Post/comment links with Reddit icon
 
 ### Device Sync
 
@@ -206,10 +187,6 @@ Contributions are welcome! Feel free to:
 - 💡 Suggest new features
 - 🔧 Submit pull requests
 - 📖 Improve documentation
-
-## 📄 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
 
 ## ⭐ Show Your Support
 
