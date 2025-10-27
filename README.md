@@ -138,7 +138,6 @@ Write notes using full markdown syntax:
 - Download attachments anytime
 - Stored encrypted in your local database
 
-
 ### Device & Cloud Sync
 
 - **🏠 Host/Guest Architecture**: First device becomes host, others auto-connect as guests
@@ -151,7 +150,6 @@ Write notes using full markdown syntax:
 - **⚡ Automatic conflict resolution**: Newest timestamp wins
 - **🔒 Encrypted data transfer**: Notes stay encrypted during sync
 - **🌐 Works across different networks**: Uses public STUN servers
-
 
 ### Backup, Restore & S3/MinIO Sync
 
@@ -197,3 +195,43 @@ Contributions are welcome! Feel free to:
 ## ⭐ Show Your Support
 
 If you find T3VO useful, please consider giving it a star on GitHub!
+
+## 📊 Comparison with Other Apps
+
+Below is a detailed comparison of **T3VO** with other popular note-taking and password management apps:
+
+| Feature / App              | **T3VO** | Bitwarden | Standard Notes | Joplin | Notion | Obsidian |
+| -------------------------- | :------: | :-------: | :------------: | :----: | :----: | :------: |
+| **Client-Side Encryption** |  ✅ AES  |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Zero-Knowledge**         |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Offline-First**          |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Smart Tag System**       |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **Markdown Support**       |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **File Attachments**       |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **Media Embeds**           |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
+| **Password Manager**       |    ✅    |    ✅     |       ❌       |   ❌   |   ❌   |    ❌    |
+| **2FA/TOTP Support**       |    ✅    |    ✅     |       ❌       |   ❌   |   ❌   |    ❌    |
+| **Bookmark Manager**       |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
+| **P2P Device Sync**        |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
+| **S3/MinIO Sync**          |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
+| **Cloud Sync**             |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **Mobile Support**         |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **Open Source**            |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **No Tracking/Analytics**  |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Free to Self-Host**      |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Rich Statistics**        |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
+| **Split-Screen Editor**    |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
+| **Distraction-Free Mode**  |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
+| **Works Without Server**   |    ✅    |    ❌     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Works on Web**           |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ❌    |
+| **Self-Hosted**            |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Unlimited Usage**        |    ✅    |   ✅\*    |       ✅       |   ✅   |  ❌\*  |    ✅    |
+
+> **Legend:**
+>
+> - ✅ = Supported / Available
+> - ❌ = Not Supported / Not Available
+> - ✅\* = Unlimited for self-hosted/community version
+> - ❌\* = Usage limits on free plan
+
+**T3VO** stands out for its unified approach (notes, passwords, bookmarks, and more in one place), strong privacy, offline-first design, and unique peer-to-peer sync with optional S3/MinIO cloud backup. For a full breakdown of tag-based features, see [TAGS.md](./TAGS.md).
