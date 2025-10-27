@@ -18,6 +18,10 @@
       <input v-model="config.bucket" required />
     </div>
     <div class="form-row">
+      <label>Region:</label>
+      <input v-model="config.region" placeholder="e.g. us-east-1" required />
+    </div>
+    <div class="form-row">
       <label>Use SSL:</label>
       <input type="checkbox" v-model="config.useSSL" />
     </div>
@@ -28,7 +32,7 @@
 
     <div v-if="minioStatus" class="server-info">
       <div class="info-badge" :class="minioStatus.connected ? 'online' : 'offline'">
-        {{ minioStatus.connected ? "🟢 MinIO Connected" : "🔴 MinIO Disconnected" }}
+        {{ minioStatus.connected ? "🟢 S3 Connected" : "🔴 S3 Disconnected" }}
       </div>
       <div class="info-stats">
         <div>Total Notes: {{ minioStatus.totalNotes || 0 }}</div>
@@ -37,8 +41,8 @@
     </div>
 
     <div class="button-group">
-      <button @click="syncToMinio" :disabled="syncing || !minioConnected" class="btn-primary">📤 Upload to MinIO</button>
-      <button @click="syncFromMinio" :disabled="syncing || !minioConnected" class="btn-primary">📥 Download from MinIO</button>
+      <button @click="syncToMinio" :disabled="syncing || !minioConnected" class="btn-primary">📤 Upload to S3</button>
+      <button @click="syncFromMinio" :disabled="syncing || !minioConnected" class="btn-primary">📥 Download from S3</button>
       <button @click="fullSync" :disabled="syncing || !minioConnected" class="btn-success">🔄 Full Sync (Two-Way)</button>
     </div>
 
@@ -86,6 +90,7 @@ const config = reactive({
   accessKeyId: localStorage.getItem("minio_accessKeyId") || "",
   secretAccessKey: localStorage.getItem("minio_secretAccessKey") || "",
   bucket: localStorage.getItem("minio_bucket") || "notes",
+  region: localStorage.getItem("minio_region") || "us-east-1",
   useSSL: localStorage.getItem("minio_useSSL") === "true" || false,
 });
 
@@ -95,7 +100,7 @@ let BUCKET_NAME = config.bucket;
 function createS3Client() {
   const endpoint = config.endpoint.replace(/\/$/, "");
   return new S3Client({
-    region: "us-east-1",
+    region: config.region || "us-east-1",
     endpoint: endpoint,
     forcePathStyle: true,
     credentials: {
@@ -110,6 +115,7 @@ function applyConfig() {
   localStorage.setItem("minio_accessKeyId", config.accessKeyId);
   localStorage.setItem("minio_secretAccessKey", config.secretAccessKey);
   localStorage.setItem("minio_bucket", config.bucket);
+  localStorage.setItem("minio_region", config.region);
   localStorage.setItem("minio_useSSL", config.useSSL ? "true" : "false");
   s3Client = createS3Client();
   BUCKET_NAME = config.bucket;

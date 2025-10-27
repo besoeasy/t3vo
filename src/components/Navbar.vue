@@ -74,6 +74,17 @@
         <BarChart3 class="w-5 h-5" />
       </router-link>
 
+
+      <!-- S3/MinIO Link -->
+      <router-link
+        to="/s3"
+        @click="mobileMenuOpen = false"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
+        title="S3 / MinIO Cloud Storage"
+      >
+        <Cloud class="w-5 h-5" />
+      </router-link>
+
       <!-- Backup Link -->
       <router-link
         to="/backup"
@@ -121,7 +132,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Plus, Lock, Database, BarChart3, Wifi, Menu, X, ArrowLeft } from "lucide-vue-next";
+import { Plus, Lock, Database, BarChart3, Wifi, Menu, X, ArrowLeft, Cloud } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
