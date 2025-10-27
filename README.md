@@ -1,6 +1,6 @@
 > **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). The reason is that the app auto-updates with new features, which you may not want immediately. By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
-# T3VO - Unified Note Vault
+# T3VO - T3VO: Where Notes, Passwords & Bookmarks Become One.
 
 T3VO is a secure, offline-first note-taking app with smart tag-based organization and rich features. Everything is a note—use simple tags to automatically organize passwords, bookmarks, and regular notes with markdown support, file attachments, and media references.
 
@@ -63,7 +63,7 @@ https://github.com/user-attachments/assets/69c97452-6241-4602-8548-3ec5d74c4018
 #@title=Gmail Account
 #@email=user@gmail.com
 #@password=SecurePassword123
-#@2fa=JBSWY3DPEHPK3PXP
+#@2fa=4XGVXHPFIMZTRMRNJALZ4K7QWHZH3S5R
 #@domains=gmail.com, mail.google.com
 
 ## Notes
