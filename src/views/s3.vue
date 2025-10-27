@@ -1,68 +1,141 @@
 <template>
-  <form class="minio-config-form" @submit.prevent="applyConfig">
-    <h3>MinIO/S3 Configuration</h3>
-    <div class="form-row">
-      <label>Endpoint:</label>
-      <input v-model="config.endpoint" placeholder="e.g. http://localhost:9000" required />
-    </div>
-    <div class="form-row">
-      <label>Access Key:</label>
-      <input v-model="config.accessKeyId" required />
-    </div>
-    <div class="form-row">
-      <label>Secret Key:</label>
-      <input v-model="config.secretAccessKey" type="password" required />
-    </div>
-    <div class="form-row">
-      <label>Bucket:</label>
-      <input v-model="config.bucket" required />
-    </div>
-    <div class="form-row">
-      <label>Region:</label>
-      <input v-model="config.region" placeholder="e.g. us-east-1" required />
-    </div>
-    <div class="form-row">
-      <label>Use SSL:</label>
-      <input type="checkbox" v-model="config.useSSL" />
-    </div>
-    <button type="submit" class="btn-primary">Apply</button>
-  </form>
-  <div class="sync-container">
-    <h2>Sync Notes With MinIO</h2>
-
-    <div v-if="minioStatus" class="server-info">
-      <div class="info-badge" :class="minioStatus.connected ? 'online' : 'offline'">
-        {{ minioStatus.connected ? "🟢 S3 Connected" : "🔴 S3 Disconnected" }}
+  <div class="flex flex-col items-center min-h-screen bg-white dark:bg-gray-900 py-6 px-2 sm:px-4">
+    <form
+      @submit.prevent="applyConfig"
+      class="w-full max-w-md bg-gray-50 dark:bg-gray-800 rounded-xl shadow p-6 mb-8 border border-gray-200 dark:border-gray-700"
+    >
+      <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white text-center">MinIO / S3 Configuration</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint</label>
+          <input
+            v-model="config.endpoint"
+            placeholder="e.g. http://localhost:9000"
+            required
+            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Access Key</label>
+          <input
+            v-model="config.accessKeyId"
+            required
+            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Secret Key</label>
+          <input
+            v-model="config.secretAccessKey"
+            type="password"
+            required
+            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bucket</label>
+          <input
+            v-model="config.bucket"
+            required
+            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
+          <input
+            v-model="config.region"
+            placeholder="e.g. us-east-1"
+            required
+            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" v-model="config.useSSL" id="useSSL" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-400" />
+          <label for="useSSL" class="text-sm text-gray-700 dark:text-gray-300">Use SSL</label>
+        </div>
       </div>
-      <div class="info-stats">
-        <div>Total Notes: {{ minioStatus.totalNotes || 0 }}</div>
-        <div v-if="minioStatus.oldestEntry">Oldest: {{ new Date(minioStatus.oldestEntry).toLocaleDateString() }}</div>
+      <button type="submit" class="mt-6 w-full py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Apply</button>
+    </form>
+
+    <section class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-white text-center">Sync Notes With MinIO</h2>
+
+      <div v-if="minioStatus" class="flex flex-col items-center mb-4">
+        <span
+          :class="
+            minioStatus.connected
+              ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+              : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+          "
+          class="px-3 py-1 rounded-full text-sm font-medium mb-2"
+        >
+          {{ minioStatus.connected ? "🟢 S3 Connected" : "🔴 S3 Disconnected" }}
+        </span>
+        <div class="flex gap-4 text-gray-700 dark:text-gray-300 text-sm">
+          <div>
+            Total Notes: <span class="font-semibold">{{ minioStatus.totalNotes || 0 }}</span>
+          </div>
+          <div v-if="minioStatus.oldestEntry">
+            Oldest: <span class="font-semibold">{{ new Date(minioStatus.oldestEntry).toLocaleDateString() }}</span>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="button-group">
-      <button @click="syncToMinio" :disabled="syncing || !minioConnected" class="btn-primary">📤 Upload to S3</button>
-      <button @click="syncFromMinio" :disabled="syncing || !minioConnected" class="btn-primary">📥 Download from S3</button>
-      <button @click="fullSync" :disabled="syncing || !minioConnected" class="btn-success">🔄 Full Sync (Two-Way)</button>
-    </div>
-
-    <div v-if="syncing" class="progress-section">
-      <div class="status-text">{{ statusMessage }}</div>
-      <progress :value="progress" :max="total"></progress>
-      <span class="progress-text">{{ progress }} / {{ total }} notes</span>
-    </div>
-
-    <div v-if="syncResult" class="result-section">
-      <div class="done-message">✓ Sync Complete!</div>
-      <div class="stats">
-        <div v-if="syncResult.uploaded !== undefined">Uploaded: {{ syncResult.uploaded }}</div>
-        <div v-if="syncResult.downloaded !== undefined">Downloaded: {{ syncResult.downloaded }}</div>
-        <div v-if="syncResult.merged !== undefined">Merged: {{ syncResult.merged }}</div>
-        <div v-if="syncResult.conflicts !== undefined">Conflicts resolved: {{ syncResult.conflicts }}</div>
+      <div class="flex flex-col sm:flex-row gap-3 mb-6">
+        <button
+          @click="syncToMinio"
+          :disabled="syncing || !minioConnected"
+          class="flex-1 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+        >
+          📤 Upload to S3
+        </button>
+        <button
+          @click="syncFromMinio"
+          :disabled="syncing || !minioConnected"
+          class="flex-1 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+        >
+          📥 Download from S3
+        </button>
+        <button
+          @click="fullSync"
+          :disabled="syncing || !minioConnected"
+          class="flex-1 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+        >
+          🔄 Full Sync (Two-Way)
+        </button>
       </div>
-    </div>
 
-    <div v-if="error" class="error-message">⚠ Error: {{ error }}</div>
+      <div v-if="syncing" class="bg-gray-50 dark:bg-gray-900 rounded p-4 mb-4">
+        <div class="font-medium text-gray-700 dark:text-gray-200 mb-2 text-center">{{ statusMessage }}</div>
+        <progress :value="progress" :max="total" class="w-full h-4 mb-1"></progress>
+        <div class="text-xs text-gray-500 text-center">{{ progress }} / {{ total }} notes</div>
+      </div>
+
+      <div v-if="syncResult" class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-4 mb-4">
+        <div class="text-green-700 dark:text-green-300 font-bold mb-2 text-center">✓ Sync Complete!</div>
+        <div class="flex flex-wrap gap-4 justify-center text-green-800 dark:text-green-200 text-sm">
+          <div v-if="syncResult.uploaded !== undefined">
+            Uploaded: <span class="font-semibold">{{ syncResult.uploaded }}</span>
+          </div>
+          <div v-if="syncResult.downloaded !== undefined">
+            Downloaded: <span class="font-semibold">{{ syncResult.downloaded }}</span>
+          </div>
+          <div v-if="syncResult.merged !== undefined">
+            Merged: <span class="font-semibold">{{ syncResult.merged }}</span>
+          </div>
+          <div v-if="syncResult.conflicts !== undefined">
+            Conflicts resolved: <span class="font-semibold">{{ syncResult.conflicts }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="error"
+        class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded p-4 font-medium text-center mb-2"
+      >
+        ⚠ Error: {{ error }}
+      </div>
+    </section>
   </div>
 </template>
 
@@ -459,169 +532,3 @@ onMounted(() => {
   checkMinioStatus();
 });
 </script>
-
-<style scoped>
-/* Same styles as original, no changes needed */
-.sync-container {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  margin: 0 0 1.5rem 0;
-  color: #333;
-  text-align: center;
-  font-size: 1.5rem;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-button {
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn-success {
-  background: #28a745;
-  color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-  background: #218838;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.progress-section {
-  background: #f8f9fa;
-  padding: 1.25rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.status-text {
-  font-weight: 500;
-  color: #495057;
-  margin-bottom: 0.75rem;
-  text-align: center;
-}
-
-progress {
-  width: 100%;
-  height: 24px;
-  margin-bottom: 0.5rem;
-  border-radius: 4px;
-}
-
-.progress-text {
-  display: block;
-  text-align: center;
-  font-size: 0.875rem;
-  color: #6c757d;
-}
-
-.result-section {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.done-message {
-  color: #155724;
-  font-weight: bold;
-  font-size: 1.125rem;
-  margin-bottom: 0.75rem;
-  text-align: center;
-}
-
-.stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: #155724;
-}
-
-.stats div {
-  padding: 0.25rem 0;
-}
-
-.error-message {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: 500;
-}
-form.minio-config-form {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  max-width: 400px;
-}
-.minio-config-form h3 {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  color: #333;
-}
-.form-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.form-row label {
-  width: 110px;
-  font-size: 0.98rem;
-  color: #444;
-}
-.form-row input[type="text"],
-.form-row input[type="password"] {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-.form-row input[type="checkbox"] {
-  margin-left: 0.5rem;
-}
-</style>
