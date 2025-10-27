@@ -42,6 +42,7 @@ https://github.com/user-attachments/assets/69c97452-6241-4602-8548-3ec5d74c4018
 
 - **💾 Backup & Restore**: Export/import encrypted JSON backups with attachments
 - **🔄 Device Sync**: Peer-to-peer sync between devices using WebRTC (no cloud!)
+- **☁️ S3/MinIO Sync**: Securely sync your notes to any S3-compatible storage (AWS S3, MinIO, etc.)
 - **📥 Download Attachments**: Download any attached file with a click
 - **🗑️ Soft Delete**: Notes can be recovered before permanent deletion
 
@@ -137,7 +138,8 @@ Write notes using full markdown syntax:
 - Download attachments anytime
 - Stored encrypted in your local database
 
-### Device Sync
+
+### Device & Cloud Sync
 
 - **🏠 Host/Guest Architecture**: First device becomes host, others auto-connect as guests
 - **🔄 Room-Based**: Simple room codes like "happytiger" for easy sharing
@@ -145,16 +147,19 @@ Write notes using full markdown syntax:
 - **🕸️ Mesh Network**: All devices connect directly to each other
 - **📊 QR Code Sharing**: Scan to join rooms instantly
 - **🔐 Peer-to-peer sync using WebRTC**: No cloud server needed!
+- **☁️ S3/MinIO Cloud Sync**: Sync your notes to S3-compatible storage (AWS S3, MinIO, etc.) for backup and multi-device access
 - **⚡ Automatic conflict resolution**: Newest timestamp wins
 - **🔒 Encrypted data transfer**: Notes stay encrypted during sync
 - **🌐 Works across different networks**: Uses public STUN servers
 
-### Backup & Restore
+
+### Backup, Restore & S3/MinIO Sync
 
 - Export all notes as encrypted JSON
 - Includes all attachments (converted to base64)
 - Import backups without losing existing notes
 - Duplicate detection during restore
+- **Sync to S3/MinIO**: Configure your own S3 endpoint, region, and credentials. Upload/download notes and attachments to your private cloud or self-hosted MinIO server. Two-way sync and conflict resolution included.
 
 ## 🔒 Security & Privacy
 
