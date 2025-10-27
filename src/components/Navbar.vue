@@ -11,11 +11,7 @@
     </button>
 
     <!-- Overlay for mobile menu -->
-    <div
-      v-if="mobileMenuOpen"
-      @click="toggleMobileMenu"
-      class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-    ></div>
+    <div v-if="mobileMenuOpen" @click="toggleMobileMenu" class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>
 
     <!-- Left Sidebar -->
     <aside
@@ -24,7 +20,7 @@
         isDashboard ? '' : 'border-r border-gray-200',
         'md:w-[120px] md:py-6 md:px-4 md:relative md:translate-x-0',
         'fixed inset-y-0 left-0 z-40 w-[240px] py-8 px-4',
-        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
       <!-- App Branding -->
@@ -54,12 +50,12 @@
       <!-- Spacer -->
       <div class="flex-1"></div>
 
-      <!-- Sync Link -->
+      <!-- Sync Overview Link -->
       <router-link
-        to="/p2p"
+        to="/sync"
         @click="mobileMenuOpen = false"
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="Device Sync"
+        title="Backup & Sync Options"
       >
         <Wifi class="w-5 h-5" />
       </router-link>
@@ -72,27 +68,6 @@
         title="Statistics"
       >
         <BarChart3 class="w-5 h-5" />
-      </router-link>
-
-
-      <!-- S3/MinIO Link -->
-      <router-link
-        to="/s3"
-        @click="mobileMenuOpen = false"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="S3 / MinIO Cloud Storage"
-      >
-        <Cloud class="w-5 h-5" />
-      </router-link>
-
-      <!-- Backup Link -->
-      <router-link
-        to="/backup"
-        @click="mobileMenuOpen = false"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
-        title="Backup & Restore"
-      >
-        <Database class="w-5 h-5" />
       </router-link>
 
       <!-- GitHub Link -->

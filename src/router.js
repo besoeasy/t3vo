@@ -7,6 +7,7 @@ import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
 import p2p from "@/views/p2p.vue";
 import S3 from "@/views/s3.vue";
+import Sync from "@/views/sync.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -46,9 +47,14 @@ const router = createRouter({
       component: p2p,
     },
     {
-      path: "/S3",
-      name: "S3",
+      path: "/s3",
+      name: "s3",
       component: S3,
+    },
+    {
+      path: "/sync",
+      name: "sync",
+      component: Sync,
     },
   ],
 });
