@@ -6,6 +6,7 @@ import NoteEdit from "@/views/note-edit.vue";
 import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
 import Sync from "@/views/sync.vue";
+import S3 from "@/views/s3.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -43,6 +44,11 @@ const router = createRouter({
       path: "/sync",
       name: "sync",
       component: Sync,
+    },
+    {
+      path: "/S3",
+      name: "S3",
+      component: S3,
     },
   ],
 });
