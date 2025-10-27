@@ -56,7 +56,7 @@
 
       <!-- Sync Link -->
       <router-link
-        to="/sync"
+        to="/p2p"
         @click="mobileMenuOpen = false"
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
         title="Device Sync"

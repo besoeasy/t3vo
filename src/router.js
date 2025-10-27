@@ -5,7 +5,7 @@ import Note from "@/views/note.vue";
 import NoteEdit from "@/views/note-edit.vue";
 import Backup from "@/views/backup.vue";
 import Stats from "@/views/stats.vue";
-import Sync from "@/views/sync.vue";
+import p2p from "@/views/p2p.vue";
 import S3 from "@/views/s3.vue";
 
 const router = createRouter({
@@ -41,9 +41,9 @@ const router = createRouter({
       component: Stats,
     },
     {
-      path: "/sync",
-      name: "sync",
-      component: Sync,
+      path: "/p2p",
+      name: "p2p",
+      component: p2p,
     },
     {
       path: "/S3",
