@@ -87,6 +87,18 @@
         </svg>
       </a>
 
+           <!-- GitHub Link -->
+      <a
+        href="https://coinos.io/BeSoEasy"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
+        title="Donate Bitcoin"
+      >
+              <Bitcoin class="w-5 h-5" />
+
+      </a>
+
       <!-- Settings/Lock Button -->
       <button
         @click="handleLogout"
@@ -107,7 +119,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Plus, Lock, Database, BarChart3, Wifi, Menu, X, ArrowLeft, Cloud } from "lucide-vue-next";
+import { Plus, Lock, Database, BarChart3, Bitcoin, Menu, X, ArrowLeft, Cloud } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
