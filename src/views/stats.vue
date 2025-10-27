@@ -49,12 +49,7 @@
           Storage
         </h3>
 
-        <!-- Database Size - Large Display -->
-        <div class="mb-6 p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100">
-          <div class="text-sm font-medium text-gray-600 mb-2">Database Size</div>
-          <div class="text-5xl font-bold text-gray-900 mb-1">{{ stats.dbSize.value }}</div>
-          <div class="text-2xl font-semibold text-gray-600">{{ stats.dbSize.unit }}</div>
-        </div>
+
 
         <div class="space-y-3">
           <div class="flex items-center justify-between">
@@ -93,7 +88,6 @@ const stats = ref({
   oldestNoteDate: "N/A",
   dbName: "",
   appVersion: version,
-  dbSize: { value: 0, unit: "KB" },
 });
 
 const loadStats = async () => {
@@ -119,8 +113,7 @@ const loadStats = async () => {
     // Get DB name
     stats.value.dbName = db.name;
 
-    // Calculate database size
-    await calculateDatabaseSize();
+  // ...existing code...
   } catch (error) {
     console.error("Error loading stats:", error);
   } finally {
@@ -128,50 +121,7 @@ const loadStats = async () => {
   }
 };
 
-const calculateDatabaseSize = async () => {
-  try {
-    // Get all data from the database
-    const notes = await db.notes.toArray();
 
-    // Calculate size by stringifying all data
-    let totalSize = 0;
-
-    // Size of notes
-    totalSize += new Blob([JSON.stringify(notes)]).size;
-
-    // Get attachments if they exist
-    if (db.attachments) {
-      const attachments = await db.attachments.toArray();
-      for (const attachment of attachments) {
-        if (attachment.data) {
-          totalSize += attachment.data.byteLength || 0;
-        }
-      }
-    }
-
-    // Convert bytes to human-readable format
-    stats.value.dbSize = formatBytes(totalSize);
-  } catch (error) {
-    console.error("Error calculating database size:", error);
-    stats.value.dbSize = { value: 0, unit: "KB" };
-  }
-};
-
-const formatBytes = (bytes) => {
-  if (bytes === 0) return { value: 0, unit: "KB" };
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  // Round to 2 decimal places
-  const value = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
-
-  return {
-    value: value,
-    unit: sizes[i],
-  };
-};
 
 const formatFullDate = (timestamp) => {
   const date = new Date(timestamp);

@@ -57,7 +57,7 @@
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
         title="Backup & Sync Options"
       >
-        <Wifi class="w-5 h-5" />
+        <Database class="w-5 h-5" />
       </router-link>
 
       <!-- Stats Link -->
