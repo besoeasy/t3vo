@@ -92,61 +92,40 @@ export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all")
   // Purge notes deleted for more than 7 days
   const now = Date.now();
   const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-  await db.notes.where('deletedAt').notEqual(null).and(note => note.deletedAt && (now - Number(note.deletedAt) > SEVEN_DAYS)).delete();
+  await db.notes.filter(note => note.deletedAt && (now - Number(note.deletedAt) > SEVEN_DAYS)).delete();
   let notes;
 
-  if (searchQuery || typeFilter !== "all") {
-    // For search or filter, load all notes and filter client-side
-    notes = await db.notes.filter((note) => note.deletedAt === null || note.deletedAt === undefined).toArray();
+  // Always return all notes (including deleted) for dashboard display
+  notes = await db.notes.toArray();
 
-    // Decrypt and parse
-    notes = notes.map((note) => {
-      const content = decryptData(note.content);
-      const parsed = parseNote(content);
-      return {
-        ...note,
-        content,
-        parsed,
-      };
-    });
+  // Decrypt and parse
+  notes = notes.map((note) => {
+    const content = decryptData(note.content);
+    const parsed = parseNote(content);
+    return {
+      ...note,
+      content,
+      parsed,
+    };
+  });
 
-    // Filter by search query
-    if (searchQuery) {
-      notes = notes.filter((note) => matchesSearch(note, searchQuery));
-    }
-
-    // Filter by type
-    if (typeFilter !== "all") {
-      notes = notes.filter((note) => note.parsed.type === typeFilter);
-    }
-
-    // Sort by updatedAt (newest first)
-    notes.sort((a, b) => b.updatedAt - a.updatedAt);
-
-    // Apply pagination after filtering
-    const offset = (page - 1) * itemsPerPage;
-    notes = notes.slice(offset, offset + itemsPerPage);
-  } else {
-    // For non-search queries, use efficient database-level pagination
-    const offset = (page - 1) * itemsPerPage;
-    notes = await db.notes
-      .filter((note) => note.deletedAt === null || note.deletedAt === undefined)
-      .reverse()
-      .sortBy("updatedAt");
-
-    notes = notes.slice(offset, offset + itemsPerPage);
-
-    // Decrypt and parse
-    notes = notes.map((note) => {
-      const content = decryptData(note.content);
-      const parsed = parseNote(content);
-      return {
-        ...note,
-        content,
-        parsed,
-      };
-    });
+  // Filter by search query
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    notes = notes.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
+
+  // Filter by type
+  if (typeFilter !== "all") {
+    notes = notes.filter((note) => note.parsed.type === typeFilter);
+  }
+
+  // Sort by updatedAt (newest first)
+  notes.sort((a, b) => b.updatedAt - a.updatedAt);
+
+  // Apply pagination after filtering
+  const offset = (page - 1) * itemsPerPage;
+  notes = notes.slice(offset, offset + itemsPerPage);
 
   return notes;
 }

@@ -19,25 +19,25 @@
       <div
         v-for="note in filteredNotes"
         :key="note.id"
-        @click="openNote(note)"
+        @click="note.deletedAt ? undefined : openNote(note)"
         class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[250px] flex flex-col relative"
-        :class="getCardColor(note)"
+        :class="[
+          getCardColor(note),
+          note.deletedAt ? 'opacity-50 grayscale pointer-events-none hover:shadow-none' : ''
+        ]"
       >
         <!-- Pin Indicator -->
         <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
-
         <!-- Content -->
         <div class="flex-1 mb-3">
           <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
             <span v-if="note.parsed.icon" class="mr-2 text-xl">{{ note.parsed.icon }}</span>
             {{ note.parsed.title }}
           </h3>
-
           <p class="text-sm text-gray-800 line-clamp-3">
             {{ note.parsed.content || "Empty note" }}
           </p>
         </div>
-
         <!-- Footer -->
         <div class="flex items-center justify-between text-xs text-gray-700 mt-auto">
           <div class="flex items-center gap-1.5">
@@ -46,7 +46,6 @@
             </span>
             <span v-if="(note.parsed.customTags || []).length > 2" class="font-medium">+{{ (note.parsed.customTags || []).length - 2 }}</span>
           </div>
-
           <div class="flex items-center gap-1.5">
             <span v-if="note.parsed.type !== 'note'">
               <Key v-if="note.parsed.type === 'password'" class="w-3 h-3" />
@@ -54,6 +53,14 @@
             </span>
             <span class="font-medium">{{ formatDate(note.updatedAt) }}</span>
           </div>
+        </div>
+        <!-- Deleted note badge and countdown -->
+        <div v-if="note.deletedAt" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-xl z-10">
+          <div class="text-xs font-semibold text-red-600 mb-1">Pending Deletion</div>
+          <div class="text-xs text-gray-700 dark:text-gray-300 mb-2">
+            Deleting in {{ getPurgeCountdown(note.deletedAt) }}
+          </div>
+          <button @click.stop="restoreNote(note)" class="px-3 py-1 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700">Restore</button>
         </div>
       </div>
     </div>
@@ -93,21 +100,20 @@ const isLoading = ref(false);
 const notes = ref([]);
 
 // Computed
+// Show all notes, including deleted, but sort: pinned > not deleted > deleted, then by updatedAt
 const filteredNotes = computed(() => {
   let filtered = notes.value;
-
-  // Filter by search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
-
-  // Sort: pinned notes first, then by updatedAt
-  return filtered.sort((a, b) => {
+  return filtered.slice().sort((a, b) => {
     // Pinned notes come first
     if (a.parsed.pinned && !b.parsed.pinned) return -1;
     if (!a.parsed.pinned && b.parsed.pinned) return 1;
-
+    // Not deleted before deleted
+    if (!a.deletedAt && b.deletedAt) return -1;
+    if (a.deletedAt && !b.deletedAt) return 1;
     // Otherwise sort by updatedAt (newest first)
     return b.updatedAt - a.updatedAt;
   });
@@ -167,6 +173,25 @@ const getCardColor = (note) => {
   
   const colorIndex = Math.abs(hash) % cardColors.length;
   return cardColors[colorIndex];
+};
+
+// Countdown for deleted notes
+const getPurgeCountdown = (deletedAt) => {
+  const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+  const msLeft = Number(deletedAt) + SEVEN_DAYS - Date.now();
+  if (msLeft <= 0) return 'soon';
+  const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+  const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h`;
+  const mins = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
+  return `${mins}m`;
+};
+
+// Restore deleted note
+const restoreNote = async (note) => {
+  await db.notes.update(note.id, { deletedAt: null });
+  await loadNotes();
 };
 
 // Lifecycle
