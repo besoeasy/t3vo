@@ -21,10 +21,7 @@
         :key="note.id"
         @click="note.deletedAt ? undefined : openNote(note)"
         class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[250px] flex flex-col relative"
-        :class="[
-          getCardColor(note),
-          note.deletedAt ? 'opacity-50 grayscale pointer-events-none hover:shadow-none' : ''
-        ]"
+        :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : '']"
       >
         <!-- Pin Indicator -->
         <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
@@ -57,9 +54,7 @@
         <!-- Deleted note badge and countdown -->
         <div v-if="note.deletedAt" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-xl z-10">
           <div class="text-xs font-semibold text-red-600 mb-1">Pending Deletion</div>
-          <div class="text-xs text-gray-700 dark:text-gray-300 mb-2">
-            Deleting in {{ getPurgeCountdown(note.deletedAt) }}
-          </div>
+          <div class="text-xs text-gray-700 dark:text-gray-300 mb-2">Deleting in {{ getPurgeCountdown(note.deletedAt) }}</div>
           <button @click.stop="restoreNote(note)" class="px-3 py-1 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700">Restore</button>
         </div>
       </div>
@@ -88,7 +83,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { fetchNotes } from "@/db";
+import { fetchNotes, db } from "@/db";
 import { Search, FileText, Key, Bookmark } from "lucide-vue-next";
 import { format } from "timeago.js";
 
@@ -153,24 +148,24 @@ const formatDate = (timestamp) => {
 
 // Color palette for note cards - vibrant colors inspired by modern note apps
 const cardColors = [
-  'bg-[#FF9D76] hover:shadow-xl',      // Coral/Salmon
-  'bg-[#FFD666] hover:shadow-xl',      // Yellow/Amber
-  'bg-[#A78BFA] hover:shadow-xl',      // Purple/Violet
-  'bg-[#D4F17E] hover:shadow-xl',      // Lime Green
-  'bg-[#67E8F9] hover:shadow-xl',      // Cyan/Turquoise
-  'bg-[#FCA5A5] hover:shadow-xl',      // Light Red/Pink
-  'bg-[#A7F3D0] hover:shadow-xl',      // Mint Green
-  'bg-[#F9A8D4] hover:shadow-xl',      // Pink
-  'bg-[#93C5FD] hover:shadow-xl',      // Sky Blue
-  'bg-[#FDE68A] hover:shadow-xl',      // Light Yellow
+  "bg-[#FF9D76] hover:shadow-xl", // Coral/Salmon
+  "bg-[#FFD666] hover:shadow-xl", // Yellow/Amber
+  "bg-[#A78BFA] hover:shadow-xl", // Purple/Violet
+  "bg-[#D4F17E] hover:shadow-xl", // Lime Green
+  "bg-[#67E8F9] hover:shadow-xl", // Cyan/Turquoise
+  "bg-[#FCA5A5] hover:shadow-xl", // Light Red/Pink
+  "bg-[#A7F3D0] hover:shadow-xl", // Mint Green
+  "bg-[#F9A8D4] hover:shadow-xl", // Pink
+  "bg-[#93C5FD] hover:shadow-xl", // Sky Blue
+  "bg-[#FDE68A] hover:shadow-xl", // Light Yellow
 ];
 
 const getCardColor = (note) => {
   // Use hash-based color for consistency
-  const hash = note.id.split('').reduce((acc, char) => {
+  const hash = note.id.split("").reduce((acc, char) => {
     return char.charCodeAt(0) + ((acc << 5) - acc);
   }, 0);
-  
+
   const colorIndex = Math.abs(hash) % cardColors.length;
   return cardColors[colorIndex];
 };
@@ -179,7 +174,7 @@ const getCardColor = (note) => {
 const getPurgeCountdown = (deletedAt) => {
   const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
   const msLeft = Number(deletedAt) + SEVEN_DAYS - Date.now();
-  if (msLeft <= 0) return 'soon';
+  if (msLeft <= 0) return "soon";
   const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
   const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   if (days > 0) return `${days}d ${hours}h`;
@@ -190,7 +185,7 @@ const getPurgeCountdown = (deletedAt) => {
 
 // Restore deleted note
 const restoreNote = async (note) => {
-  await db.notes.update(note.id, { deletedAt: null });
+  await db.notes.update(note.id, { deletedAt: null, updatedAt: Date.now() });
   await loadNotes();
 };
 
