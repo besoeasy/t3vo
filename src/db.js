@@ -414,6 +414,7 @@ export async function mergeSyncData(localNotes, remoteNotes) {
     const localNotesMap = new Map(localNotes.map((note) => [note.id, note]));
 
     // Process each remote note
+
     for (const remoteNote of remoteNotes) {
       const localNote = localNotesMap.get(remoteNote.id);
 
@@ -424,8 +425,27 @@ export async function mergeSyncData(localNotes, remoteNotes) {
       } else {
         // Note exists locally - check for conflicts
         if (remoteNote.updatedAt > localNote.updatedAt) {
-          // Remote is newer - update local
-          await db.notes.put(remoteNote);
+          // Remote is newer - merge attachments
+          let mergedAttachments = [];
+          const localAtt = Array.isArray(localNote.attachments) ? localNote.attachments : [];
+          const remoteAtt = Array.isArray(remoteNote.attachments) ? remoteNote.attachments : [];
+
+          // Merge attachments by id, prefer newer uploadedAt
+          const attMap = new Map();
+          for (const att of localAtt) {
+            attMap.set(att.id, att);
+          }
+          for (const att of remoteAtt) {
+            if (!attMap.has(att.id) || (att.uploadedAt > (attMap.get(att.id)?.uploadedAt || 0))) {
+              attMap.set(att.id, att);
+            }
+          }
+          mergedAttachments = Array.from(attMap.values());
+
+          await db.notes.put({
+            ...remoteNote,
+            attachments: mergedAttachments,
+          });
           stats.updated++;
           stats.conflicts++;
         } else if (remoteNote.updatedAt < localNote.updatedAt) {
