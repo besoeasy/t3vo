@@ -96,7 +96,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Plus, Lock, Database, BarChart3, Bitcoin, ArrowLeft, Cloud } from "lucide-vue-next";
+import { Plus, Lock, Database, BarChart3, Bitcoin, ArrowLeft } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
@@ -105,16 +105,17 @@ const isDashboard = computed(() => route.path === "/dashboard" || route.path ===
 
 const emit = defineEmits(["newNote"]);
 
+const generateRandomId = () => {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+};
+
 const handleNewNote = () => {
-  // Generate a random ID for new note and navigate directly to edit mode
-  const newNoteId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-  router.push(`/notes/${newNoteId}/edit`);
+  router.push(`/notes/${generateRandomId()}/edit`);
 };
 
 const handleLogout = () => {
   if (confirm("Are you sure you want to lock the app?")) {
-    sessionStorage.removeItem("ENCRYPTION_KEY");
-    sessionStorage.removeItem("ENCRYPTION_PIN");
+    sessionStorage.clear();
     location.reload();
   }
 };
