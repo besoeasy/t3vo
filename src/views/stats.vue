@@ -29,7 +29,7 @@
             <Trash2 class="w-5 h-5 text-red-600" />
           </div>
           <p class="text-3xl font-bold text-gray-900">{{ stats.deletedNotes }}</p>
-          <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">Automatically purged after 90 days</p>
+          <p v-if="stats.deletedNotes > 0" class="text-xs text-gray-500 mt-1">Automatically purged after 7 days</p>
         </div>
 
         <!-- Created Date -->

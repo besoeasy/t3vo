@@ -44,7 +44,7 @@ https://github.com/user-attachments/assets/69c97452-6241-4602-8548-3ec5d74c4018
 - **🔄 Device Sync**: Peer-to-peer sync between devices using WebRTC (no cloud!)
 - **☁️ S3/MinIO Sync**: Securely sync your notes to any S3-compatible storage (AWS S3, MinIO, etc.)
 - **📥 Download Attachments**: Download any attached file with a click
-- **🗑️ Soft Delete**: Notes can be recovered before permanent deletion
+- **🗑️ Soft Delete & Auto-Purge**: Notes can be recovered before permanent deletion. Deleted notes are automatically purged from your device after 7 days for privacy and storage efficiency.
 
 ## 🚀 Quick Start
 
@@ -148,6 +148,7 @@ Write notes using full markdown syntax:
 - **🔐 Peer-to-peer sync using WebRTC**: No cloud server needed!
 - **☁️ S3/MinIO Cloud Sync**: Sync your notes to S3-compatible storage (AWS S3, MinIO, etc.) for backup and multi-device access
 - **⚡ Automatic conflict resolution**: Newest timestamp wins
+- **🧹 Auto-purge deleted notes**: Notes deleted for more than 7 days are automatically removed from your device.
 - **🔒 Encrypted data transfer**: Notes stay encrypted during sync
 - **🌐 Works across different networks**: Uses public STUN servers
 

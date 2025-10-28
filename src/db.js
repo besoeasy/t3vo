@@ -89,6 +89,10 @@ export async function addNote(content, files = [], customId = null) {
  * @returns {Array} - Array of notes with parsed data
  */
 export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all") {
+  // Purge notes deleted for more than 7 days
+  const now = Date.now();
+  const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+  await db.notes.where('deletedAt').notEqual(null).and(note => note.deletedAt && (now - Number(note.deletedAt) > SEVEN_DAYS)).delete();
   let notes;
 
   if (searchQuery || typeFilter !== "all") {
