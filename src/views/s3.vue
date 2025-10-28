@@ -4,7 +4,7 @@
       @submit.prevent="applyConfig"
       class="w-full max-w-md bg-gray-50 dark:bg-gray-800 rounded-xl shadow p-6 mb-8 border border-gray-200 dark:border-gray-700"
     >
-  <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white text-center">S3 Configuration</h2>
+      <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white text-center">S3 Configuration</h2>
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint</label>
@@ -54,7 +54,7 @@
           <label for="useSSL" class="text-sm text-gray-700 dark:text-gray-300">Use SSL</label>
         </div>
       </div>
-      <button type="submit" class="mt-6 w-full py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Apply</button>
+      <button type="submit" class="mt-6 w-full py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Connect</button>
     </form>
 
     <section class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700">
@@ -83,23 +83,9 @@
 
       <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <button
-          @click="syncToS3"
-          :disabled="syncing || !s3Connected"
-          class="flex-1 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-        >
-          📤 Upload to S3
-        </button>
-        <button
-          @click="syncFromS3"
-          :disabled="syncing || !s3Connected"
-          class="flex-1 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-        >
-          📥 Download from S3
-        </button>
-        <button
           @click="fullSync"
           :disabled="syncing || !s3Connected"
-          class="flex-1 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+          class="w-full py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
         >
           🔄 Full Sync (Two-Way)
         </button>
@@ -166,7 +152,6 @@ const config = reactive({
   region: localStorage.getItem("s3_region") || "us-east-1",
   useSSL: localStorage.getItem("s3_useSSL") === "true" || false,
 });
-
 
 let s3Client = null;
 let BUCKET_NAME = config.bucket;
@@ -255,8 +240,8 @@ async function checkS3Status() {
     if (!bucketExists) {
       await s3Client.send(new CreateBucketCommand({ Bucket: BUCKET_NAME }));
     }
-  s3Status.value.connected = true;
-  s3Connected.value = true;
+    s3Status.value.connected = true;
+    s3Connected.value = true;
 
     // Fetch metadata for stats
     let totalNotes = 0;
@@ -271,157 +256,15 @@ async function checkS3Status() {
         }
       }
     }
-  s3Status.value = { connected: true, totalNotes, oldestEntry };
+    s3Status.value = { connected: true, totalNotes, oldestEntry };
   } catch (e) {
     console.error("MinIO connection error:", e);
-  s3Status.value.connected = false;
-  s3Connected.value = false;
-  error.value = "Failed to connect to S3";
+    s3Status.value.connected = false;
+    s3Connected.value = false;
+    error.value = "Failed to connect to S3";
   }
 }
 
-// Upload local notes to S3
-async function syncToS3() {
-  syncing.value = true;
-  syncResult.value = null;
-  error.value = "";
-  progress.value = 0;
-  statusMessage.value = "Loading local notes...";
-
-  try {
-    const notes = await getAllNotes();
-    total.value = notes.length;
-  statusMessage.value = "Uploading notes to S3...";
-
-    let uploaded = 0;
-
-    for (let i = 0; i < notes.length; i++) {
-      const note = notes[i];
-
-      // Convert ArrayBuffer attachments to Base64
-      const attachments = (note.attachments || []).map((att) => ({
-        id: att.id,
-        name: att.name,
-        type: att.type,
-        size: att.size,
-        data: att.data instanceof ArrayBuffer ? arrayBufferToBase64(att.data) : null,
-        uploadedAt: att.uploadedAt,
-      }));
-
-
-      // Prepare note for S3
-      const s3Note = {
-        noteID: note.id,
-        userID: userID,
-        content: note.content, // Keep encrypted
-        updatedAt: note.updatedAt,
-        deletedAt: note.deletedAt,
-        attachments: attachments,
-      };
-
-      const objectName = `${userID}/${note.id}.json`;
-      const noteJson = JSON.stringify(s3Note);
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: objectName,
-          Body: noteJson,
-          ContentType: "application/json",
-        })
-      );
-
-      uploaded++;
-      progress.value = i + 1;
-    }
-
-    syncResult.value = { uploaded };
-    statusMessage.value = "Upload complete!";
-  await checkS3Status(); // Update status after upload
-  } catch (e) {
-  console.error("Sync to S3 error:", e);
-  error.value = e.message || "Failed to sync to S3";
-  } finally {
-    syncing.value = false;
-  }
-}
-
-// Download notes from S3
-async function syncFromS3() {
-  syncing.value = true;
-  syncResult.value = null;
-  error.value = "";
-  progress.value = 0;
-  statusMessage.value = "Fetching notes from S3...";
-
-  try {
-    const objects = [];
-    const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
-    if (listRes.Contents) {
-      for (const obj of listRes.Contents) {
-        objects.push(obj);
-      }
-    }
-
-    total.value = objects.length;
-    statusMessage.value = "Syncing notes to local database...";
-
-    let downloaded = 0;
-
-    for (let i = 0; i < objects.length; i++) {
-      const obj = objects[i];
-      const objectName = obj.Key;
-
-      const getObjRes = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: objectName }));
-      const data = await streamToString(getObjRes.Body);
-
-      const serverNote = JSON.parse(data);
-
-      // Convert Base64 attachments back to ArrayBuffer
-      const attachments = (serverNote.attachments || []).map((att) => ({
-        id: att.id,
-        name: att.name,
-        type: att.type,
-        size: att.size,
-        data: att.data ? base64ToArrayBuffer(att.data) : null,
-        uploadedAt: att.uploadedAt,
-      }));
-
-      // Convert to local format
-      const localNote = {
-        id: serverNote.noteID,
-        content: serverNote.content,
-        updatedAt: serverNote.updatedAt,
-        deletedAt: serverNote.deletedAt || null,
-        attachments: attachments,
-      };
-
-      // Check if note exists locally
-      const existingNote = await db.notes.get(localNote.id);
-
-      if (!existingNote) {
-        // New note - add it
-        await db.notes.add(localNote);
-        downloaded++;
-      } else if (localNote.updatedAt > existingNote.updatedAt) {
-  // S3 version is newer - update local
-        await db.notes.put(localNote);
-        downloaded++;
-      }
-
-      progress.value = i + 1;
-    }
-
-    syncResult.value = { downloaded };
-    statusMessage.value = "Download complete!";
-  await checkS3Status(); // Update status after download
-  } catch (e) {
-  console.error("Sync from S3 error:", e);
-  error.value = e.message || "Failed to sync from S3";
-  } finally {
-    syncing.value = false;
-  }
-}
 
 // Two-way sync (merge both ways)
 async function fullSync() {
@@ -431,8 +274,8 @@ async function fullSync() {
   progress.value = 0;
 
   try {
-  // Step 1: Upload to S3
-  statusMessage.value = "Step 1/2: Uploading local notes...";
+    // Step 1: Upload to S3
+    statusMessage.value = "Step 1/2: Uploading local notes...";
     const localNotes = await getAllNotes();
     total.value = localNotes.length;
 
@@ -449,6 +292,7 @@ async function fullSync() {
         data: att.data instanceof ArrayBuffer ? arrayBufferToBase64(att.data) : null,
         uploadedAt: att.uploadedAt,
       }));
+
       const s3Note = {
         noteID: note.id,
         userID: userID,
@@ -457,8 +301,10 @@ async function fullSync() {
         deletedAt: note.deletedAt,
         attachments: attachments,
       };
+
       const objectName = `${userID}/${note.id}.json`;
       const noteJson = JSON.stringify(s3Note);
+      
       await s3Client.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
@@ -471,8 +317,8 @@ async function fullSync() {
       progress.value = i + 1;
     }
 
-  // Step 2: Download and merge from S3
-  statusMessage.value = "Step 2/2: Downloading and merging...";
+    // Step 2: Download and merge from S3
+    statusMessage.value = "Step 2/2: Downloading and merging...";
     const objects = [];
     const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
     if (listRes.Contents) {
@@ -510,21 +356,29 @@ async function fullSync() {
       if (!existingNote) {
         await db.notes.add(localNote);
         merged++;
-      } else if (localNote.updatedAt > existingNote.updatedAt) {
-  await db.notes.put(localNote);
-  merged++;
-  conflicts++;
-      } else if (localNote.updatedAt < existingNote.updatedAt) {
-        conflicts++;
+      } else {
+        // Conflict resolution: prefer latest updatedAt, handle deletes
+        if (localNote.updatedAt > existingNote.updatedAt) {
+          await db.notes.put(localNote);
+          merged++;
+          conflicts++;
+        } else if (existingNote.updatedAt > localNote.updatedAt && existingNote.deletedAt && !localNote.deletedAt) {
+          // Local is a newer delete, keep local delete
+          // Optionally, could upload delete to S3 here
+          conflicts++;
+        } else if (localNote.updatedAt < existingNote.updatedAt) {
+          conflicts++;
+        }
+        // else: equal, do nothing
       }
       progress.value = i + 1;
     }
-  syncResult.value = { uploaded, downloaded: objects.length, merged, conflicts };
-  statusMessage.value = "Full sync complete!";
-  await checkS3Status(); // Update status after sync
+    syncResult.value = { uploaded, downloaded: objects.length, merged, conflicts };
+    statusMessage.value = "Full sync complete!";
+    await checkS3Status(); // Update status after sync
   } catch (e) {
-  console.error("Full sync error:", e);
-  error.value = e.message || "Failed to complete full sync";
+    console.error("Full sync error:", e);
+    error.value = e.message || "Failed to complete full sync";
   } finally {
     syncing.value = false;
   }

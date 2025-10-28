@@ -41,10 +41,10 @@
         <!-- Footer -->
         <div class="flex items-center justify-between text-xs text-gray-700 mt-auto">
           <div class="flex items-center gap-1.5">
-            <span v-for="tag in note.parsed.customTags.slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-gray-900/95 text-white rounded">
+            <span v-for="tag in (note.parsed.customTags || []).slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-gray-900/95 text-white rounded">
               {{ tag }}
             </span>
-            <span v-if="note.parsed.customTags.length > 2" class="font-medium">+{{ note.parsed.customTags.length - 2 }}</span>
+            <span v-if="(note.parsed.customTags || []).length > 2" class="font-medium">+{{ (note.parsed.customTags || []).length - 2 }}</span>
           </div>
 
           <div class="flex items-center gap-1.5">
