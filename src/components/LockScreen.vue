@@ -48,11 +48,11 @@
       >
         <span class="flex items-center justify-center">
           <Unlock class="w-5 h-5 mr-2" />
-          UNLOCK
+          DECRYPT & UNLOCK
         </span>
       </button>
 
-      <div class="mt-8 p-4 bg-white bg-opacity-60 rounded-xl backdrop-blur-sm">
+      <div class="mt-5 p-4 bg-white bg-opacity-60 rounded-xl backdrop-blur-sm">
         <p class="text-sm text-gray-700 text-center">
           🔐 Your master password is the encryption key for all your data.<br />
           Choose a strong password and remember it - it cannot be recovered.
