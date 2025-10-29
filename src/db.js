@@ -315,7 +315,6 @@ export function decryptData(encryptedData) {
   }
 }
 
-// Database maintenance - run periodically instead of randomly
 let lastMaintenanceRun = localStorage.getItem("lastDbMaintenance") || 0;
 const MAINTENANCE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -323,17 +322,15 @@ export async function performDatabaseMaintenance() {
   const now = Date.now();
 
   if (now - lastMaintenanceRun < MAINTENANCE_INTERVAL) {
-    return; // Skip if maintenance was run recently
+    return;
   }
 
   console.log("Performing database maintenance...");
 
   try {
-    // Remove notes soft deleted for more than 7 days
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
     await db.notes.filter((note) => note.deletedAt && now - Number(note.deletedAt) > SEVEN_DAYS).delete();
 
-    // Clear decryption cache to free memory
     decryptionCache.clear();
 
     localStorage.setItem("lastDbMaintenance", now.toString());
