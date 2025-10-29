@@ -16,6 +16,7 @@
 | `#@url=`      | Website URL (bookmark)     | `#@url=https://...`       |
 | `#@qrcode=`   | Generate QR code from text | `#@qrcode=SomeText`       |
 | `#@crypto=`   | Get Information Crypto     | `#@crypto=bitcoin`        |
+| `#@apikey=`   | API Key for integrations   | `#@apikey=sk-1234abcd`    |
 
 
 # Auto Parsing

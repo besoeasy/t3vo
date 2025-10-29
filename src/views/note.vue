@@ -60,7 +60,7 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-auto bg-gray-50">
-      <div class="max-w-7xl mx-auto p-6 md:p-12">
+      <div class="mx-auto p-6 md:p-12">
         <!-- Two Column Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left Column - Tags & Metadata -->
@@ -79,6 +79,9 @@
 
             <!-- 2FA/TOTP -->
             <TagTOTP v-if="parsed?.tags?.['2fa'] || parsed?.tags?.totp" :parsed="parsed" />
+
+            <!-- API Key -->
+            <TagApiKey v-if="parsed?.tags?.apikey" :value="parsed.tags.apikey" />
 
             <!-- Domains -->
             <TagDomains v-if="parsed?.tags?.domains" :value="parsed.tags.domains" :parsed="parsed" />
@@ -133,8 +136,10 @@ import TagCrypto from "@/components/tags/TagCrypto.vue";
 import TagAttachments from "@/components/tags/TagAttachments.vue";
 import TagReferences from "@/components/tags/TagReferences.vue";
 import TagDomains from "@/components/tags/TagDomains.vue";
+
 import TagQRCode from "@/components/tags/TagQRCode.vue";
 import TagCryptoAddresses from "@/components/tags/TagCryptoAddresses.vue";
+import TagApiKey from "@/components/tags/TagApiKey.vue";
 
 const route = useRoute();
 const router = useRouter();
