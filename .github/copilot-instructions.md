@@ -3,6 +3,7 @@
 Always use tailwindcss for styling and avoid custom css unless absolutely necessary.
 Do not add comments unless the code is complex and requires explanation.
 Make sure each component and design is mobile compatible and responsive.
+Keep all the components consistent with the existing design system.
 
 # things to do before answering
 
