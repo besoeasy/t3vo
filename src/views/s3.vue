@@ -127,9 +127,7 @@
 
 <script setup>
 import { reactive, watch } from "vue";
-// Helper: convert S3 GetObjectCommand Body (ReadableStream) to string (browser)
 async function streamToString(stream) {
-  // Browser: stream is a ReadableStream
   const reader = stream.getReader();
   let result = "";
   while (true) {
@@ -143,7 +141,6 @@ import { ref, onMounted } from "vue";
 import { db, getAllNotes } from "@/db";
 import { S3Client, ListObjectsV2Command, PutObjectCommand, GetObjectCommand, HeadBucketCommand, CreateBucketCommand } from "@aws-sdk/client-s3";
 
-// S3 client configuration (user-editable)
 const config = reactive({
   endpoint: localStorage.getItem("s3_endpoint") || "http://localhost:9000",
   accessKeyId: localStorage.getItem("s3_accessKeyId") || "",
@@ -265,8 +262,6 @@ async function checkS3Status() {
   }
 }
 
-
-// Two-way sync (prefer latest updatedAt)
 async function fullSync() {
   syncing.value = true;
   syncResult.value = null;
@@ -275,18 +270,13 @@ async function fullSync() {
 
   try {
     const localNotes = await getAllNotes();
-    const listRes = await s3Client.send(
-      new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` })
-    );
+    const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
 
     const cloudObjects = listRes.Contents || [];
     const cloudNotes = {};
 
-    // Step 1: Load all cloud notes into memory
     for (const obj of cloudObjects) {
-      const getObjRes = await s3Client.send(
-        new GetObjectCommand({ Bucket: BUCKET_NAME, Key: obj.Key })
-      );
+      const getObjRes = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: obj.Key }));
       const data = await streamToString(getObjRes.Body);
       const note = JSON.parse(data);
       cloudNotes[note.noteID] = note;
@@ -295,7 +285,6 @@ async function fullSync() {
     const uploaded = { new: 0, updated: 0 };
     const downloaded = { new: 0, updated: 0 };
 
-    // Step 2: Compare and sync both ways
     for (const localNote of localNotes) {
       const s3Key = `${userID}/${localNote.id}.json`;
       const remoteNote = cloudNotes[localNote.id];
@@ -303,7 +292,6 @@ async function fullSync() {
       const remoteUpdated = remoteNote ? new Date(remoteNote.updatedAt) : null;
 
       if (!remoteNote) {
-        // New local note → upload to S3
         await s3Client.send(
           new PutObjectCommand({
             Bucket: BUCKET_NAME,
@@ -314,11 +302,9 @@ async function fullSync() {
               content: localNote.content,
               updatedAt: localNote.updatedAt,
               deletedAt: localNote.deletedAt || null,
-              attachments: (localNote.attachments || []).map(att => ({
+              attachments: (localNote.attachments || []).map((att) => ({
                 ...att,
-                data: att.data
-                  ? arrayBufferToBase64(att.data)
-                  : null,
+                data: att.data ? arrayBufferToBase64(att.data) : null,
               })),
             }),
             ContentType: "application/json",
@@ -328,11 +314,9 @@ async function fullSync() {
         continue;
       }
 
-      // Conflict resolution: prefer latest updatedAt
       if (remoteUpdated > localUpdated) {
-        // Cloud is newer → replace local note
         await db.notes.delete(localNote.id);
-        const attachments = (remoteNote.attachments || []).map(att => ({
+        const attachments = (remoteNote.attachments || []).map((att) => ({
           ...att,
           data: att.data ? base64ToArrayBuffer(att.data) : null,
         }));
@@ -345,7 +329,6 @@ async function fullSync() {
         });
         downloaded.updated++;
       } else if (localUpdated > remoteUpdated) {
-        // Local is newer → overwrite cloud
         await s3Client.send(
           new PutObjectCommand({
             Bucket: BUCKET_NAME,
@@ -356,11 +339,9 @@ async function fullSync() {
               content: localNote.content,
               updatedAt: localNote.updatedAt,
               deletedAt: localNote.deletedAt || null,
-              attachments: (localNote.attachments || []).map(att => ({
+              attachments: (localNote.attachments || []).map((att) => ({
                 ...att,
-                data: att.data
-                  ? arrayBufferToBase64(att.data)
-                  : null,
+                data: att.data ? arrayBufferToBase64(att.data) : null,
               })),
             }),
             ContentType: "application/json",
@@ -370,12 +351,11 @@ async function fullSync() {
       }
     }
 
-    // Step 3: Handle notes that exist only in cloud
     for (const key in cloudNotes) {
       const note = cloudNotes[key];
       const existsLocal = await db.notes.get(note.noteID);
       if (!existsLocal) {
-        const attachments = (note.attachments || []).map(att => ({
+        const attachments = (note.attachments || []).map((att) => ({
           ...att,
           data: att.data ? base64ToArrayBuffer(att.data) : null,
         }));
@@ -400,9 +380,4 @@ async function fullSync() {
     syncing.value = false;
   }
 }
-
-// Initialize S3 status on mount
-onMounted(() => {
-  checkS3Status();
-});
 </script>
