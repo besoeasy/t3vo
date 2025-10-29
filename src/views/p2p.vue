@@ -1,4 +1,8 @@
 <template>
+    <!-- Sync Logs -->
+    <div v-if="syncLogs.length" class="mb-4 bg-gray-100 border border-gray-300 rounded p-3 text-xs max-h-48 overflow-y-auto">
+      <div v-for="(log, i) in syncLogs" :key="i" class="font-mono text-gray-700">{{ log }}</div>
+    </div>
   <div class="max-w-4xl mx-auto p-4 md:p-8 pt-16 md:pt-8">
     <!-- Page Title with Status -->
     <div class="flex items-center justify-between mb-6 md:mb-8">
@@ -138,11 +142,6 @@
                 <p class="text-2xl font-mono font-bold text-gray-900">{{ roomCode }}</p>
               </div>
 
-              <!-- QR Code -->
-              <div v-if="qrCodeDataUrl" class="bg-white rounded-lg p-4 border border-blue-200">
-                <p class="text-xs text-gray-500 mb-2">Scan to Join</p>
-                <img :src="qrCodeDataUrl" alt="Room QR Code" class="w-48 h-48 mx-auto" />
-              </div>
             </div>
           </div>
         </div>
@@ -183,27 +182,6 @@
                 </div>
               </div>
               
-              <!-- QR Code for room sharing -->
-              <div v-if="qrCodeDataUrl && isHost" class="mt-4 flex items-start gap-4">
-                <div class="flex-1">
-                  <p class="text-sm text-gray-600 mb-2">Share this QR code or room code with other devices:</p>
-                  <div class="flex gap-2">
-                    <input
-                      type="text"
-                      :value="roomCode"
-                      readonly
-                      class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white font-mono text-sm"
-                    />
-                    <button
-                      @click="copyRoomCode"
-                      class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                </div>
-                <img :src="qrCodeDataUrl" alt="Room QR Code" class="w-24 h-24 border-2 border-white shadow rounded-lg" />
-              </div>
             </div>
             
             <button
@@ -346,16 +324,22 @@
 </template>
 
 <script setup>
+// Sync log state
+const syncLogs = ref([]);
+function addSyncLog(...args) {
+  const msg = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+  syncLogs.value.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+  // Limit log size
+  if (syncLogs.value.length > 100) syncLogs.value.shift();
+}
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import Peer from 'peerjs';
-import QRCode from 'qrcode';
 import { getAllNotes, mergeSyncData } from '@/db';
 
 // Room-based state
 const roomCode = ref('');
 const myPeerId = ref('');
 const isHost = ref(false);
-const qrCodeDataUrl = ref('');
 const isConnected = ref(false);
 const connecting = ref(false);
 const roomReady = ref(false); // Indicates host has created room and is waiting for others
@@ -459,7 +443,6 @@ function initializePeer(peerId, tryHost = false) {
           reject(new Error('Invalid peer ID'));
         }
 
-        generateQRCode(roomCode.value);
       });
 
       peer.on('connection', (conn) => {
@@ -641,15 +624,48 @@ function setupConnectionHandlers(conn) {
         }
       }
     } else if (data.type === 'sync_request') {
-      // Other device is requesting our data
-      const notes = await getAllNotes();
-      conn.send({
-        type: 'sync_response',
-        notes: notes
+      // Accumulate incoming sync_request batches and merge after all are received, then respond
+      if (!conn._syncRequestAccumulator) {
+        conn._syncRequestAccumulator = [];
+        conn._syncRequestExpected = data.batchTotal;
+        conn._syncRequestReceived = 0;
+      }
+      conn._syncRequestAccumulator = conn._syncRequestAccumulator.concat(data.notes);
+      conn._syncRequestReceived++;
+  addSyncLog(`📥 Received sync_request batch ${data.batchIndex || '?'} of ${data.batchTotal || '?'} from ${conn.peer}:`, data.notes);
+      if (conn._syncRequestReceived < conn._syncRequestExpected) {
+        return; // Wait for all batches
+      }
+      // All batches received, merge and respond
+      const remoteNotes = conn._syncRequestAccumulator;
+      conn._syncRequestAccumulator = [];
+      conn._syncRequestExpected = 0;
+      conn._syncRequestReceived = 0;
+      // Merge incoming notes into our DB
+      const myNotes = await getAllNotes();
+      const stats = await mergeSyncData(myNotes, remoteNotes);
+      lastSyncStats.value = {
+        ...stats,
+        timestamp: Date.now()
+      };
+      // Respond with our own notes (batched)
+      const responseBatches = [];
+      for (let i = 0; i < myNotes.length; i += 3) {
+        responseBatches.push(myNotes.slice(i, i + 3));
+      }
+      responseBatches.forEach((batch, idx) => {
+        conn.send({
+          type: 'sync_response',
+          notes: batch,
+          batchIndex: idx + 1,
+          batchTotal: responseBatches.length
+        });
+  addSyncLog(`📤 Sent sync_response batch ${idx + 1}/${responseBatches.length} to ${conn.peer}:`, batch);
       });
     } else if (data.type === 'sync_response') {
-      // Received data from other device
-      await handleSyncResponse(data.notes);
+      // Received data from other device (in batch)
+  addSyncLog(`📥 Received sync_response batch ${data.batchIndex || '?'} of ${data.batchTotal || '?'} from ${conn.peer}:`, data.notes);
+      await handleSyncResponse(data.notes, data.batchIndex, data.batchTotal, conn.peer);
     }
   });
 
@@ -680,18 +696,35 @@ async function performSync() {
 
   syncing.value = true;
   errorMessage.value = '';
+  // Reset syncBatchState for all peers
+  Object.keys(syncBatchState).forEach(k => { delete syncBatchState[k]; });
 
   try {
     // Get all our notes (including deleted)
     const myNotes = await getAllNotes();
 
-    // Send sync request to all connected peers
+    // Helper to split array into batches
+    function chunkArray(array, size) {
+      const result = [];
+      for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
+      }
+      return result;
+    }
+
+    // Send sync request to all connected peers in batches of 3 notes
     connections.value.forEach((conn, peerId) => {
       if (conn.open) {
-        console.log('🔄 Syncing with:', peerId);
-        conn.send({
-          type: 'sync_request',
-          notes: myNotes
+        const batches = chunkArray(myNotes, 3);
+  addSyncLog(`🔄 Syncing with: ${peerId}, total notes: ${myNotes.length}, batches: ${batches.length}`);
+        batches.forEach((batch, idx) => {
+          addSyncLog(`📤 Sending batch ${idx + 1}/${batches.length} to ${peerId}:`, batch);
+          conn.send({
+            type: 'sync_request',
+            notes: batch,
+            batchIndex: idx + 1,
+            batchTotal: batches.length
+          });
         });
       }
     });
@@ -703,19 +736,52 @@ async function performSync() {
   }
 }
 
-async function handleSyncResponse(remoteNotes) {
+// Track batch responses for merging, per peer
+const syncBatchState = {};
+
+// peerId is passed from setupConnectionHandlers
+async function handleSyncResponse(remoteNotes, batchIndex, batchTotal, peerId) {
   try {
+    if (!peerId) peerId = 'default';
+    if (!syncBatchState[peerId]) {
+      syncBatchState[peerId] = { accumulator: [], expected: 0, received: 0, done: false };
+    }
+    const state = syncBatchState[peerId];
+    if (typeof batchTotal === 'number' && batchTotal > 1) {
+      // Batched mode
+      if (state.expected === 0) {
+        state.expected = batchTotal;
+        state.accumulator = [];
+        state.received = 0;
+      }
+      state.accumulator = state.accumulator.concat(remoteNotes);
+      state.received++;
+  addSyncLog(`🗃️ [${peerId}] Accumulated batch ${batchIndex}/${batchTotal}. Total notes so far: ${state.accumulator.length}`);
+      if (state.received < state.expected) {
+        return; // Wait for all batches
+      }
+      // All batches received, merge
+      remoteNotes = state.accumulator;
+      state.expected = 0;
+      state.received = 0;
+      state.accumulator = [];
+    }
     const myNotes = await getAllNotes();
-    
     // Merge the data
     const stats = await mergeSyncData(myNotes, remoteNotes);
-    
     lastSyncStats.value = {
       ...stats,
       timestamp: Date.now()
     };
-
-    syncing.value = false;
+    // Mark this peer as done
+    state.done = true;
+    // If all peers are done, set syncing to false
+    const allDone = Object.values(syncBatchState).every(s => s.done);
+    if (allDone) {
+      syncing.value = false;
+      // Reset state for next sync
+      Object.keys(syncBatchState).forEach(k => { delete syncBatchState[k]; });
+    }
   } catch (err) {
     console.error('Failed to handle sync response:', err);
     errorMessage.value = 'Failed to merge data.';
@@ -747,22 +813,6 @@ function cleanup() {
   disconnect();
 }
 
-async function generateQRCode(code) {
-  try {
-    // Generate QR code with room code (not peer ID)
-    const qrData = code;
-    qrCodeDataUrl.value = await QRCode.toDataURL(qrData, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-  } catch (err) {
-    console.error('Failed to generate QR code:', err);
-  }
-}
 
 async function copyRoomCode() {
   try {

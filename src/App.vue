@@ -2,7 +2,7 @@
   <LockScreen v-if="!isUnlocked" @unlock="handleUnlock" />
 
   <Navbar v-else @newNote="handleNewNote">
-    <RouterView @newNote="handleNewNote" />
+    <RouterView />
   </Navbar>
 </template>
 
