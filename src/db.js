@@ -9,7 +9,6 @@ const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY, false) : null;
 
 export const db = new Dexie(`T3VO-${hashedKey}`);
 
-// Simplified schema - everything is a note
 db.version(1).stores({
   notes: "id, attachments, updatedAt, deletedAt",
 });
@@ -17,19 +16,6 @@ db.version(1).stores({
 const itemsPerPage = 60;
 
 const getCurrentTime = () => Date.now();
-
-// Optimized match function - searches in raw content
-function matchesSearch(note, searchQuery) {
-  if (!searchQuery) return true;
-
-  const lowerQuery = searchQuery.toLowerCase();
-  const content = decryptData(note.content);
-
-  if (!content) return false;
-
-  // Search in raw content (includes tags and text)
-  return content.toLowerCase().includes(lowerQuery);
-}
 
 // Optimized hash function using built-in crypto when available
 function getSha256Hash(str, includeTimestamp = false) {
@@ -89,10 +75,6 @@ export async function addNote(content, files = [], customId = null) {
  * @returns {Array} - Array of notes with parsed data
  */
 export async function fetchNotes(page = 1, searchQuery = "", typeFilter = "all") {
-  // Purge notes deleted for more than 7 days
-  const now = Date.now();
-  const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-  await db.notes.filter(note => note.deletedAt && (now - Number(note.deletedAt) > SEVEN_DAYS)).delete();
   let notes;
 
   // Always return all notes (including deleted) for dashboard display
@@ -347,9 +329,9 @@ export async function performDatabaseMaintenance() {
   console.log("Performing database maintenance...");
 
   try {
-    // Remove notes older than 90 days (soft deleted items only)
-    const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
-    await db.notes.where("deletedAt").below(ninetyDaysAgo).delete();
+    // Remove notes soft deleted for more than 7 days
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    await db.notes.filter((note) => note.deletedAt && now - Number(note.deletedAt) > SEVEN_DAYS).delete();
 
     // Clear decryption cache to free memory
     decryptionCache.clear();
@@ -419,7 +401,7 @@ export async function mergeSyncData(localNotes, remoteNotes) {
             attMap.set(att.id, att);
           }
           for (const att of remoteAtt) {
-            if (!attMap.has(att.id) || (att.uploadedAt > (attMap.get(att.id)?.uploadedAt || 0))) {
+            if (!attMap.has(att.id) || att.uploadedAt > (attMap.get(att.id)?.uploadedAt || 0)) {
               attMap.set(att.id, att);
             }
           }
