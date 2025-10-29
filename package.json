@@ -1,6 +1,6 @@
 {
   "name": "t3vo",
-  "version": "0.1.2",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "npm i && vite",
