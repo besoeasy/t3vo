@@ -237,6 +237,9 @@ function extractReferences(content) {
  * @returns {Array} - Array of crypto address objects
  */
 function extractCryptoAddresses(content) {
+  const addresses = [];
+  const seen = new Set(); // To avoid duplicates
+
   // Litecoin Legacy (L...)
   const ltcLegacyMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.litecoinLegacy);
   for (const match of ltcLegacyMatches) {
@@ -301,8 +304,6 @@ function extractCryptoAddresses(content) {
       });
     }
   }
-  const addresses = [];
-  const seen = new Set(); // To avoid duplicates
 
   // Bitcoin Legacy (P2PKH)
   const legacyMatches = content.matchAll(CRYPTO_ADDRESS_PATTERNS.bitcoinLegacy);
