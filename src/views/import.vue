@@ -129,7 +129,7 @@ const importData = async () => {
                 title ? `#@title=${title}` : "",
                 `#@bookmark=${url}`,
                 note ? `#@note=${note}` : "",
-                "#@tags=imported,bookmark"
+                "#@tags=bookmark"
               ].filter(Boolean).join("\n") + "\n";
             } else if (activeTab.value === "passwords") {
               const title = mapping.title ? row[csvHeaders.value.indexOf(mapping.title)] : "";
@@ -145,7 +145,7 @@ const importData = async () => {
                 `#@password=${password}`,
                 totp ? `#@totp=${totp}` : "",
                 urls ? `#@urls=${urls}` : "",
-                "#@tags=imported,password,login"
+                "#@tags=password,login"
               ].filter(Boolean).join("\n") + "\n";
             }
             await addNote(content);
