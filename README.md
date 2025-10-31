@@ -185,6 +185,16 @@ Use these free services to deploy the app with a single click:
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/besoeasy/t3vo&branch=latest)
 
+### Running via Docker
+
+You can also run the app using Docker without building locally:
+
+```bash
+docker run --rm -p 8080:80 ghcr.io/besoeasy/t3vo:test
+```
+
+Then open http://localhost:8080 in your browser.
+
 ## 🤝 Contribute
 
 Contributions are welcome! Feel free to:
@@ -204,7 +214,7 @@ Below is a detailed comparison of **T3VO** with other popular note-taking and pa
 
 | Feature / App              | **T3VO** | Bitwarden | Standard Notes | Joplin | Notion | Obsidian |
 | -------------------------- | :------: | :-------: | :------------: | :----: | :----: | :------: |
-| **Client-Side Encryption** |  ✅ AES  |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
+| **Client-Side Encryption** |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
 | **Zero-Knowledge**         |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
 | **Offline-First**          |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
 | **Smart Tag System**       |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
