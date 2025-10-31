@@ -151,10 +151,7 @@ const cardColors = [
   "bg-[#FF9D76] hover:shadow-xl", // Coral/Salmon
   "bg-[#FFD666] hover:shadow-xl", // Yellow/Amber
   "bg-[#A78BFA] hover:shadow-xl", // Purple/Violet
-  "bg-[#D4F17E] hover:shadow-xl", // Lime Green
-  "bg-[#67E8F9] hover:shadow-xl", // Cyan/Turquoise
   "bg-[#FCA5A5] hover:shadow-xl", // Light Red/Pink
-  "bg-[#A7F3D0] hover:shadow-xl", // Mint Green
   "bg-[#F9A8D4] hover:shadow-xl", // Pink
   "bg-[#93C5FD] hover:shadow-xl", // Sky Blue
   "bg-[#FDE68A] hover:shadow-xl", // Light Yellow

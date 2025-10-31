@@ -179,7 +179,7 @@ const isReadyToImport = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col items-center justify-center min-h-screen">
     <div>
       <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center uppercase">Import <span
           class="text-blue-600">Data</span></h1>
@@ -240,8 +240,6 @@ const isReadyToImport = computed(() => {
                 </select>
               </div>
             </template>
-
-
           </div>
         </div>
 
