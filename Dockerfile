@@ -24,40 +24,9 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built Vite assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# === EMBEDDED nginx.conf using heredoc ===
-COPY <<EOF /etc/nginx/conf.d/default.conf
-server {
-    listen 80 default_server;
-    server_name _;
 
-    root /usr/share/nginx/html;
-    index index.html;
-
-    # SPA fallback - fixes 404 on page refresh
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-
-    # Cache static assets (1 year)
-    location ~* \.(?:jpg|?g|gif|png|ico|svg|webp|woff2?|ttf|eot|js|css)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-
-    # Security headers
-    add_header X-Content-Type-Options nosniff;
-    add_header X-Frame-Options DENY;
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
-
-    # Optional: Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-}
-EOF
+# Copy custom nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose HTTP
 EXPOSE 80
