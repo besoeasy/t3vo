@@ -189,7 +189,7 @@ Use these free services to deploy the app with a single click:
 You can also run the app using Docker without building locally:
 
 ```bash
-docker run --rm -p 8080:80 ghcr.io/besoeasy/t3vo:test
+docker run -d --name t3vo -p 8080:80 ghcr.io/besoeasy/t3vo:main
 ```
 
 Then open http://localhost:8080 in your browser.
