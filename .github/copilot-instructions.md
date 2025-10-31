@@ -7,7 +7,7 @@ Keep all the components consistent with the existing design system. All componen
 
 # things to do before answering
 
-Give possible Suggestions only after analyzing the entire context of the question.
+Give possible Suggestions only after analyzing the entire codebase and understanding the context of the project.
 
 # Important Notes
 
