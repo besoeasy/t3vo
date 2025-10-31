@@ -87,10 +87,10 @@
             <TagDomains v-if="parsed?.tags?.domains" :value="parsed.tags.domains" :parsed="parsed" />
 
             <!-- Attachments -->
-            <TagAttachments v-if="note.attachments?.length" :attachments="note.attachments" />
+            <ParseAttachments v-if="note.attachments?.length" :attachments="note.attachments" />
 
             <!-- Crypto Addresses -->
-            <TagCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
+            <ParseCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
 
             <!-- Secret -->
             <TagSecret v-if="parsed?.tags?.secret" :value="parsed.tags.secret" />
@@ -101,7 +101,6 @@
             <!-- Card -->
             <TagCard v-if="parsed?.tags?.card" :value="parsed.tags.card" />
 
-
             <!-- Date -->
             <TagDate v-if="parsed?.tags?.date" :value="parsed.tags.date" />
 
@@ -109,7 +108,7 @@
             <TagAddress v-if="parsed?.tags?.address" :value="parsed.tags.address" />
 
             <!-- References -->
-            <TagReferences v-if="parsed?.references?.length" :references="parsed.references" />
+            <ParseReferences v-if="parsed?.references?.length" :references="parsed.references" />
           </div>
 
           <!-- Right Column - Content -->
@@ -149,18 +148,18 @@ import TagBookmark from "@/components/tags/TagBookmark.vue";
 import TagPassword from "@/components/tags/TagPassword.vue";
 import TagTOTP from "@/components/tags/TagTOTP.vue";
 import TagCrypto from "@/components/tags/TagCrypto.vue";
-import TagAttachments from "@/components/tags/TagAttachments.vue";
-import TagReferences from "@/components/tags/TagReferences.vue";
 import TagDomains from "@/components/tags/TagDomains.vue";
-
 import TagQRCode from "@/components/tags/TagQRCode.vue";
-import TagCryptoAddresses from "@/components/tags/TagCryptoAddresses.vue";
 import TagApiKey from "@/components/tags/TagApiKey.vue";
 import TagSecret from "@/components/tags/TagSecret.vue";
 import TagWifi from "@/components/tags/TagWifi.vue";
 import TagCard from "@/components/tags/TagCard.vue";
 import TagDate from "@/components/tags/TagDate.vue";
 import TagAddress from "@/components/tags/TagAddress.vue";
+
+import ParseCryptoAddresses from "@/components/parsed/CryptoAddresses.vue";
+import ParseReferences from "@/components/parsed/References.vue";
+import ParseAttachments from "@/components/parsed/Attachments.vue";
 
 const route = useRoute();
 const router = useRouter();
