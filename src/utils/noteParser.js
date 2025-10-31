@@ -82,7 +82,17 @@ export function parseNote(content) {
   // Extract all tags
   for (const match of matches) {
     const [, key, value] = match;
-    tags[key.toLowerCase()] = value.trim();
+    if (key.toLowerCase() === 'card') {
+      // Parse card as number-expiry-cvv
+      const cardParts = value.trim().split('-');
+      tags.card = {
+        cardNumber: cardParts[0] || '',
+        expiry: cardParts[1] || '',
+        cvv: cardParts[2] || ''
+      };
+    } else {
+      tags[key.toLowerCase()] = value.trim();
+    }
   }
 
   // Remove tags from content to get clean text

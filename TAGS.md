@@ -17,6 +17,12 @@
 | `#@qrcode=`   | Generate QR code from text | `#@qrcode=SomeText`       |
 | `#@crypto=`   | Get Information Crypto     | `#@crypto=bitcoin`        |
 | `#@apikey=`   | API Key for integrations   | `#@apikey=sk-1234abcd`    |
+| `#@secret=`   | Generic secret                | `#@secret=abcd1234`        |
+| `#@wifi=`     | WiFi credentials (SSID:pass)  | `#@wifi=HomeWiFi:password` |
+| `#@card=`     | Card number, expiry, and CVV  | `#@card=4111 1111 1111 1111-12/27-123` |
+| `#@date=`     | Date (any format)             | `#@date=2025-10-31`        |
+| `#@address=`  | Physical address (opens OpenStreetMap and searches the address) | `#@address=1600 Amphitheatre Parkway, Mountain View, CA` |
+
 
 
 # Auto Parsing

@@ -92,6 +92,22 @@
             <!-- Crypto Addresses -->
             <TagCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
 
+            <!-- Secret -->
+            <TagSecret v-if="parsed?.tags?.secret" :value="parsed.tags.secret" />
+
+            <!-- WiFi -->
+            <TagWifi v-if="parsed?.tags?.wifi" :value="parsed.tags.wifi" />
+
+            <!-- Card -->
+            <TagCard v-if="parsed?.tags?.card" :value="parsed.tags.card" />
+
+
+            <!-- Date -->
+            <TagDate v-if="parsed?.tags?.date" :value="parsed.tags.date" />
+
+            <!-- Address -->
+            <TagAddress v-if="parsed?.tags?.address" :value="parsed.tags.address" />
+
             <!-- References -->
             <TagReferences v-if="parsed?.references?.length" :references="parsed.references" />
           </div>
@@ -140,6 +156,11 @@ import TagDomains from "@/components/tags/TagDomains.vue";
 import TagQRCode from "@/components/tags/TagQRCode.vue";
 import TagCryptoAddresses from "@/components/tags/TagCryptoAddresses.vue";
 import TagApiKey from "@/components/tags/TagApiKey.vue";
+import TagSecret from "@/components/tags/TagSecret.vue";
+import TagWifi from "@/components/tags/TagWifi.vue";
+import TagCard from "@/components/tags/TagCard.vue";
+import TagDate from "@/components/tags/TagDate.vue";
+import TagAddress from "@/components/tags/TagAddress.vue";
 
 const route = useRoute();
 const router = useRouter();

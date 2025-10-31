@@ -12,8 +12,14 @@ import TagReferences from '@/components/tags/TagReferences.vue'
 import TagDomains from '@/components/tags/TagDomains.vue'
 import TagUrl from '@/components/tags/TagUrl.vue'
 
+
 import TagApiKey from '@/components/tags/TagApiKey.vue'
 import TagQRCode from '@/components/tags/TagQRCode.vue'
+import TagSecret from '@/components/tags/TagSecret.vue'
+import TagWifi from '@/components/tags/TagWifi.vue'
+import TagCard from '@/components/tags/TagCard.vue'
+import TagDate from '@/components/tags/TagDate.vue'
+import TagAddress from '@/components/tags/TagAddress.vue'
 
 /**
  * Component registry mapping tag names to Vue components
@@ -43,6 +49,13 @@ export const TAG_COMPONENTS = {
 
   // API Key
   apikey: TagApiKey,
+
+  // New tags
+  secret: TagSecret,
+  wifi: TagWifi,
+  card: TagCard,
+  date: TagDate,
+  address: TagAddress,
 }
 
 /**

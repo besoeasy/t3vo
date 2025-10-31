@@ -12,3 +12,4 @@ Give possible Suggestions only after analyzing the entire context of the questio
 # Important Notes
 
 Do not modify usage of tags and stick to explanation in TAGS.md
+whenever a new tag is added, make sure to update TAGS.md and create component for it if necessary, alogside update noteviewer to parse and display it correctly.
