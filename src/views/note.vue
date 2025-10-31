@@ -1,3 +1,4 @@
+
 <template>
   <!-- Loading State -->
   <div v-if="!isLoaded" class="flex items-center justify-center h-full">
@@ -92,6 +93,8 @@
             <!-- Crypto Addresses -->
             <ParseCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
 
+            <TagIp v-if="parsed?.tags?.ip" :value="parsed.tags.ip" />
+
             <!-- Secret -->
             <TagSecret v-if="parsed?.tags?.secret" :value="parsed.tags.secret" />
 
@@ -156,6 +159,7 @@ import TagWifi from "@/components/tags/TagWifi.vue";
 import TagCard from "@/components/tags/TagCard.vue";
 import TagDate from "@/components/tags/TagDate.vue";
 import TagAddress from "@/components/tags/TagAddress.vue";
+import TagIp from "@/components/tags/TagIp.vue";
 
 import ParseCryptoAddresses from "@/components/parsed/CryptoAddresses.vue";
 import ParseReferences from "@/components/parsed/References.vue";

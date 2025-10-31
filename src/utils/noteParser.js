@@ -213,6 +213,7 @@ export function getTagSuggestions() {
     { tag: '#@totp=', description: 'Alternative to 2fa', type: 'password' },
     { tag: '#@domains=', description: 'Comma-separated domains', type: 'password' },
     { tag: '#@crypto=', description: 'Cryptocurrency symbols (e.g., bitcoin,ethereum)', type: 'crypto' },
+    { tag: '#@ip=', description: 'IP address info (lookup and geolocation)', type: 'ip' },
   ];
 }
 

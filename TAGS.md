@@ -22,6 +22,7 @@
 | `#@card=`     | Card number, expiry, and CVV  | `#@card=4111 1111 1111 1111-12/27-123` |
 | `#@date=`     | Date (any format)             | `#@date=2025-10-31`        |
 | `#@address=`  | Physical address (opens OpenStreetMap and searches the address) | `#@address=1600 Amphitheatre Parkway, Mountain View, CA` |
+| `#@ip=`       | IP address info (lookup and geolocation) | `#@ip=8.8.8.8` |
 
 
 
