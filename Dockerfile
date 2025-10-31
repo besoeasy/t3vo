@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # ===== Stage 1: Build Vite app (multi-arch) =====
 FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
