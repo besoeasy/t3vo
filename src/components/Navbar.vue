@@ -39,6 +39,7 @@
         <Database class="w-5 h-5" />
       </router-link>
 
+
       <!-- Stats Link -->
       <router-link
         to="/stats"
@@ -46,6 +47,15 @@
         title="Statistics"
       >
         <BarChart3 class="w-5 h-5" />
+      </router-link>
+
+      <!-- Import Link -->
+      <router-link
+        to="/import"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
+        title="Import Data"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
       </router-link>
 
       <!-- GitHub Link -->

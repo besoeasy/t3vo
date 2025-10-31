@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
+
 import Dashboard from "@/views/dashboard.vue";
 import Note from "@/views/note.vue";
 import NoteEdit from "@/views/note-edit.vue";
@@ -8,6 +9,7 @@ import Stats from "@/views/stats.vue";
 import p2p from "@/views/p2p.vue";
 import S3 from "@/views/s3.vue";
 import Sync from "@/views/sync.vue";
+import ImportView from "@/views/import.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -55,6 +57,11 @@ const router = createRouter({
       path: "/sync",
       name: "sync",
       component: Sync,
+    },
+    {
+      path: "/import",
+      name: "import",
+      component: ImportView,
     },
   ],
 });

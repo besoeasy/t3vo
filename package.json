@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "type": "module",
   "scripts": {
-    "dev": "npm i && vite",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -17,7 +17,7 @@
     "lucide-vue-next": "^0.474.0",
     "marked": "^16.4.1",
     "otpauth": "^9.3.6",
-    "papaparse": "^5.5.2",
+    "papaparse": "^5.5.3",
     "peerjs": "^1.5.5",
     "pinia": "^2.3.1",
     "qrcode": "^1.5.4",
