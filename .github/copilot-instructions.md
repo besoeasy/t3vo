@@ -8,6 +8,7 @@ Keep all the components consistent with the existing design system. All componen
 # things to do before answering
 
 Give possible Suggestions only after analyzing the entire codebase and understanding the context of the project.
+Update Available Tags in note-edit.vue with all tags from TAGS.md
 
 # Important Notes
 
