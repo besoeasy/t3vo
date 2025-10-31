@@ -28,11 +28,11 @@
         <!-- Content -->
         <div class="flex-1 mb-3">
           <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
-            <span v-if="note.parsed.icon" class="mr-2 text-xl">{{ note.parsed.icon }}</span>
+            <span v-if="note.parsed.icon" class="mr-2 text-2xl">{{ note.parsed.icon }}</span>
             {{ note.parsed.title }}
           </h3>
           <p class="text-sm text-gray-800 line-clamp-3">
-            {{ note.parsed.content || "Empty note" }}
+            {{ note.parsed.content || "......." }}
           </p>
         </div>
         <!-- Footer -->
