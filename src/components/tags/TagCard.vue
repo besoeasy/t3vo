@@ -1,16 +1,19 @@
 
 <template>
   <div class="flex flex-col items-center w-full">
-  <div class="relative w-full max-w-xs sm:max-w-sm md:max-w-md aspect-[16/10] bg-blue-900 rounded-2xl shadow-xl p-5 flex flex-col justify-between text-white select-none">
+    <div class="relative w-full max-w-xs sm:max-w-sm md:max-w-md aspect-[16/10] bg-blue-900 rounded-2xl shadow-xl p-5 flex flex-col justify-between text-white select-none">
       <!-- Card Chip and Brand -->
       <div class="flex items-center justify-between mb-4">
         <div class="w-10 h-7 bg-yellow-200 rounded-md shadow-inner flex items-center justify-center">
           <div class="w-6 h-3 bg-yellow-50 rounded-sm"></div>
         </div>
-        <svg class="w-10 h-10" viewBox="0 0 48 48" fill="none">
-          <circle cx="16" cy="24" r="8" fill="#fbbf24"/>
-          <circle cx="32" cy="24" r="8" fill="#f59e42"/>
-        </svg>
+        <div class="flex flex-col items-end">
+          <svg class="w-10 h-10 mb-1" viewBox="0 0 48 48" fill="none">
+            <circle cx="16" cy="24" r="8" fill="#fbbf24"/>
+            <circle cx="32" cy="24" r="8" fill="#f59e42"/>
+          </svg>
+          <span class="text-xs font-semibold text-gray-200 tracking-wide">{{ cardType }}</span>
+        </div>
       </div>
       <!-- Card Number -->
       <div class="mb-4">
@@ -41,4 +44,18 @@ function formatCardNumber(num) {
   if (!num) return '•••• •••• •••• ••••'
   return num.replace(/[^0-9]/g, '').replace(/(.{4})/g, '$1 ').trim()
 }
+
+function detectCardType(number) {
+  if (!number) return ''
+  const n = number.replace(/\D/g, '')
+  if (/^4[0-9]{12}(?:[0-9]{3})?$/.test(n)) return 'Visa'
+  if (/^5[1-5][0-9]{14}$/.test(n)) return 'MasterCard'
+  if (/^3[47][0-9]{13}$/.test(n)) return 'Amex'
+  if (/^6(?:011|5[0-9]{2})[0-9]{12}$/.test(n)) return 'Discover'
+  if (/^3(?:0[0-5]|[68][0-9])[0-9]{11}$/.test(n)) return 'Diners Club'
+  if (/^35[0-9]{14}$/.test(n)) return 'JCB'
+  return 'Card'
+}
+
+const cardType = detectCardType(card.cardNumber)
 </script>
