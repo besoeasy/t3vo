@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full p-4 bg-white border border-gray-200 rounded-xl flex items-center gap-3">
-    <div class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <div class="w-full p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-center gap-6">
+    <div class="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex-shrink-0 shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -11,9 +11,9 @@
       </svg>
     </div>
     <div class="flex flex-col flex-1 min-w-0">
-      <span class="text-xs text-gray-500 font-medium mb-1">Date</span>
-      <span class="text-lg font-bold text-black select-all">{{ value }}</span>
-      <span v-if="relative" class="text-xs text-gray-400 mt-1">({{ relative }})</span>
+      <span class="text-sm text-gray-500 font-semibold tracking-wide uppercase mb-2">Date</span>
+      <span class="text-xl font-bold text-gray-900 select-all leading-tight">{{ value }}</span>
+      <span v-if="relative" class="text-base text-gray-600 mt-2 font-medium">{{ relative }}</span>
     </div>
   </div>
 </template>
