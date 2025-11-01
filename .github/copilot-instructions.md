@@ -3,7 +3,8 @@
 Always use tailwindcss for styling and avoid custom css unless absolutely necessary.
 Do not add comments unless the code is complex and requires explanation.
 Make sure each component and design is mobile compatible and responsive.
-Keep all the components consistent with the existing design system. All components are full width by default unless specified otherwise.
+Keep all the components consistent with the existing design system. All components are full width by default unless specified otherwise./
+All components must use animations created with tailwindcss utilities only.
 
 # things to do before answering
 

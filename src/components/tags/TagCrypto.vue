@@ -100,7 +100,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { fetchCryptoData, formatCryptoPrice, formatLargeNumber, getPriceChangeColor } from '@/utils/cryptoApi'
 
 const props = defineProps({
   value: {
@@ -115,6 +114,154 @@ const props = defineProps({
 
 const cryptoData = ref([])
 const isLoading = ref(false)
+
+const CACHE_DURATION = 4 * 60 * 60 * 1000
+const CACHE_KEY_PREFIX = 'crypto_cache_'
+const COINGECKO_API = 'https://api.coingecko.com/api/v3'
+
+const getCachedData = (key) => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY_PREFIX + key)
+    if (!cached) return null
+
+    const { data, timestamp } = JSON.parse(cached)
+    const now = Date.now()
+
+    if (now - timestamp < CACHE_DURATION) {
+      return data
+    }
+
+    localStorage.removeItem(CACHE_KEY_PREFIX + key)
+    return null
+  } catch (error) {
+    console.error('Error reading cache:', error)
+    return null
+  }
+}
+
+const setCachedData = (key, data) => {
+  try {
+    const cacheData = {
+      data,
+      timestamp: Date.now(),
+    }
+    localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheData))
+  } catch (error) {
+    console.error('Error saving cache:', error)
+  }
+}
+
+const fetchCryptoData = async (cryptoIds) => {
+  const ids = Array.isArray(cryptoIds) ? cryptoIds : [cryptoIds]
+  const validIds = ids.filter(id => id && id.trim())
+  
+  if (validIds.length === 0) {
+    return []
+  }
+
+  const results = []
+
+  for (const id of validIds) {
+    const trimmedId = id.trim().toLowerCase()
+    const cacheKey = trimmedId
+
+    const cached = getCachedData(cacheKey)
+    if (cached) {
+      console.log(`Using cached data for ${trimmedId}`)
+      results.push(cached)
+      continue
+    }
+
+    try {
+      const response = await fetch(
+        `${COINGECKO_API}/coins/${trimmedId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
+      )
+
+      if (!response.ok) {
+        console.error(`Failed to fetch ${trimmedId}: ${response.status}`)
+        results.push({
+          id: trimmedId,
+          error: true,
+          message: `Failed to fetch data for ${trimmedId}`,
+        })
+        continue
+      }
+
+      const data = await response.json()
+
+      const cryptoData = {
+        id: data.id,
+        symbol: data.symbol?.toUpperCase(),
+        name: data.name,
+        image: data.image?.large || data.image?.small,
+        current_price: data.market_data?.current_price?.usd,
+        market_cap: data.market_data?.market_cap?.usd,
+        market_cap_rank: data.market_data?.market_cap_rank,
+        price_change_24h: data.market_data?.price_change_percentage_24h,
+        price_change_7d: data.market_data?.price_change_percentage_7d,
+        price_change_30d: data.market_data?.price_change_percentage_30d,
+        price_change_1y: data.market_data?.price_change_percentage_1y,
+        total_volume: data.market_data?.total_volume?.usd,
+        high_24h: data.market_data?.high_24h?.usd,
+        low_24h: data.market_data?.low_24h?.usd,
+        website: data.links?.homepage?.[0],
+        blockchain_site: data.links?.blockchain_site?.[0],
+        last_updated: data.last_updated,
+      }
+
+      setCachedData(cacheKey, cryptoData)
+      results.push(cryptoData)
+
+      if (validIds.length > 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    } catch (error) {
+      console.error(`Error fetching ${trimmedId}:`, error)
+      results.push({
+        id: trimmedId,
+        error: true,
+        message: error.message,
+      })
+    }
+  }
+
+  return results
+}
+
+const formatCryptoPrice = (price) => {
+  if (!price) return 'N/A'
+  
+  if (price < 0.01) {
+    return `$${price.toFixed(6)}`
+  } else if (price < 1) {
+    return `$${price.toFixed(4)}`
+  } else if (price < 100) {
+    return `$${price.toFixed(2)}`
+  } else {
+    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+}
+
+const formatLargeNumber = (num) => {
+  if (!num) return 'N/A'
+  
+  if (num >= 1e12) {
+    return `$${(num / 1e12).toFixed(2)}T`
+  } else if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(2)}B`
+  } else if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(2)}M`
+  } else if (num >= 1e3) {
+    return `$${(num / 1e3).toFixed(2)}K`
+  } else {
+    return `$${num.toFixed(2)}`
+  }
+}
+
+const getPriceChangeColor = (change) => {
+  if (!change && change !== 0) return 'text-gray-500'
+  return change >= 0 ? 'text-green-600' : 'text-red-600'
+}
 
 const cryptoIds = computed(() => {
   return props.value?.split(',').map(id => id.trim()).filter(Boolean) || []
@@ -136,7 +283,6 @@ const loadCryptoData = async () => {
   }
 }
 
-// Load data on mount and when value changes
 onMounted(() => loadCryptoData())
 watch(() => props.value, () => loadCryptoData())
 </script>
