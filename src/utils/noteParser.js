@@ -69,6 +69,7 @@ export function parseNote(content) {
       raw: '',
       content: '',
       tags: {},
+      allTags: [],
       type: 'note',
       title: '',
       references: [],
@@ -77,21 +78,29 @@ export function parseNote(content) {
   }
 
   const tags = {};
+  const allTags = [];
   const matches = content.matchAll(TAG_REGEX);
 
   // Extract all tags
   for (const match of matches) {
-    const [, key, value] = match;
-    if (key.toLowerCase() === 'card') {
-      // Parse card as number-expiry-cvv
+    const [fullMatch, key, value] = match;
+    const lowerKey = key.toLowerCase();
+    
+    if (lowerKey === 'card') {
       const cardParts = value.trim().split('-');
-      tags.card = {
+      const cardData = {
         cardNumber: cardParts[0] || '',
         expiry: cardParts[1] || '',
         cvv: cardParts[2] || ''
       };
+      tags.card = cardData;
+      allTags.push({ key: lowerKey, value: cardData, raw: fullMatch });
     } else {
-      tags[key.toLowerCase()] = value.trim();
+      const trimmedValue = value.trim();
+      if (!tags[lowerKey]) {
+        tags[lowerKey] = trimmedValue;
+      }
+      allTags.push({ key: lowerKey, value: trimmedValue, raw: fullMatch });
     }
   }
 
@@ -119,6 +128,7 @@ export function parseNote(content) {
     raw: content,
     content: cleanContent,
     tags,
+    allTags,
     type,
     title,
     references,

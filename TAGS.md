@@ -15,7 +15,7 @@
 | `#@bookmark=` | Website URL (bookmark)                                          | `#@bookmark=https://...`                                 |
 | `#@url=`      | Website URL (bookmark)                                          | `#@url=https://...`                                      |
 | `#@qrcode=`   | Generate QR code from text                                      | `#@qrcode=SomeText`                                      |
-| `#@crypto=`   | Get Information Crypto                                          | `#@crypto=bitcoin`                                       |
+| `#@crypto=`   | Cryptocurrency tracking (one per tag)                           | `#@crypto=bitcoin` or `#@crypto=ethereum`                |
 | `#@apikey=`   | API Key for integrations                                        | `#@apikey=sk-1234abcd`                                   |
 | `#@secret=`   | Generic secret                                                  | `#@secret=abcd1234`                                      |
 | `#@wifi=`     | WiFi credentials (SSID:pass)                                    | `#@wifi=HomeWiFi:password`                               |

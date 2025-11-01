@@ -66,49 +66,53 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left Column - Tags & Metadata -->
           <div class="lg:col-span-1 space-y-4">
-            <!-- Bookmark -->
-            <TagBookmark v-if="parsed?.tags?.bookmark" :parsed="parsed" />
+            <!-- Render all tags in order -->
+            <template v-for="(tag, index) in parsed?.allTags" :key="`${tag.key}-${index}`">
+              <!-- Bookmark (render once) -->
+              <TagBookmark v-if="(tag.key === 'bookmark' || tag.key === 'url') && shouldRenderOnce(tag.key)" :parsed="parsed" />
 
-            <!-- QR Code -->
-            <TagQRCode v-if="parsed?.tags?.qrcode" :value="parsed.tags.qrcode" :parsed="parsed" />
+              <!-- QR Code (can render multiple times) -->
+              <TagQRCode v-else-if="tag.key === 'qrcode'" :value="tag.value" :parsed="parsed" />
 
-            <!-- Crypto -->
-            <TagCrypto v-if="parsed?.tags?.crypto" :value="parsed.tags.crypto" :parsed="parsed" />
+              <!-- Crypto (can render multiple times) -->
+              <TagCrypto v-else-if="tag.key === 'crypto'" :value="tag.value" :parsed="parsed" />
 
-            <!-- Password Fields -->
-            <TagPassword v-if="hasPasswordTags" :parsed="parsed" />
+              <!-- Password (render once) -->
+              <TagPassword v-else-if="(tag.key === 'password' || tag.key === 'email' || tag.key === 'username') && shouldRenderOnce('password')" :parsed="parsed" />
 
-            <!-- 2FA/TOTP -->
-            <TagTOTP v-if="parsed?.tags?.['2fa'] || parsed?.tags?.totp" :parsed="parsed" />
+              <!-- 2FA/TOTP (render once) -->
+              <TagTOTP v-else-if="(tag.key === '2fa' || tag.key === 'totp') && shouldRenderOnce('2fa')" :parsed="parsed" />
 
-            <!-- API Key -->
-            <TagApiKey v-if="parsed?.tags?.apikey" :value="parsed.tags.apikey" />
+              <!-- API Key (can render multiple times) -->
+              <TagApiKey v-else-if="tag.key === 'apikey'" :value="tag.value" />
 
-            <!-- Domains -->
-            <TagDomains v-if="parsed?.tags?.domains" :value="parsed.tags.domains" :parsed="parsed" />
+              <!-- Domains (can render multiple times) -->
+              <TagDomains v-else-if="tag.key === 'domains'" :value="tag.value" :parsed="parsed" />
+
+              <!-- IP (can render multiple times) -->
+              <TagIp v-else-if="tag.key === 'ip'" :value="tag.value" />
+
+              <!-- Secret (can render multiple times) -->
+              <TagSecret v-else-if="tag.key === 'secret'" :value="tag.value" />
+
+              <!-- WiFi (can render multiple times) -->
+              <TagWifi v-else-if="tag.key === 'wifi'" :value="tag.value" />
+
+              <!-- Card (can render multiple times) -->
+              <TagCard v-else-if="tag.key === 'card'" :value="tag.value" />
+
+              <!-- Date (can render multiple times) -->
+              <TagDate v-else-if="tag.key === 'date'" :value="tag.value" />
+
+              <!-- Address (can render multiple times) -->
+              <TagAddress v-else-if="tag.key === 'address'" :value="tag.value" />
+            </template>
 
             <!-- Attachments -->
             <ParseAttachments v-if="note.attachments?.length" :attachments="note.attachments" />
 
             <!-- Crypto Addresses -->
             <ParseCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
-
-            <TagIp v-if="parsed?.tags?.ip" :value="parsed.tags.ip" />
-
-            <!-- Secret -->
-            <TagSecret v-if="parsed?.tags?.secret" :value="parsed.tags.secret" />
-
-            <!-- WiFi -->
-            <TagWifi v-if="parsed?.tags?.wifi" :value="parsed.tags.wifi" />
-
-            <!-- Card -->
-            <TagCard v-if="parsed?.tags?.card" :value="parsed.tags.card" />
-
-            <!-- Date -->
-            <TagDate v-if="parsed?.tags?.date" :value="parsed.tags.date" />
-
-            <!-- Address -->
-            <TagAddress v-if="parsed?.tags?.address" :value="parsed.tags.address" />
 
             <!-- References -->
             <ParseReferences v-if="parsed?.references?.length" :references="parsed.references" />
@@ -139,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchNoteById, softDeleteNote } from "@/db";
 import { parseNote } from "@/utils/noteParser";
@@ -210,10 +214,29 @@ const hasPasswordTags = computed(() => {
   return !!(parsed.value?.tags?.password || parsed.value?.tags?.email || parsed.value?.tags?.username);
 });
 
+const renderedOnce = ref(new Set());
+
+const shouldRenderOnce = (tagKey) => {
+  const onceOnlyTags = ['password', 'email', 'username', '2fa', 'totp', 'bookmark', 'url'];
+  if (onceOnlyTags.includes(tagKey)) {
+    if (renderedOnce.value.has(tagKey)) {
+      return false;
+    }
+    renderedOnce.value.add(tagKey);
+    return true;
+  }
+  return true;
+};
+
+const resetRenderedOnce = () => {
+  renderedOnce.value.clear();
+};
+
 onMounted(async () => {
   noteId.value = route.params.id;
 
   try {
+    resetRenderedOnce();
     const loadedNote = await fetchNoteById(noteId.value);
     note.value = loadedNote;
   } catch (error) {
@@ -221,6 +244,10 @@ onMounted(async () => {
   } finally {
     isLoaded.value = true;
   }
+});
+
+watch(() => parsed.value, () => {
+  resetRenderedOnce();
 });
 
 const formatDate = (timestamp) => {
