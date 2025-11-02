@@ -45,10 +45,6 @@ const props = defineProps({
   value: {
     type: String,
     required: true
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
@@ -121,13 +117,47 @@ Organize your supertags into categories:
 
 ## 🎨 Component Props
 
-Your supertag component receives these props:
+Your supertag component receives this prop:
 
 ```javascript
 props: {
-  value: String,    // The supertag's value (e.g., for #@crypto=bitcoin, value is "bitcoin")
-  parsed: Object    // Full parsed note object with all supertags
+  value: String    // The supertag's value (e.g., for #@crypto=bitcoin, value is "bitcoin")
 }
+```
+
+## 🛠️ Available Libraries & Styling
+
+Supertag components have access to:
+
+- **Tailwind CSS** - Use utility classes for all styling (required)
+- **Lucide Vue Next** - Icon library (`lucide-vue-next`)
+- **Axios** - HTTP client for API requests
+- **Vue 3 Composition API** - ref, computed, watch, onMounted, etc.
+
+**Example with icons:**
+```vue
+<script setup>
+import { Wifi, Copy, Check } from 'lucide-vue-next'
+</script>
+
+<template>
+  <Wifi class="w-5 h-5 text-blue-600" />
+</template>
+```
+
+**Example with API requests:**
+```vue
+<script setup>
+import axios from 'axios'
+import { ref, onMounted } from 'vue'
+
+const data = ref(null)
+
+onMounted(async () => {
+  const response = await axios.get(`https://api.example.com/${props.value}`)
+  data.value = response.data
+})
+</script>
 ```
 
 ## 🔍 Using the Supertag Registry
@@ -167,8 +197,7 @@ const validation = supertagRegistry.validateSupertagValue('email', 'test@example
 
 <script setup>
 defineProps({
-  value: String,
-  parsed: Object
+  value: String
 })
 </script>
 
@@ -198,8 +227,7 @@ export const tagMetadata = {
 import { ref, onMounted } from 'vue'
 
 const props = defineProps({
-  value: String,
-  parsed: Object
+  value: String
 })
 
 const data = ref(null)

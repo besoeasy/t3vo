@@ -26,10 +26,6 @@ const props = defineProps({
   value: {
     type: String,
     default: ''
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 });
 

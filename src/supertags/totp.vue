@@ -33,10 +33,6 @@ const props = defineProps({
   value: {
     type: String,
     default: null
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
@@ -45,8 +41,7 @@ const totpTimeRemaining = ref(30)
 let totpInterval = null
 
 const secret = computed(() => {
-  // Check both value prop and parsed tags
-  return props.value || props.parsed?.tags?.['2fa'] || props.parsed?.tags?.totp || null
+  return props.value
 })
 
 const generateTOTP = () => {

@@ -27,17 +27,13 @@ const props = defineProps({
   value: {
     type: String,
     default: null
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
 const qrcodeCanvas = ref(null)
 
 const text = computed(() => {
-  return props.value || props.parsed?.tags?.qrcode || null
+  return props.value
 })
 
 const generateQRCode = async () => {

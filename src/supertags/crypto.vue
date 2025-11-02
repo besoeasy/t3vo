@@ -96,10 +96,6 @@ const props = defineProps({
   value: {
     type: String,
     required: true
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 

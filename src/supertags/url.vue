@@ -17,15 +17,11 @@ const props = defineProps({
   value: {
     type: String,
     default: null
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
 const url = computed(() => {
-  return props.value || props.parsed?.tags?.url || null
+  return props.value
 })
 </script>
 

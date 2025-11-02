@@ -34,15 +34,11 @@ const props = defineProps({
   value: {
     type: String,
     default: null
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
 const bookmarkUrl = computed(() => {
-  return props.value || props.parsed?.tags?.bookmark || null
+  return props.value
 })
 
 const displayUrl = computed(() => {

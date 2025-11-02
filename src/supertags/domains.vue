@@ -20,15 +20,11 @@ const props = defineProps({
   value: {
     type: String,
     default: null
-  },
-  parsed: {
-    type: Object,
-    default: null
   }
 })
 
 const domains = computed(() => {
-  return props.value || props.parsed?.tags?.domains || null
+  return props.value
 })
 
 const domainList = computed(() => {
