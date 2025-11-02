@@ -1,4 +1,3 @@
-
 <template>
   <!-- Loading State -->
   <div v-if="!isLoaded" class="flex items-center justify-center h-full">
@@ -52,9 +51,6 @@
         <h1 v-else class="text-3xl md:text-4xl font-bold text-gray-400 mb-2 italic">Untitled Note</h1>
         <div class="flex items-center gap-3 text-sm text-gray-500">
           <span>{{ formatDate(note.updatedAt) }}</span>
-          <span v-if="parsed?.customTags.length" class="flex gap-2">
-            <span v-for="tag in parsed.customTags" :key="tag" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"> #{{ tag }} </span>
-          </span>
         </div>
       </div>
     </div>
@@ -69,12 +65,7 @@
             <!-- Render all tags in order -->
             <template v-for="(tag, index) in parsed?.allTags" :key="`${tag.key}-${index}`">
               <!-- Dynamic supertag component rendering -->
-              <component 
-                :is="getSupertagComponent(tag.key)" 
-                v-if="getSupertagComponent(tag.key)"
-                :value="tag.value" 
-                :parsed="parsed"
-              />
+              <component :is="getSupertagComponent(tag.key)" v-if="getSupertagComponent(tag.key)" :value="tag.value" :parsed="parsed" />
             </template>
 
             <!-- Attachments -->
