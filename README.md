@@ -1,10 +1,38 @@
-> **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). The reason is that the app auto-updates with new features, which you may not want immediately. By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
+# T3VO: One App for Everything
 
-# T3VO: Where Notes, Passwords & Bookmarks Become One.
+> **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
-T3VO is a secure, offline-first note-taking app with smart tag-based organization and rich features. Everything is a note—use simple tags to automatically organize passwords, bookmarks, and regular notes with markdown support, file attachments, and media references.
+**Stop juggling multiple apps.** One password manager. One bookmark manager. One notes app. One cloud service. One subscription. One privacy concern after another.
 
-<img width="2880" height="1688" alt="image" src="https://github.com/user-attachments/assets/9f0e6753-09ab-4afc-a1b5-655cb8d613a5" />
+**T3VO simplifies your digital life** with a single, intelligent note system that becomes whatever you need—password vault, bookmark organizer, document storage, or personal knowledge base. Everything is just a note with smart tags.
+
+## Why T3VO?
+
+### Your Data, Your Control
+
+In a world where companies control your passwords, notes, and bookmarks—**T3VO puts you back in charge.**
+
+- **Offline-First**: Works completely without internet. Your data lives on your device, not someone's cloud.
+- **P2P Sync**: Share between your devices directly using peer-to-peer—no servers, no middlemen.
+- **S3 Backup**: Want cloud backup? Use your own S3 storage. Not theirs.
+- **Zero-Knowledge Encryption**: Even if someone gets your backup, they can't read it without your master password.
+
+**The only person who should hold your data is you.**
+
+### One App, Infinite Possibilities
+
+Stop switching between apps. Everything you need in one place:
+
+- 🔐 **Password Manager** with 2FA/TOTP support
+- 🔖 **Bookmark Manager** with rich previews
+- 📝 **Note-Taking** with markdown
+- 💳 **Crypto Wallet Tracker** with address detection
+- 📎 **Document Storage** with attachments
+- 🌐 **URL Manager** with media embeds
+
+All powered by smart tags. Just type `#@password=`, `#@bookmark=`, or `#@cryptoaddress=` and T3VO does the rest.
+
+<img width="2880" height="1688" alt="T3VO Interface" src="https://github.com/user-attachments/assets/9f0e6753-09ab-4afc-a1b5-655cb8d613a5" />
 
 ## ✨ Key Features
 
@@ -15,6 +43,7 @@ T3VO is a secure, offline-first note-taking app with smart tag-based organizatio
 - **📱 Offline-First**: Works completely offline, all data stored locally in IndexedDB
 - **🏷️ Smart Tags**: Use `#@password=`, `#@bookmark=`, etc. to auto-organize
 - **🔍 Powerful Search**: Instant search across all notes, titles, and content
+- **🔄 Secure P2P**: Direct device-to-device sync using WebRTC—no cloud needed
 
 ### Rich Content
 
@@ -27,9 +56,9 @@ T3VO is a secure, offline-first note-taking app with smart tag-based organizatio
 ### Security & Passwords
 
 - **🔑 Password Manager**: Store credentials securely with structured fields
-- **🔄 Real-time 2FA**: Generate TOTP codes from `#@2fa=` tags with countdown timer
+- **🔄 Real-time 2FA**: Generate TOTP codes from `#@totp=` tags with countdown timer
 - **🌐 Domain Support**: Track associated domains for each password
-- **�️ Clean Display**: Monospace fonts for passwords and codes
+- **👁️ Clean Display**: Monospace fonts for passwords and codes
 
 ### Organization
 
@@ -46,166 +75,160 @@ T3VO is a secure, offline-first note-taking app with smart tag-based organizatio
 - **📥 Download Attachments**: Download any attached file with a click
 - **🗑️ Soft Delete & Auto-Purge**: Notes can be recovered before permanent deletion. Deleted notes are automatically purged from your device after 7 days for privacy and storage efficiency.
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
-1. **Set Master Password**: On first launch, create a secure master password
-2. **Create Notes**: Click the + button to create your first note
-3. **Use Tags**: Add `#@title=`, `#@password=`, etc. to structure your notes
-4. **Attach Files**: Drag and drop files or click the attachment button
-5. **Add References**: Paste YouTube, Twitter, Instagram, or Reddit URLs
-6. **Write in Markdown**: Use markdown syntax for rich formatting
+### 1. Deploy Your Instance (Recommended)
 
-### Tag System Examples
-
-**Password Note with 2FA:**
-
-```
-#@title=Gmail Account
-#@email=user@gmail.com
-#@password=SecurePassword123
-#@2fa=4XGVXHPFIMZTRMRNJALZ4K7QWHZH3S5R
-#@domains=gmail.com, mail.google.com
-
-## Notes
-My main email account with 2FA enabled
-
-## Recovery
-- Recovery email: backup@email.com
-- Recovery phone: +1-555-0123
-```
-
-**Bookmark with References:**
-
-```
-#@title=Awesome Tutorial
-#@bookmark=https://example.com/tutorial
-
-Great tutorial I found on YouTube
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
-
-Also discussed on Reddit:
-https://www.reddit.com/r/programming/comments/abc123
-```
-
-**Note with Markdown & Code:**
-
-```
-#@title=API Documentation
-
-## Endpoint
-`POST /api/users`
-
-### Example Code
-\`\`\`javascript
-fetch('/api/users', {
-  method: 'POST',
-  body: JSON.stringify({ name: 'John' })
-})
-\`\`\`
-```
-
-**Regular Note with Attachments:**
-
-```
-#@title=Project Proposal
-
-Attach presentation.pdf, mockups.png for reference.
-
-## Overview
-- Budget: $10,000
-- Timeline: 3 months
-- Team: 5 people
-```
-
-👉 See [TAGS.md](./TAGS.md) for complete tag documentation
-
-## 📱 Features in Detail
-
-### Markdown Support
-
-Write notes using full markdown syntax:
-
-- Headers, lists, links, images
-- Code blocks with syntax highlighting
-- Tables, blockquotes, horizontal rules
-- Inline code and formatting
-
-### File Attachments
-
-- Drag and drop files directly into notes
-- Support for images, PDFs, documents, any file type
-- Preview thumbnails for images
-- Download attachments anytime
-- Stored encrypted in your local database
-
-### Device & Cloud Sync
-
-- **🏠 Host/Guest Architecture**: First device becomes host, others auto-connect as guests
-- **🔄 Room-Based**: Simple room codes like "happytiger" for easy sharing
-- **📱 Cross-Device**: Works between phones, tablets, laptops seamlessly
-- **🕸️ Mesh Network**: All devices connect directly to each other
-- **📊 QR Code Sharing**: Scan to join rooms instantly
-- **🔐 Peer-to-peer sync using WebRTC**: No cloud server needed!
-- **☁️ S3/MinIO Cloud Sync**: Sync your notes to S3-compatible storage (AWS S3, MinIO, etc.) for backup and multi-device access
-- **⚡ Automatic conflict resolution**: Newest timestamp wins
-- **🧹 Auto-purge deleted notes**: Notes deleted for more than 7 days are automatically removed from your device.
-- **🔒 Encrypted data transfer**: Notes stay encrypted during sync
-- **🌐 Works across different networks**: Uses public STUN servers
-
-### Backup, Restore & S3/MinIO Sync
-
-- Export all notes as encrypted JSON
-- Includes all attachments (converted to base64)
-- Import backups without losing existing notes
-- Duplicate detection during restore
-- **Sync to S3/MinIO**: Configure your own S3 endpoint, region, and credentials. Upload/download notes and attachments to your private cloud or self-hosted MinIO server. Two-way sync and conflict resolution included.
-
-## 🔒 Security & Privacy
-
-- **Zero-Knowledge**: Your master password never leaves your device
-- **Client-Side Encryption**: All notes encrypted using AES before storage
-- **No Cloud**: Everything stored locally in your browser
-- **No Tracking**: No analytics, no telemetry, no data collection
-- **Offline-First**: Works completely without internet
-- **P2P Sync**: Direct device-to-device sync, no intermediary servers
-
-## 🚀 Deployment
-
-### Easy
-
-1. Fork this repository
-2. Deploy on Vercel or Netlify
-
-### Super Easy
-
-Use these free services to deploy the app with a single click:
+**Fork this repository** and deploy to Vercel/Netlify for free. This gives you control over updates.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/besoeasy/t3vo/tree/latest)
-
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/besoeasy/t3vo&branch=latest)
 
-### Running via Docker
-
-You can also run the app using Docker without building locally:
+Or run with Docker:
 
 ```bash
 docker run -d --name t3vo -p 8080:80 ghcr.io/besoeasy/t3vo:main
 ```
 
-Then open http://localhost:8080 in your browser.
+### 2. Set Up Your Vault
 
-## 🤝 Contribute
+1. **Create Master Password**: Choose a strong password on first launch
+2. **Create Your First Note**: Click the + button
+3. **Add Smart Tags**: Type `#@title=My First Note` to start
 
-Contributions are welcome! Feel free to:
+### 3. Start Organizing
 
-- 🐛 Report bugs
-- 💡 Suggest new features
+Everything is a note. Just add tags to make it special:
+
+**Store a password:**
+
+```
+#@title=Gmail
+#@email=user@example.com
+#@password=SecurePass123
+#@totp=JBSWY3DPEHPK3PXP
+```
+
+**Save a bookmark:**
+
+```
+#@title=Great Article
+#@bookmark=https://example.com
+
+My notes about this article...
+```
+
+**Track crypto wallet:**
+
+```
+#@title=Bitcoin Wallet
+#@cryptoaddress=1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+
+Main BTC wallet for savings
+```
+
+👉 See [TAGS.md](src/supertags/README.md) for all available tags
+
+## 🔐 How It Works
+
+### Privacy by Design
+
+1. **You create** a master password (never sent anywhere)
+2. **Your device encrypts** all notes with AES encryption
+3. **Everything stays local** in IndexedDB on your device
+4. **Optional P2P sync** connects devices directly (WebRTC)
+5. **Optional S3 backup** uses your own storage (not ours)
+
+**Result:** Your data never touches our servers. We can't read it. We can't lose it. We can't sell it.
+
+### Smart Tags System
+
+Tags automatically transform your notes:
+
+| Tag                | What It Does            | Example                          |
+| ------------------ | ----------------------- | -------------------------------- |
+| `#@title=`         | Sets note title         | `#@title=My Bank Account`        |
+| `#@email=`         | Creates email field     | `#@email=user@example.com`       |
+| `#@username=`      | Creates username field  | `#@username=john_doe`            |
+| `#@password=`      | Password with show/hide | `#@password=SecurePass123`       |
+| `#@totp=`          | 2FA code generator      | `#@totp=JBSWY3DPEHPK3PXP`        |
+| `#@bookmark=`      | Saved link              | `#@bookmark=https://example.com` |
+| `#@cryptoaddress=` | Crypto wallet lookup    | `#@cryptoaddress=1A1zP1e...`     |
+| `#@apikey=`        | API key storage         | `#@apikey=sk_live_abc123`        |
+| `#@secret=`        | Hidden text field       | `#@secret=TopSecretInfo`         |
+
+[See all 19+ tags →](src/supertags/README.md)
+
+### Sync Options
+
+**Option 1: P2P Sync (No Server)**
+
+- Create a room with code like "happydog123"
+- Other devices join with same code
+- Direct device-to-device sync via WebRTC
+- Works across different WiFi networks
+
+**Option 2: S3 Backup (Your Cloud)**
+
+- Configure your S3 endpoint (AWS, MinIO, etc.)
+- One-click upload/download
+- Full encryption before upload
+- You control the storage
+
+**Option 3: Offline Only**
+
+- Don't sync at all
+- Use export/import for backups
+- Maximum privacy
+
+## 💡 Use Cases
+
+**Replace 4+ Apps with One:**
+
+- ✅ Password Manager (Bitwarden, 1Password)
+- ✅ Bookmark Manager (Raindrop, Pocket)
+- ✅ Note-Taking (Notion, Evernote)
+- ✅ 2FA App (Authy, Google Authenticator)
+- ✅ Crypto Wallet Tracker
+- ✅ Document Storage
+
+**Perfect For:**
+
+- 🔐 Storing passwords with 2FA codes
+- 🔖 Organizing bookmarks with notes
+- 📝 Technical documentation with code blocks
+- 🔑 API keys and secrets
+- 📄 Personal knowledge base
+- 🌐 URL collections with metadata
+
+## 🙋 FAQ
+
+**Q: Is my data safe?**  
+A: Yes. Everything is encrypted on your device before storage. Your master password never leaves your device. Even if someone steals your device or backup, they can't decrypt it without your password.
+
+**Q: What if I forget my master password?**  
+A: There's no recovery. This is by design for zero-knowledge security. Your password is the encryption key—without it, data cannot be decrypted.
+
+**Q: Can I use this on mobile?**  
+A: Yes! It's a web app that works on any device with a browser. Install it as a PWA for app-like experience.
+
+**Q: Do I need internet?**  
+A: No. T3VO works 100% offline. Internet is only needed for optional P2P sync or S3 backup.
+
+**Q: Where is my data stored?**  
+A: In your browser's IndexedDB. It never leaves your device unless you explicitly sync via P2P or S3.
+
+**Q: Is it really free?**  
+A: Yes. Open source (MIT license). Deploy your own instance for free on Vercel/Netlify.
+
+## 🤝 Contributing
+
+We welcome contributions!
+
+- 🐛 [Report bugs](https://github.com/besoeasy/t3vo/issues)
+- 💡 [Suggest features](https://github.com/besoeasy/t3vo/issues)
 - 🔧 Submit pull requests
-- 📖 Improve documentation
-
-## ⭐ Show Your Support
-
-If you find T3VO useful, please consider giving it a star on GitHub!
+- ⭐ Star the repo if you find it useful!
 
 ## 📊 Comparison with Other Apps
 
@@ -245,4 +268,4 @@ Below is a detailed comparison of **T3VO** with other popular note-taking and pa
 > - ✅\* = Unlimited for self-hosted/community version
 > - ❌\* = Usage limits on free plan
 
-**T3VO** stands out for its unified approach (notes, passwords, bookmarks, and more in one place), strong privacy, offline-first design, and unique peer-to-peer sync with optional S3/MinIO cloud backup. For a full breakdown of tag-based features, see [TAGS.md](./TAGS.md).
+**T3VO** stands out for its unified approach (notes, passwords, bookmarks, and more in one place), strong privacy, offline-first design, and unique peer-to-peer sync with optional S3/MinIO cloud backup. For a full breakdown of tag-based features, see [TAGS.md](src/supertags/README.md).

@@ -162,7 +162,7 @@
           </p>
           <div class="flex flex-wrap gap-3">
             <a
-              href="https://github.com/besoeasy/t3vo/blob/main/src/tags/README.md"
+              href="https://github.com/besoeasy/t3vo/blob/main/src/supertags/README.md"
               target="_blank"
               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
             >
