@@ -1,132 +1,244 @@
 <template>
-  <div class="flex flex-col items-center min-h-screen bg-white dark:bg-gray-900 py-6 px-2 sm:px-4">
-    <form
-      @submit.prevent="applyConfig"
-      class="w-full max-w-md bg-gray-50 dark:bg-gray-800 rounded-xl shadow p-6 mb-8 border border-gray-200 dark:border-gray-700"
-    >
-      <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white text-center">S3 Configuration</h2>
-      <div class="space-y-4">
+  <div class="max-w-4xl mx-auto p-4 md:p-8 pt-16 md:pt-8">
+    <!-- Page Title with Status -->
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+      <h2 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">S3 Cloud Sync</h2>
+      <div v-if="s3Connected" class="flex items-center gap-2 text-green-600 dark:text-green-400">
+        <div class="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full animate-pulse"></div>
+        <span class="text-sm font-medium">Connected</span>
+      </div>
+    </div>
+
+    <!-- Status Card -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-6">
+      <div class="flex items-start gap-4">
+        <div class="p-3 bg-blue-500 rounded-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">S3-Compatible Cloud Storage</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Sync your notes to any S3-compatible storage (AWS S3, MinIO, Backblaze B2, etc.). Your data is encrypted and stored securely in your own cloud storage.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuration Card -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">S3 Configuration</h3>
+      <form @submit.prevent="applyConfig" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Endpoint</label>
           <input
             v-model="config.endpoint"
             placeholder="e.g. http://localhost:9000"
             required
-            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
           />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Access Key</label>
-          <input
-            v-model="config.accessKeyId"
-            required
-            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Access Key</label>
+            <input
+              v-model="config.accessKeyId"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Secret Key</label>
+            <input
+              v-model="config.secretAccessKey"
+              type="password"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+            />
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Secret Key</label>
-          <input
-            v-model="config.secretAccessKey"
-            type="password"
-            required
-            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bucket</label>
-          <input
-            v-model="config.bucket"
-            required
-            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
-          <input
-            v-model="config.region"
-            placeholder="e.g. us-east-1"
-            required
-            class="w-full rounded border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bucket</label>
+            <input
+              v-model="config.bucket"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Region</label>
+            <input
+              v-model="config.region"
+              placeholder="e.g. us-east-1"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+            />
+          </div>
         </div>
         <div class="flex items-center gap-2">
           <input type="checkbox" v-model="config.useSSL" id="useSSL" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-400" />
           <label for="useSSL" class="text-sm text-gray-700 dark:text-gray-300">Use SSL</label>
         </div>
-      </div>
-      <button type="submit" class="mt-6 w-full py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">Connect</button>
-    </form>
+        <button type="submit" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+          Connect to S3
+        </button>
+      </form>
+    </div>
 
-    <section class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700">
-      <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-white text-center">Sync Notes With S3</h2>
-
-      <div v-if="s3Status" class="flex flex-col items-center mb-4">
+    <!-- Connection Status -->
+    <div v-if="s3Status" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Connection Status</h3>
         <span
           :class="
             s3Status.connected
               ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
               : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
           "
-          class="px-3 py-1 rounded-full text-sm font-medium mb-2"
+          class="px-3 py-1 rounded-full text-sm font-medium"
         >
-          {{ s3Status.connected ? "🟢 S3 Connected" : "🔴 S3 Disconnected" }}
+          {{ s3Status.connected ? "✓ Connected" : "✗ Disconnected" }}
         </span>
-        <div class="flex gap-4 text-gray-700 dark:text-gray-300 text-sm">
-          <div>
-            Total Notes: <span class="font-semibold">{{ s3Status.totalNotes || 0 }}</span>
+      </div>
+      <div v-if="s3Status.connected" class="grid grid-cols-2 gap-4 text-sm">
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+          <p class="text-gray-600 dark:text-gray-400 mb-1">Total Notes</p>
+          <p class="font-semibold text-gray-900 dark:text-white text-xl">{{ s3Status.totalNotes || 0 }}</p>
+        </div>
+        <div v-if="s3Status.oldestEntry" class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+          <p class="text-gray-600 dark:text-gray-400 mb-1">Oldest Entry</p>
+          <p class="font-semibold text-gray-900 dark:text-white">{{ new Date(s3Status.oldestEntry).toLocaleDateString() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync Actions -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sync Data</h3>
+      
+      <button
+        @click="fullSync"
+        :disabled="syncing || !s3Connected"
+        class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+      >
+        <svg v-if="syncing" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ syncing ? 'Syncing...' : 'Sync Now (Two-Way)' }}
+      </button>
+
+      <!-- Progress -->
+      <div v-if="syncing" class="mt-4 bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+        <div class="font-medium text-gray-700 dark:text-gray-200 mb-2 text-center text-sm">{{ statusMessage }}</div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+          <div class="bg-blue-500 h-2 rounded-full transition-all" :style="{ width: total > 0 ? (progress / total * 100) + '%' : '0%' }"></div>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 text-center">{{ progress }} / {{ total }} notes</div>
+      </div>
+
+      <!-- Sync Results -->
+      <div v-if="syncResult" class="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <div class="text-green-700 dark:text-green-300 font-bold mb-3 text-center flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Sync Complete!
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div v-if="syncResult.uploaded !== undefined" class="bg-white dark:bg-gray-800 rounded p-3">
+            <p class="text-gray-600 dark:text-gray-400">Uploaded</p>
+            <p class="font-semibold text-gray-900 dark:text-white text-lg">{{ syncResult.uploaded.new + syncResult.uploaded.updated }}</p>
           </div>
-          <div v-if="s3Status.oldestEntry">
-            Oldest: <span class="font-semibold">{{ new Date(s3Status.oldestEntry).toLocaleDateString() }}</span>
+          <div v-if="syncResult.downloaded !== undefined" class="bg-white dark:bg-gray-800 rounded p-3">
+            <p class="text-gray-600 dark:text-gray-400">Downloaded</p>
+            <p class="font-semibold text-gray-900 dark:text-white text-lg">{{ syncResult.downloaded.new + syncResult.downloaded.updated }}</p>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="flex flex-col sm:flex-row gap-3 mb-6">
-        <button
-          @click="fullSync"
-          :disabled="syncing || !s3Connected"
-          class="w-full py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+    <!-- Sync Logs -->
+    <div v-if="syncLogs.length" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sync Logs</h3>
+        <button 
+          @click="syncLogs = []"
+          class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
-          🔄 Full Sync (Two-Way)
+          Clear
         </button>
       </div>
-
-      <div v-if="syncing" class="bg-gray-50 dark:bg-gray-900 rounded p-4 mb-4">
-        <div class="font-medium text-gray-700 dark:text-gray-200 mb-2 text-center">{{ statusMessage }}</div>
-        <progress :value="progress" :max="total" class="w-full h-4 mb-1"></progress>
-        <div class="text-xs text-gray-500 text-center">{{ progress }} / {{ total }} notes</div>
+      <div class="bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-xs max-h-48 overflow-y-auto font-mono">
+        <div v-for="(log, i) in syncLogs" :key="i" class="text-gray-700 dark:text-gray-300 py-1">{{ log }}</div>
       </div>
+    </div>
 
-      <div v-if="syncResult" class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-4 mb-4">
-        <div class="text-green-700 dark:text-green-300 font-bold mb-2 text-center">✓ Sync Complete!</div>
-        <div class="flex flex-wrap gap-4 justify-center text-green-800 dark:text-green-200 text-sm">
-          <div v-if="syncResult.uploaded !== undefined">
-            Uploaded: <span class="font-semibold">{{ syncResult.uploaded }}</span>
-          </div>
-          <div v-if="syncResult.downloaded !== undefined">
-            Downloaded: <span class="font-semibold">{{ syncResult.downloaded }}</span>
-          </div>
-          <div v-if="syncResult.merged !== undefined">
-            Merged: <span class="font-semibold">{{ syncResult.merged }}</span>
-          </div>
-          <div v-if="syncResult.conflicts !== undefined">
-            Conflicts resolved: <span class="font-semibold">{{ syncResult.conflicts }}</span>
-          </div>
-        </div>
+    <!-- Error Messages -->
+    <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+      <svg class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-red-900 dark:text-red-300">Error</p>
+        <p class="text-sm text-red-700 dark:text-red-400">{{ error }}</p>
       </div>
+      <button @click="error = ''" class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
 
-      <div
-        v-if="error"
-        class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded p-4 font-medium text-center mb-2"
-      >
-        ⚠ Error: {{ error }}
-      </div>
-    </section>
+    <!-- How It Works -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">How S3 Sync Works</h3>
+      <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Configure your S3-compatible storage credentials above</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Click "Connect to S3" to establish connection and create bucket if needed</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Use "Sync Now" to perform two-way sync - newer notes always win</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Works with AWS S3, MinIO, Backblaze B2, Wasabi, and other S3-compatible services</span>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import { reactive, watch, ref, onMounted } from "vue";
+import { db, getAllNotes } from "@/db";
+import { S3Client, ListObjectsV2Command, PutObjectCommand, GetObjectCommand, HeadBucketCommand, CreateBucketCommand } from "@aws-sdk/client-s3";
+
+// Sync log state
+const syncLogs = ref([]);
+function addSyncLog(...args) {
+  const msg = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+  syncLogs.value.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+  // Limit log size
+  if (syncLogs.value.length > 100) syncLogs.value.shift();
+}
+
 async function streamToString(stream) {
   const reader = stream.getReader();
   let result = "";
@@ -137,9 +249,6 @@ async function streamToString(stream) {
   }
   return result;
 }
-import { ref, onMounted } from "vue";
-import { db, getAllNotes } from "@/db";
-import { S3Client, ListObjectsV2Command, PutObjectCommand, GetObjectCommand, HeadBucketCommand, CreateBucketCommand } from "@aws-sdk/client-s3";
 
 const config = reactive({
   endpoint: localStorage.getItem("s3_endpoint") || "http://localhost:9000",
@@ -227,15 +336,19 @@ function base64ToArrayBuffer(base64) {
 // Check S3 connection and bucket status
 async function checkS3Status() {
   try {
+    addSyncLog('🔍 Checking S3 connection...');
     // Check if bucket exists
     let bucketExists = true;
     try {
       await s3Client.send(new HeadBucketCommand({ Bucket: BUCKET_NAME }));
+      addSyncLog(`✓ Bucket '${BUCKET_NAME}' exists`);
     } catch (err) {
       bucketExists = false;
+      addSyncLog(`⚠ Bucket '${BUCKET_NAME}' does not exist, creating...`);
     }
     if (!bucketExists) {
       await s3Client.send(new CreateBucketCommand({ Bucket: BUCKET_NAME }));
+      addSyncLog(`✓ Bucket '${BUCKET_NAME}' created successfully`);
     }
     s3Status.value.connected = true;
     s3Connected.value = true;
@@ -254,8 +367,10 @@ async function checkS3Status() {
       }
     }
     s3Status.value = { connected: true, totalNotes, oldestEntry };
+    addSyncLog(`✓ S3 connected - ${totalNotes} notes found`);
   } catch (e) {
     console.error("MinIO connection error:", e);
+    addSyncLog(`❌ S3 connection failed: ${e.message}`);
     s3Status.value.connected = false;
     s3Connected.value = false;
     error.value = "Failed to connect to S3";
@@ -269,10 +384,14 @@ async function fullSync() {
   progress.value = 0;
 
   try {
+    addSyncLog('🔄 Starting full sync...');
     const localNotes = await getAllNotes();
+    addSyncLog(`📱 Found ${localNotes.length} local notes`);
+    
     const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
 
     const cloudObjects = listRes.Contents || [];
+    addSyncLog(`☁️ Found ${cloudObjects.length} cloud notes`);
     const cloudNotes = {};
 
     for (const obj of cloudObjects) {
@@ -285,6 +404,7 @@ async function fullSync() {
     const uploaded = { new: 0, updated: 0 };
     const downloaded = { new: 0, updated: 0 };
 
+    addSyncLog('📤 Processing uploads...');
     for (const localNote of localNotes) {
       const s3Key = `${userID}/${localNote.id}.json`;
       const remoteNote = cloudNotes[localNote.id];
@@ -311,6 +431,7 @@ async function fullSync() {
           })
         );
         uploaded.new++;
+        addSyncLog(`⬆️ Uploaded new note: ${localNote.id}`);
         continue;
       }
 
@@ -328,6 +449,7 @@ async function fullSync() {
           attachments,
         });
         downloaded.updated++;
+        addSyncLog(`⬇️ Downloaded updated note: ${localNote.id}`);
       } else if (localUpdated > remoteUpdated) {
         await s3Client.send(
           new PutObjectCommand({
@@ -348,9 +470,11 @@ async function fullSync() {
           })
         );
         uploaded.updated++;
+        addSyncLog(`⬆️ Uploaded updated note: ${localNote.id}`);
       }
     }
 
+    addSyncLog('📥 Processing downloads...');
     for (const key in cloudNotes) {
       const note = cloudNotes[key];
       const existsLocal = await db.notes.get(note.noteID);
@@ -367,14 +491,17 @@ async function fullSync() {
           attachments,
         });
         downloaded.new++;
+        addSyncLog(`⬇️ Downloaded new note: ${note.noteID}`);
       }
     }
 
     syncResult.value = { uploaded, downloaded };
     statusMessage.value = "Sync complete!";
+    addSyncLog(`✅ Sync complete! Uploaded: ${uploaded.new + uploaded.updated}, Downloaded: ${downloaded.new + downloaded.updated}`);
     await checkS3Status();
   } catch (e) {
     console.error("Full sync error:", e);
+    addSyncLog(`❌ Sync failed: ${e.message}`);
     error.value = e.message || "Failed to complete sync";
   } finally {
     syncing.value = false;
