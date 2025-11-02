@@ -30,7 +30,7 @@
       </div>
 
       <!-- Connection Status -->
-      <div v-if="!isConnected && !connecting" class="space-y-6">
+      <div v-if="!isConnected && !connecting && !roomReady" class="space-y-6">
         <!-- Create or Join Room -->
         <div class="bg-white border border-gray-200 rounded-xl p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Join or Create a Room</h3>
@@ -368,20 +368,22 @@ async function joinRoom(code = null) {
   }
 
   const targetRoomCode = code || roomCode.value;
-  roomCode.value = targetRoomCode.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const sanitizedRoomCode = targetRoomCode.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  if (roomCode.value.length < 2) {
+  if (sanitizedRoomCode.length < 2) {
     errorMessage.value = 'Room code must be at least 2 characters';
     return;
   }
 
+  // Set roomCode after validation
+  roomCode.value = sanitizedRoomCode;
   connecting.value = true;
   errorMessage.value = '';
 
   try {
     // Try to become host first - if room exists, we'll become guest automatically
-    const hostId = `t3vo-${roomCode.value}`;
-    await initializePeer(hostId, true);
+    const hostId = `t3vo-${sanitizedRoomCode}`;
+    await initializePeer(hostId, true, sanitizedRoomCode);
   } catch (err) {
     console.error('Failed to join room:', err);
     errorMessage.value = 'Failed to join room. Please try again.';
@@ -389,9 +391,12 @@ async function joinRoom(code = null) {
   }
 }
 
-function initializePeer(peerId, tryHost = false) {
+function initializePeer(peerId, tryHost = false, preserveRoomCode = null) {
   return new Promise((resolve, reject) => {
     try {
+      // Preserve the room code throughout the process
+      const savedRoomCode = preserveRoomCode || roomCode.value;
+      
       // Clean up any existing peer first
       if (peer) {
         peer.destroy();
@@ -420,15 +425,19 @@ function initializePeer(peerId, tryHost = false) {
         myPeerId.value = id;
         
         // Check if we became the host
-        if (tryHost && id === `t3vo-${roomCode.value}`) {
+        if (tryHost && id === `t3vo-${savedRoomCode}`) {
           isHost.value = true;
           console.log('🎯 Became HOST with ID:', id);
+          // Ensure roomCode is set
+          roomCode.value = savedRoomCode;
           connecting.value = false;
           roomReady.value = true; // Room is created and ready for others to join
           resolve(id);
-        } else if (!tryHost && id.startsWith(`t3vo-${roomCode.value}-`)) {
+        } else if (!tryHost && id.startsWith(`t3vo-${savedRoomCode}-`)) {
           isHost.value = false;
           console.log('👤 Became GUEST with ID:', id);
+          // Ensure roomCode is set
+          roomCode.value = savedRoomCode;
           // If we're a guest, connect to the host AFTER we're fully ready
           connecting.value = false;
           resolve(id);
@@ -457,9 +466,10 @@ function initializePeer(peerId, tryHost = false) {
           console.log('Host ID taken, becoming guest...');
           
           // Create guest ID with timestamp
-          const guestId = `t3vo-${roomCode.value}-${Date.now()}`;
+          const guestId = `t3vo-${savedRoomCode}-${Date.now()}`;
           console.log('Creating guest with ID:', guestId);
-          initializePeer(guestId, false).then(resolve).catch(reject);
+          // Preserve the room code when becoming guest
+          initializePeer(guestId, false, savedRoomCode).then(resolve).catch(reject);
         } else if (err.type === 'peer-unavailable') {
           // Peer not found yet - this is common for guests trying to connect
           console.log('Peer not available yet, will retry...');
