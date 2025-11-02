@@ -146,15 +146,15 @@ const formatDate = (timestamp) => {
   return format(timestamp);
 };
 
-// Color palette for note cards - vibrant colors inspired by modern note apps
+// Color palette for note cards - soft pastel colors
 const cardColors = [
-  "bg-[#FF9D76] hover:shadow-xl", // Coral/Salmon
-  "bg-[#FFD666] hover:shadow-xl", // Yellow/Amber
-  "bg-[#A78BFA] hover:shadow-xl", // Purple/Violet
-  "bg-[#FCA5A5] hover:shadow-xl", // Light Red/Pink
-  "bg-[#F9A8D4] hover:shadow-xl", // Pink
-  "bg-[#93C5FD] hover:shadow-xl", // Sky Blue
-  "bg-[#FDE68A] hover:shadow-xl", // Light Yellow
+  "bg-[#FFE4E1] hover:shadow-xl", // Misty rose
+  "bg-[#E6F3FF] hover:shadow-xl", // Light sky blue
+  "bg-[#F0E6FF] hover:shadow-xl", // Lavender
+  "bg-[#E1FFE1] hover:shadow-xl", // Honeydew green
+  "bg-[#FFF0E6] hover:shadow-xl", // Peach
+  "bg-[#FFE6F0] hover:shadow-xl", // Light pink
+  "bg-[#FFFACD] hover:shadow-xl", // Lemon chiffon
 ];
 
 const getCardColor = (note) => {
