@@ -181,3 +181,31 @@ async function fetchInfo() {
   loading.value = false;
 }
 </script>
+
+<script>
+export const tagMetadata = {
+  name: "ip",
+  displayName: "IP Address",
+  description: "Display IP address with geolocation lookup and map integration",
+  example: "ip=8.8.8.8",
+  category: "data",
+  icon: "🌐",
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: "IP address is required" };
+    }
+    // Basic IPv4 validation
+    const ipv4Pattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    // Basic IPv6 validation (simplified)
+    const ipv6Pattern = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+    
+    const trimmed = value.trim();
+    if (!ipv4Pattern.test(trimmed) && !ipv6Pattern.test(trimmed)) {
+      return { valid: false, error: "Invalid IP address format" };
+    }
+    return { valid: true };
+  },
+};
+</script>

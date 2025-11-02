@@ -1,4 +1,3 @@
-
 <template>
   <div class="flex flex-col items-center w-full">
     <div class="relative w-full max-w-xs sm:max-w-sm md:max-w-md aspect-[16/10] bg-blue-900 rounded-2xl shadow-xl p-5 flex flex-col justify-between text-white select-none">
@@ -37,7 +36,17 @@
 </template>
 
 <script setup>
-const props = defineProps({ value: [String, Object] })
+const props = defineProps({
+  value: {
+    type: [String, Object],
+    default: null
+  },
+  parsed: {
+    type: Object,
+    default: null
+  }
+})
+
 const card = typeof props.value === 'object' ? props.value : { cardNumber: '', expiry: '', cvv: '' }
 
 function formatCardNumber(num) {
@@ -58,4 +67,35 @@ function detectCardType(number) {
 }
 
 const cardType = detectCardType(card.cardNumber)
+</script>
+
+<script>
+export const tagMetadata = {
+  name: 'card',
+  displayName: 'Payment Card',
+  description: 'Store credit/debit card information with visual card display',
+  example: 'card=4111111111111111-12/27-123',
+  category: 'finance',
+  icon: '💳',
+  aliases: [],
+  parseValue: (value) => {
+    if (typeof value === 'object') return value
+    const parts = value.trim().split('-')
+    return {
+      cardNumber: parts[0] || '',
+      expiry: parts[1] || '',
+      cvv: parts[2] || ''
+    }
+  },
+  validate: (value) => {
+    if (!value) {
+      return { valid: false, error: 'Card information is required' }
+    }
+    const card = typeof value === 'string' ? value.split('-')[0] : value.cardNumber
+    if (!card || card.replace(/\D/g, '').length < 13) {
+      return { valid: false, error: 'Invalid card number' }
+    }
+    return { valid: true }
+  }
+}
 </script>

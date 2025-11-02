@@ -68,44 +68,13 @@
           <div class="lg:col-span-1 space-y-4">
             <!-- Render all tags in order -->
             <template v-for="(tag, index) in parsed?.allTags" :key="`${tag.key}-${index}`">
-              <!-- Bookmark (render once) -->
-              <TagBookmark v-if="(tag.key === 'bookmark' || tag.key === 'url') && shouldRenderOnce(tag.key)" :parsed="parsed" />
-
-              <!-- QR Code (can render multiple times) -->
-              <TagQRCode v-else-if="tag.key === 'qrcode'" :value="tag.value" :parsed="parsed" />
-
-              <!-- Crypto (can render multiple times) -->
-              <TagCrypto v-else-if="tag.key === 'crypto'" :value="tag.value" :parsed="parsed" />
-
-              <!-- Password (render once) -->
-              <TagPassword v-else-if="(tag.key === 'password' || tag.key === 'email' || tag.key === 'username') && shouldRenderOnce('password')" :parsed="parsed" />
-
-              <!-- 2FA/TOTP (render once) -->
-              <TagTOTP v-else-if="(tag.key === '2fa' || tag.key === 'totp') && shouldRenderOnce('2fa')" :parsed="parsed" />
-
-              <!-- API Key (can render multiple times) -->
-              <TagApiKey v-else-if="tag.key === 'apikey'" :value="tag.value" />
-
-              <!-- Domains (can render multiple times) -->
-              <TagDomains v-else-if="tag.key === 'domains'" :value="tag.value" :parsed="parsed" />
-
-              <!-- IP (can render multiple times) -->
-              <TagIp v-else-if="tag.key === 'ip'" :value="tag.value" />
-
-              <!-- Secret (can render multiple times) -->
-              <TagSecret v-else-if="tag.key === 'secret'" :value="tag.value" />
-
-              <!-- WiFi (can render multiple times) -->
-              <TagWifi v-else-if="tag.key === 'wifi'" :value="tag.value" />
-
-              <!-- Card (can render multiple times) -->
-              <TagCard v-else-if="tag.key === 'card'" :value="tag.value" />
-
-              <!-- Date (can render multiple times) -->
-              <TagDate v-else-if="tag.key === 'date'" :value="tag.value" />
-
-              <!-- Address (can render multiple times) -->
-              <TagAddress v-else-if="tag.key === 'address'" :value="tag.value" />
+              <!-- Dynamic tag component rendering -->
+              <component 
+                :is="getTagComponent(tag.key)" 
+                v-if="getTagComponent(tag.key) && shouldRenderTag(tag.key)"
+                :value="tag.value" 
+                :parsed="parsed"
+              />
             </template>
 
             <!-- Attachments -->
@@ -151,19 +120,7 @@ import { ArrowLeft, Edit, Trash2 } from "lucide-vue-next";
 import { format } from "timeago.js";
 import { Marked } from "marked";
 
-import TagBookmark from "@/components/tags/TagBookmark.vue";
-import TagPassword from "@/components/tags/TagPassword.vue";
-import TagTOTP from "@/components/tags/TagTOTP.vue";
-import TagCrypto from "@/components/tags/TagCrypto.vue";
-import TagDomains from "@/components/tags/TagDomains.vue";
-import TagQRCode from "@/components/tags/TagQRCode.vue";
-import TagApiKey from "@/components/tags/TagApiKey.vue";
-import TagSecret from "@/components/tags/TagSecret.vue";
-import TagWifi from "@/components/tags/TagWifi.vue";
-import TagCard from "@/components/tags/TagCard.vue";
-import TagDate from "@/components/tags/TagDate.vue";
-import TagAddress from "@/components/tags/TagAddress.vue";
-import TagIp from "@/components/tags/TagIp.vue";
+import { getTagComponent } from "@/tags";
 
 import ParseCryptoAddresses from "@/components/parsed/CryptoAddresses.vue";
 import ParseReferences from "@/components/parsed/References.vue";
@@ -216,15 +173,27 @@ const hasPasswordTags = computed(() => {
 
 const renderedOnce = ref(new Set());
 
-const shouldRenderOnce = (tagKey) => {
-  const onceOnlyTags = ['password', 'email', 'username', '2fa', 'totp', 'bookmark', 'url'];
-  if (onceOnlyTags.includes(tagKey)) {
-    if (renderedOnce.value.has(tagKey)) {
-      return false;
+// Tags that should only render once (e.g., password combines email, username, password)
+const renderOnceMap = {
+  'password': ['password', 'email', 'username'],
+  '2fa': ['2fa', 'totp'],
+  'bookmark': ['bookmark', 'url']
+};
+
+const shouldRenderTag = (tagKey) => {
+  // Check if this tag is part of a render-once group
+  for (const [groupKey, tags] of Object.entries(renderOnceMap)) {
+    if (tags.includes(tagKey)) {
+      // If any tag in this group has been rendered, skip
+      if (renderedOnce.value.has(groupKey)) {
+        return false;
+      }
+      // Mark this group as rendered
+      renderedOnce.value.add(groupKey);
+      return true;
     }
-    renderedOnce.value.add(tagKey);
-    return true;
   }
+  // All other tags can render multiple times
   return true;
 };
 

@@ -89,3 +89,22 @@ async function locateOnMap() {
   }
 }
 </script>
+
+<script>
+export const tagMetadata = {
+  name: "address",
+  displayName: "Physical Address",
+  description: "Display physical addresses with OpenStreetMap integration and geocoding",
+  example: "address=123 Main St, New York, NY",
+  category: "contact",
+  icon: "📍",
+  aliases: ["addr", "location"],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: "Address is required" };
+    }
+    return { valid: true };
+  },
+};
+</script>

@@ -121,3 +121,26 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<script>
+export const tagMetadata = {
+  name: 'totp',
+  displayName: '2FA / TOTP',
+  description: 'Generate time-based one-time passwords (TOTP) for two-factor authentication',
+  example: 'totp=JBSWY3DPEHPK3PXP',
+  category: 'security',
+  icon: '🔐',
+  aliases: ['2fa'],
+  parseValue: (value) => value.trim().toUpperCase().replace(/\s/g, ''),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'TOTP secret is required' }
+    }
+    // Basic Base32 validation
+    if (!/^[A-Z2-7]+=*$/.test(value.trim().toUpperCase().replace(/\s/g, ''))) {
+      return { valid: false, error: 'Invalid TOTP secret format (must be Base32)' }
+    }
+    return { valid: true }
+  }
+}
+</script>

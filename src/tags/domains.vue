@@ -36,3 +36,22 @@ const domainList = computed(() => {
   return domains.value.split(',').map(d => d.trim()).filter(Boolean)
 })
 </script>
+
+<script>
+export const tagMetadata = {
+  name: 'domains',
+  displayName: 'Domains',
+  description: 'List related domain names or websites (comma-separated)',
+  example: 'domains=github.com,gitlab.com',
+  category: 'reference',
+  icon: '🌐',
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'At least one domain is required' }
+    }
+    return { valid: true }
+  }
+}
+</script>

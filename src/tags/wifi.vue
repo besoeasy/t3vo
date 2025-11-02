@@ -1,4 +1,3 @@
-
 <template>
   <div class="p-4 bg-white rounded-xl border border-blue-200 shadow-sm w-full">
     <div class="flex items-center gap-3 mb-3">
@@ -36,7 +35,16 @@
 import { computed } from 'vue'
 import { Wifi, Copy } from 'lucide-vue-next'
 
-const props = defineProps({ value: String })
+const props = defineProps({
+  value: {
+    type: String,
+    default: ''
+  },
+  parsed: {
+    type: Object,
+    default: null
+  }
+})
 
 const ssid = computed(() => {
   if (!props.value) return ''
@@ -51,5 +59,27 @@ const password = computed(() => {
 function copyToClipboard(text) {
   if (!text) return
   navigator.clipboard.writeText(text)
+}
+</script>
+
+<script>
+export const tagMetadata = {
+  name: 'wifi',
+  displayName: 'WiFi Credentials',
+  description: 'Store WiFi network credentials (SSID and password)',
+  example: 'wifi=MyNetwork:password123',
+  category: 'security',
+  icon: '📶',
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'WiFi credentials are required' }
+    }
+    if (!value.includes(':')) {
+      return { valid: false, error: 'Format must be SSID:password' }
+    }
+    return { valid: true }
+  }
 }
 </script>

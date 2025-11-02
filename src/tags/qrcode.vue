@@ -75,3 +75,22 @@ watch(text, () => {
   generateQRCode()
 })
 </script>
+
+<script>
+export const tagMetadata = {
+  name: 'qrcode',
+  displayName: 'QR Code',
+  description: 'Generate scannable QR codes from any text or URL',
+  example: 'qrcode=https://example.com',
+  category: 'data',
+  icon: '📱',
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'QR code content is required' }
+    }
+    return { valid: true }
+  }
+}
+</script>

@@ -22,7 +22,16 @@
 import { computed } from "vue";
 import { format as timeagoFormat } from "timeago.js";
 
-const props = defineProps({ value: String });
+const props = defineProps({
+  value: {
+    type: String,
+    default: ''
+  },
+  parsed: {
+    type: Object,
+    default: null
+  }
+});
 
 const relative = computed(() => {
   if (!props.value) return "";
@@ -31,4 +40,27 @@ const relative = computed(() => {
   if (isNaN(date.getTime())) return "";
   return timeagoFormat(date);
 });
+</script>
+
+<script>
+export const tagMetadata = {
+  name: 'date',
+  displayName: 'Date',
+  description: 'Display dates with relative time formatting (e.g., "2 days ago")',
+  example: 'date=2025-11-03',
+  category: 'organization',
+  icon: '📅',
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'Date is required' }
+    }
+    const date = new Date(value.trim())
+    if (isNaN(date.getTime())) {
+      return { valid: false, error: 'Invalid date format' }
+    }
+    return { valid: true }
+  }
+}
 </script>

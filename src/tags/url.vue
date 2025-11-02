@@ -28,3 +28,36 @@ const url = computed(() => {
   return props.value || props.parsed?.tags?.url || null
 })
 </script>
+
+<script>
+export const tagMetadata = {
+  name: "url",
+  displayName: "URL",
+  description: "Display clickable web URLs with external link indicator",
+  example: "url=https://example.com",
+  category: "reference",
+  icon: "🔗",
+  aliases: ["link", "website"],
+  parseValue: (value) => {
+    const trimmed = value.trim();
+    // Add https:// if no protocol is specified
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  },
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: "URL is required" };
+    }
+    try {
+      const trimmed = value.trim();
+      const testUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+      new URL(testUrl);
+      return { valid: true };
+    } catch {
+      return { valid: false, error: "Invalid URL format" };
+    }
+  },
+};
+</script>

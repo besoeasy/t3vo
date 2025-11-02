@@ -1,106 +1,126 @@
 <template>
-  <div v-if="isLoaded" class="h-full flex flex-col bg-white">
+  <div v-if="isLoaded" class="h-full flex flex-col bg-gray-50">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 px-4 md:px-8 py-3 md:py-4">
+    <div class="bg-white border-b border-gray-200 px-6 py-4">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
-          <button @click="handleCancel" class="flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Back">
+        <div class="flex items-center space-x-4">
+          <button @click="handleCancel" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Back">
             <ArrowLeft class="w-5 h-5" />
           </button>
-          <h2 class="text-lg md:text-2xl font-bold text-gray-900 truncate">
+          <h2 class="text-2xl font-bold text-gray-900">
             {{ isNewNote ? "New Note" : "Edit Note" }}
           </h2>
-          <span v-if="detectedType" class="hidden sm:inline-block px-3 py-1 text-xs font-medium rounded-full flex-shrink-0" :class="typeClass">
-            {{ detectedType }}
-          </span>
         </div>
-        <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
-          <button @click="handleCancel" class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
+        <div class="flex items-center space-x-3">
+          <button @click="handleCancel" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
             Cancel
           </button>
           <button
             @click="handleSaveClick"
             :disabled="!noteContent.trim()"
-            class="flex items-center px-4 md:px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors"
+            class="flex items-center px-6 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors"
           >
-            <Save class="w-4 h-4 md:mr-2" />
-            <span class="hidden md:inline">Save</span>
+            <Save class="w-4 h-4 mr-2" />
+            Save
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Editor View -->
-    <div class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8">
-      <!-- Editor Panel -->
-      <div class="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <!-- Toolbar -->
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-gray-900">Content</h3>
-            <div class="flex items-center space-x-2">
-              <button
-                @click="showTagHelp = !showTagHelp"
-                :class="[
-                  'flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
-                  showTagHelp ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-200',
-                ]"
-              >
-                <HelpCircle class="w-3.5 h-3.5 mr-1.5" />
-                Tags
-              </button>
+    <!-- Main Editor Layout -->
+    <div class="flex-1 overflow-hidden flex">
+      <!-- Left Sidebar - Available Tags (1/3) -->
+      <div class="w-1/3 border-r border-gray-200 bg-white overflow-y-auto">
+        <div class="p-6">
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Available Tags</h3>
+            <p class="text-xs text-gray-500">Click to insert into your note</p>
+          </div>
+
+          <!-- Search -->
+          <div class="mb-6">
+            <input
+              v-model="tagSearch"
+              type="text"
+              placeholder="Search tags..."
+              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 focus:outline-none"
+            />
+          </div>
+
+          <!-- Tags by Category -->
+          <div class="space-y-6">
+            <div v-for="category in filteredCategories" :key="category" class="space-y-2">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider">{{ category }}</h4>
+              <div class="space-y-1">
+                <button
+                  v-for="tag in getTagsByCategory(category)"
+                  :key="tag.name"
+                  @click="insertTag(tag)"
+                  class="w-full text-left px-3 py-2.5 rounded-lg border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all group"
+                >
+                  <div class="flex items-start gap-3">
+                    <span class="text-xl flex-shrink-0">{{ tag.icon }}</span>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="text-sm font-medium text-gray-900">{{ tag.displayName }}</span>
+                      </div>
+                      <code class="text-xs text-gray-600 font-mono">#@{{ tag.name }}=</code>
+                      <p class="text-xs text-gray-500 mt-1">{{ tag.description }}</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Templates -->
+          <div class="mt-8 pt-6 border-t border-gray-200">
+            <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">Quick Templates</h4>
+            <div class="space-y-2">
               <button
                 @click="insertTemplate('password')"
-                class="flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                class="w-full text-left px-3 py-2.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors"
               >
-                <Key class="w-3.5 h-3.5 mr-1.5" />
-                Password
+                <div class="flex items-center gap-2">
+                  <Key class="w-4 h-4 text-blue-600" />
+                  <span class="text-sm font-medium text-blue-900">Password Template</span>
+                </div>
               </button>
               <button
                 @click="insertTemplate('bookmark')"
-                class="flex items-center px-3 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                class="w-full text-left px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors"
               >
-                <Bookmark class="w-3.5 h-3.5 mr-1.5" />
-                Bookmark
+                <div class="flex items-center gap-2">
+                  <Bookmark class="w-4 h-4 text-amber-600" />
+                  <span class="text-sm font-medium text-amber-900">Bookmark Template</span>
+                </div>
               </button>
               <button
                 @click="insertTemplate('note')"
-                class="flex items-center px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                class="w-full text-left px-3 py-2.5 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors"
               >
-                <FileText class="w-3.5 h-3.5 mr-1.5" />
-                Note
+                <div class="flex items-center gap-2">
+                  <FileText class="w-4 h-4 text-green-600" />
+                  <span class="text-sm font-medium text-green-900">Note Template</span>
+                </div>
               </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Tag Help -->
-          <div v-if="showTagHelp" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs">
-            <p class="font-semibold text-blue-900 mb-3">Available Tags:</p>
-            <div class="grid grid-cols-2 gap-3 text-blue-800">
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@title=</code> Title</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@tags=</code> Tags</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@pin=true</code> Pin</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@icon=</code> Icon</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@email=</code> Email</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@username=</code> Username</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@password=</code> Password</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@2fa=</code> 2FA</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@domains=</code> Domains</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@bookmark=</code> URL</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@crypto=</code> Crypto</div>
-              <div><code class="bg-white px-2 py-1 rounded font-mono">#@qrcode=</code> QR Code</div>
+      <!-- Right Side - Markdown Editor (2/3) -->
+      <div class="flex-1 flex flex-col bg-white">
+        <!-- Editor Toolbar -->
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <h3 class="text-sm font-semibold text-gray-900">Content</h3>
+              <span class="text-xs text-gray-500">{{ noteContent.length }} characters</span>
             </div>
-          </div>
-
-          <!-- Warnings -->
-          <div v-if="warnings.length > 0" class="mt-3 space-y-2">
-            <div
-              v-for="(warning, index) in warnings"
-              :key="index"
-              class="flex items-start p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-900"
-            >
-              <AlertCircle class="w-4 h-4 mr-2 flex-shrink-0" />
-              {{ warning }}
+            <div class="flex items-center gap-2">
+              <Paperclip class="w-4 h-4 text-gray-600" />
+              <span class="text-xs text-gray-600">{{ attachments.length }} attachment{{ attachments.length !== 1 ? "s" : "" }}</span>
             </div>
           </div>
         </div>
@@ -111,7 +131,7 @@
             ref="textareaRef"
             v-model="noteContent"
             @keydown.tab.prevent="handleTab"
-            placeholder="Start typing your note... Use #@tag= to add metadata"
+            placeholder="Start typing your note... Click tags on the left to insert them."
             class="w-full h-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-gray-900 focus:outline-none resize-none text-sm leading-relaxed"
             style="font-family: 'SF Mono', 'Monaco', monospace"
           ></textarea>
@@ -123,7 +143,6 @@
             <div class="flex items-center gap-2">
               <Paperclip class="w-4 h-4 text-gray-600" />
               <span class="text-xs font-semibold text-gray-900">Attachments</span>
-              <span v-if="attachments.length > 0" class="text-xs text-gray-500">({{ attachments.length }})</span>
             </div>
             <label class="flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors">
               <Upload class="w-3.5 h-3.5 mr-1.5" />
@@ -133,7 +152,7 @@
           </div>
 
           <!-- Attachments List -->
-          <div v-if="attachments.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div v-if="attachments.length > 0" class="grid grid-cols-4 gap-3">
             <div v-for="(att, index) in attachments" :key="index" class="relative p-3 bg-white rounded-lg border border-gray-200">
               <button @click="removeAttachment(index)" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
                 <X class="w-3 h-3" />
@@ -149,52 +168,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Footer -->
-        <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
-          <span>{{ noteContent.length }} characters</span>
-          <span v-if="tagCount > 0">{{ tagCount }} tag{{ tagCount !== 1 ? "s" : "" }}</span>
-        </div>
-      </div>
-
-      <!-- Preview Panel - Detected Tags -->
-      <div class="hidden lg:flex lg:w-1/2 flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 class="text-sm font-semibold text-gray-900">Live Preview</h3>
-        </div>
-        <div class="flex-1 p-6 overflow-auto">
-          <div v-if="parsed && noteContent.trim()" class="space-y-4">
-            <!-- Type Badge -->
-            <div v-if="detectedType" class="flex items-center gap-2 mb-4">
-              <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full" :class="typeClass">
-                <component :is="typeIcon" class="w-4 h-4 mr-1.5" />
-                {{ detectedType }}
-              </span>
-            </div>
-
-            <!-- Tag Components -->
-            <TagBookmark v-if="parsed.tags?.bookmark" :parsed="parsed" />
-            <TagCrypto v-if="parsed.tags?.crypto" :value="parsed.tags.crypto" :parsed="parsed" />
-            <TagPassword v-if="hasPasswordTags" :parsed="parsed" />
-            <TagTOTP v-if="parsed.tags?.['2fa'] || parsed.tags?.totp" :parsed="parsed" />
-            <TagDomains v-if="parsed.tags?.domains" :value="parsed.tags.domains" :parsed="parsed" />
-
-            <!-- Attachments/References Count -->
-            <div v-if="attachments.length > 0" class="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-              <div class="flex items-center gap-2">
-                <Paperclip class="w-4 h-4 text-emerald-700" />
-                <span class="text-sm font-medium text-emerald-900">{{ attachments.length }} attachment{{ attachments.length !== 1 ? "s" : "" }}</span>
-              </div>
-            </div>
-          </div>
-          <div v-else class="flex items-center justify-center h-full text-gray-400">
-            <div class="text-center">
-              <FileText class="w-16 h-16 mx-auto mb-3 opacity-50" />
-              <p class="text-sm font-medium">Preview will appear here</p>
-              <p class="text-xs mt-1">Start typing to see your note</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -206,14 +179,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { fetchNoteById, addNote, updateNote, softDeleteNote, addAttachments } from "@/db";
-import { parseNote, validateNote } from "@/utils/noteParser";
-import { ArrowLeft, Save, Key, Bookmark, FileText, HelpCircle, AlertCircle, Paperclip, Upload, File, X } from "lucide-vue-next";
-import TagBookmark from "@/components/tags/TagBookmark.vue";
-import TagPassword from "@/components/tags/TagPassword.vue";
-import TagTOTP from "@/components/tags/TagTOTP.vue";
-import TagCrypto from "@/components/tags/TagCrypto.vue";
-import TagDomains from "@/components/tags/TagDomains.vue";
+import { fetchNoteById, addNote, updateNote, addAttachments } from "@/db";
+import { ArrowLeft, Save, Key, Bookmark, FileText, Paperclip, Upload, File, X } from "lucide-vue-next";
+import { tagRegistry } from "@/tags";
 
 const route = useRoute();
 const router = useRouter();
@@ -222,9 +190,52 @@ const noteContent = ref("");
 const isNewNote = ref(false);
 const noteId = ref(null);
 const isLoaded = ref(false);
-const showTagHelp = ref(false);
 const textareaRef = ref(null);
 const attachments = ref([]);
+const tagSearch = ref("");
+
+// Get all tags from registry
+const allTags = computed(() => tagRegistry.getAllTags());
+const allCategories = computed(() => tagRegistry.getCategories());
+
+// Filter tags based on search
+const filteredTags = computed(() => {
+  if (!tagSearch.value.trim()) return allTags.value;
+  return tagRegistry.searchTags(tagSearch.value);
+});
+
+// Filter categories that have matching tags
+const filteredCategories = computed(() => {
+  const matchingCategories = new Set();
+  filteredTags.value.forEach(tag => {
+    if (tag.category) matchingCategories.add(tag.category);
+  });
+  return Array.from(matchingCategories).sort();
+});
+
+// Get tags by category
+const getTagsByCategory = (category) => {
+  return filteredTags.value.filter(tag => tag.category === category);
+};
+
+// Insert tag at cursor position
+const insertTag = (tag) => {
+  const textarea = textareaRef.value;
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = noteContent.value;
+  
+  const tagText = `#@${tag.name}=`;
+  noteContent.value = text.substring(0, start) + tagText + text.substring(end);
+  
+  // Set cursor position after the inserted tag
+  setTimeout(() => {
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + tagText.length;
+  }, 0);
+};
 
 onMounted(async () => {
   noteId.value = route.params.id;
@@ -252,43 +263,6 @@ onMounted(async () => {
       textareaRef.value.focus();
     }
   }, 100);
-});
-
-// Parsing
-const parsed = computed(() => {
-  if (!noteContent.value) return null;
-  return parseNote(noteContent.value);
-});
-
-const detectedType = computed(() => parsed.value?.type || "note");
-
-const typeIcon = computed(() => {
-  switch (detectedType.value) {
-    case "password":
-      return Key;
-    case "bookmark":
-      return Bookmark;
-    default:
-      return FileText;
-  }
-});
-
-const typeClass = computed(() => {
-  switch (detectedType.value) {
-    case "password":
-      return "bg-blue-100 text-blue-700";
-    case "bookmark":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-green-100 text-green-700";
-  }
-});
-
-const tagCount = computed(() => Object.keys(parsed.value?.tags || {}).length);
-const warnings = computed(() => (noteContent.value ? validateNote(noteContent.value) : []));
-
-const hasPasswordTags = computed(() => {
-  return !!(parsed.value?.tags?.password || parsed.value?.tags?.email || parsed.value?.tags?.username);
 });
 
 // Templates

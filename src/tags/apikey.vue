@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full p-4 bg-blue-50 border border-blue-200 rounded-xl flex flex-col gap-2">
+  <div class="w-full p-4 bg-blue-50 rounded-xl border border-blue-200 flex flex-col gap-2">
     <div class="flex items-center gap-2 mb-1">
       <span class="text-blue-700 font-bold text-sm">API Key</span>
     </div>
@@ -40,6 +40,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  parsed: {
+    type: Object,
+    default: null
+  }
 });
 
 const apiKey = ref(props.value);
@@ -62,5 +66,24 @@ async function copyApiKey() {
   await navigator.clipboard.writeText(apiKey.value);
   copied.value = true;
   setTimeout(() => (copied.value = false), 1200);
+}
+</script>
+
+<script>
+export const tagMetadata = {
+  name: 'apikey',
+  displayName: 'API Key',
+  description: 'Securely store API keys with show/hide and copy functionality',
+  example: 'apikey=sk-1234567890abcdef',
+  category: 'security',
+  icon: '🔑',
+  aliases: [],
+  parseValue: (value) => value.trim(),
+  validate: (value) => {
+    if (!value || !value.trim()) {
+      return { valid: false, error: 'API key is required' }
+    }
+    return { valid: true }
+  }
 }
 </script>
