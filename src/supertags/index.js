@@ -1,61 +1,52 @@
 /**
- * Tag Registry System
- * Auto-discovers and registers all tag modules from the tags directory
+ * Supertag Registry System
+ * Auto-discovers and registers all supertag modules from the supertags directory
  * 
- * Each tag module should export:
- * 1. Default export: Vue component for rendering the tag
- * 2. Named export 'tagMetadata': Object with tag configuration
+ * Each supertag module should export:
+ * 1. Default export: Vue component for rendering the supertag
+ * 2. Named export 'tagMetadata': Object with supertag configuration
  * 
- * Example tag metadata structure:
+ * Example supertag metadata structure:
  * {
- *   name: 'crypto',              // Tag name (used as #@crypto=)
+ *   name: 'crypto',              // Supertag name (used as #@crypto=)
  *   displayName: 'Cryptocurrency', // Human-readable name
- *   description: '...',           // What this tag does
+ *   description: '...',           // What this supertag does
  *   example: 'crypto=bitcoin',    // Example usage
  *   category: 'finance',          // Category for grouping
  *   icon: '₿',                    // Display icon
- *   aliases: [],                  // Alternative names (e.g., ['url'] for 'bookmark')
  *   parseValue: (value) => value, // Optional: Transform the value
  *   validate: (value) => {...}    // Optional: Validate the value
  * }
  */
 
-// Import all tag modules using Vite's glob import
-const tagModules = import.meta.glob('./*.vue', { eager: true })
+// Import all supertag modules using Vite's glob import
+const supertagModules = import.meta.glob('./*.vue', { eager: true })
 
-class TagRegistry {
+class SupertagRegistry {
   constructor() {
-    this.tags = new Map()
+    this.supertags = new Map()
     this.components = new Map()
-    this.aliases = new Map()
     this.categories = new Map()
     this.initialize()
   }
 
   initialize() {
-    // Process each tag module
-    for (const [path, module] of Object.entries(tagModules)) {
+    // Process each supertag module
+    for (const [path, module] of Object.entries(supertagModules)) {
       // Skip index.js
       if (path === './index.js') continue
 
       // Extract filename without extension (e.g., './crypto.vue' -> 'crypto')
       const filename = path.replace('./', '').replace('.vue', '')
 
-      // Get tag metadata
+      // Get supertag metadata
       const metadata = module.tagMetadata || this.createDefaultMetadata(filename)
       
       // Store component
       this.components.set(metadata.name, module.default || module)
       
-      // Register tag
-      this.tags.set(metadata.name, metadata)
-
-      // Register aliases
-      if (metadata.aliases && metadata.aliases.length > 0) {
-        metadata.aliases.forEach(alias => {
-          this.aliases.set(alias, metadata.name)
-        })
-      }
+      // Register supertag
+      this.supertags.set(metadata.name, metadata)
 
       // Organize by category
       if (metadata.category) {
@@ -65,21 +56,20 @@ class TagRegistry {
         this.categories.get(metadata.category).push(metadata)
       }
 
-      console.log(`✓ Registered tag: #@${metadata.name}=`)
+      console.log(`✓ Registered supertag: #@${metadata.name}=`)
     }
 
-    console.log(`🏷️  Tag Registry initialized with ${this.tags.size} tags`)
+    console.log(`🏷️  Supertag Registry initialized with ${this.supertags.size} supertags`)
   }
 
   createDefaultMetadata(filename) {
     return {
       name: filename,
       displayName: this.toTitleCase(filename),
-      description: `${this.toTitleCase(filename)} tag`,
+      description: `${this.toTitleCase(filename)} supertag`,
       example: `${filename}=value`,
       category: 'other',
       icon: '🏷️',
-      aliases: [],
       parseValue: (value) => value.trim(),
       validate: (value) => ({ valid: true })
     }
@@ -90,32 +80,30 @@ class TagRegistry {
   }
 
   /**
-   * Get tag metadata by name or alias
+   * Get supertag metadata by name
    */
-  getTag(name) {
-    const tagName = this.aliases.get(name) || name
-    return this.tags.get(tagName)
+  getSupertag(name) {
+    return this.supertags.get(name)
   }
 
   /**
-   * Get component by tag name or alias
+   * Get component by supertag name
    */
   getComponent(name) {
-    const tagName = this.aliases.get(name) || name
-    return this.components.get(tagName)
+    return this.components.get(name)
   }
 
   /**
-   * Get all tags
+   * Get all supertags
    */
-  getAllTags() {
-    return Array.from(this.tags.values())
+  getAllSupertags() {
+    return Array.from(this.supertags.values())
   }
 
   /**
-   * Get all tags in a specific category
+   * Get all supertags in a specific category
    */
-  getTagsByCategory(category) {
+  getSupertagsByCategory(category) {
     return this.categories.get(category) || []
   }
 
@@ -127,17 +115,17 @@ class TagRegistry {
   }
 
   /**
-   * Check if a tag exists
+   * Check if a supertag exists
    */
-  hasTag(name) {
-    return this.tags.has(name) || this.aliases.has(name)
+  hasSupertag(name) {
+    return this.supertags.has(name)
   }
 
   /**
-   * Parse a tag value using its custom parser if available
+   * Parse a supertag value using its custom parser if available
    */
-  parseTagValue(tagName, value) {
-    const metadata = this.getTag(tagName)
+  parseSupertagValue(supertagName, value) {
+    const metadata = this.getSupertag(supertagName)
     if (metadata && metadata.parseValue) {
       return metadata.parseValue(value)
     }
@@ -145,10 +133,10 @@ class TagRegistry {
   }
 
   /**
-   * Validate a tag value using its custom validator if available
+   * Validate a supertag value using its custom validator if available
    */
-  validateTagValue(tagName, value) {
-    const metadata = this.getTag(tagName)
+  validateSupertagValue(supertagName, value) {
+    const metadata = this.getSupertag(supertagName)
     if (metadata && metadata.validate) {
       return metadata.validate(value)
     }
@@ -156,69 +144,67 @@ class TagRegistry {
   }
 
   /**
-   * Get tag suggestions for autocomplete
+   * Get supertag suggestions for autocomplete
    * Returns array of { tag, description, category, icon }
    */
-  getTagSuggestions(filterCategory = null) {
-    const tags = filterCategory 
-      ? this.getTagsByCategory(filterCategory)
-      : this.getAllTags()
+  getSupertagSuggestions(filterCategory = null) {
+    const supertags = filterCategory 
+      ? this.getSupertagsByCategory(filterCategory)
+      : this.getAllSupertags()
 
-    return tags.map(metadata => ({
+    return supertags.map(metadata => ({
       tag: `#@${metadata.name}=`,
       displayName: metadata.displayName,
       description: metadata.description,
       example: metadata.example,
       category: metadata.category,
-      icon: metadata.icon,
-      aliases: metadata.aliases
+      icon: metadata.icon
     }))
   }
 
   /**
-   * Search tags by name or description
+   * Search supertags by name or description
    */
-  searchTags(query) {
+  searchSupertags(query) {
     const lowerQuery = query.toLowerCase()
-    return this.getAllTags().filter(metadata => 
+    return this.getAllSupertags().filter(metadata => 
       metadata.name.toLowerCase().includes(lowerQuery) ||
       metadata.displayName.toLowerCase().includes(lowerQuery) ||
-      metadata.description.toLowerCase().includes(lowerQuery) ||
-      (metadata.aliases && metadata.aliases.some(alias => alias.toLowerCase().includes(lowerQuery)))
+      metadata.description.toLowerCase().includes(lowerQuery)
     )
   }
 }
 
 // Create and export singleton instance
-export const tagRegistry = new TagRegistry()
+export const supertagRegistry = new SupertagRegistry()
 
 // Export helper functions
-export function getTagComponent(name) {
-  return tagRegistry.getComponent(name)
+export function getSupertagComponent(name) {
+  return supertagRegistry.getComponent(name)
 }
 
-export function getTagMetadata(name) {
-  return tagRegistry.getTag(name)
+export function getSupertagMetadata(name) {
+  return supertagRegistry.getSupertag(name)
 }
 
-export function getAllTags() {
-  return tagRegistry.getAllTags()
+export function getAllSupertags() {
+  return supertagRegistry.getAllSupertags()
 }
 
-export function getTagSuggestions(category = null) {
-  return tagRegistry.getTagSuggestions(category)
+export function getSupertagSuggestions(category = null) {
+  return supertagRegistry.getSupertagSuggestions(category)
 }
 
-export function hasTag(name) {
-  return tagRegistry.hasTag(name)
+export function hasSupertag(name) {
+  return supertagRegistry.hasSupertag(name)
 }
 
-export function parseTagValue(tagName, value) {
-  return tagRegistry.parseTagValue(tagName, value)
+export function parseSupertagValue(supertagName, value) {
+  return supertagRegistry.parseSupertagValue(supertagName, value)
 }
 
-export function validateTagValue(tagName, value) {
-  return tagRegistry.validateTagValue(tagName, value)
+export function validateSupertagValue(supertagName, value) {
+  return supertagRegistry.validateSupertagValue(supertagName, value)
 }
 
-export default tagRegistry
+export default supertagRegistry

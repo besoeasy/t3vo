@@ -130,7 +130,6 @@ export const tagMetadata = {
   example: 'totp=JBSWY3DPEHPK3PXP',
   category: 'security',
   icon: '🔐',
-  aliases: ['2fa'],
   parseValue: (value) => value.trim().toUpperCase().replace(/\s/g, ''),
   validate: (value) => {
     if (!value || !value.trim()) {

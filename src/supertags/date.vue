@@ -50,7 +50,6 @@ export const tagMetadata = {
   example: 'date=2025-11-03',
   category: 'organization',
   icon: '📅',
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

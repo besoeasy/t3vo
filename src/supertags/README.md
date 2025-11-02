@@ -1,37 +1,39 @@
-# Modular Tag System
+# Modular Supertag System
 
-The T3VO tag system is fully modular - each tag is a self-contained Vue component with metadata that describes its behavior.
+The T3VO supertag system is fully modular - each supertag is a self-contained Vue component with metadata that describes its behavior.
+
+Supertags are different from regular tags (`#tag`). They are interactive components with the `#@` prefix that provide rich functionality like displaying cryptocurrency prices, generating QR codes, managing passwords, etc.
 
 ## 📁 Structure
 
 ```
-src/tags/
-├── index.js          # Tag registry (auto-discovers all tags)
-├── crypto.vue        # Tag component with metadata
-├── bookmark.vue      # Tag component with metadata
-├── password.vue      # Tag component with metadata
-└── ...              # More tag components
+src/supertags/
+├── index.js          # Supertag registry (auto-discovers all supertags)
+├── crypto.vue        # Supertag component with metadata
+├── bookmark.vue      # Supertag component with metadata
+├── password.vue      # Supertag component with metadata
+└── ...              # More supertag components
 ```
 
 ## 🎯 How It Works
 
-1. **Auto-Discovery**: The tag registry (`index.js`) automatically discovers and registers all `.vue` files in the `src/tags/` directory
-2. **Metadata Export**: Each tag component exports its configuration via `tagMetadata`
+1. **Auto-Discovery**: The supertag registry (`index.js`) automatically discovers and registers all `.vue` files in the `src/supertags/` directory
+2. **Metadata Export**: Each supertag component exports its configuration via `tagMetadata`
 3. **Dynamic Loading**: Components are loaded dynamically when needed
-4. **Type Safety**: Validation and parsing logic is defined per-tag
+4. **Type Safety**: Validation and parsing logic is defined per-supertag
 
-## 🔨 Creating a New Tag
+## 🔨 Creating a New Supertag
 
 ### Step 1: Create the Component File
 
-Create a new `.vue` file in `src/tags/` with the tag name (e.g., `email.vue` for `#@email=`)
+Create a new `.vue` file in `src/supertags/` with the supertag name (e.g., `email.vue` for `#@email=`)
 
 ### Step 2: Build the Component
 
 ```vue
 <template>
   <div>
-    <!-- Your tag's UI here -->
+    <!-- Your supertag's UI here -->
     <p>{{ value }}</p>
   </div>
 </template>
@@ -54,20 +56,19 @@ const props = defineProps({
 </script>
 ```
 
-### Step 3: Export Tag Metadata
+### Step 3: Export Supertag Metadata
 
-Add a second `<script>` block to export the tag configuration:
+Add a second `<script>` block to export the supertag configuration:
 
 ```vue
 <script>
 export const tagMetadata = {
-  name: 'email',                    // Tag identifier (used as #@email=)
+  name: 'email',                    // Supertag identifier (used as #@email=)
   displayName: 'Email Address',     // Human-readable name
   description: 'Store and display email addresses',  // What it does
   example: 'email=user@example.com', // Example usage
   category: 'contact',               // Category for organization
   icon: '📧',                        // Display icon
-  aliases: [],                       // Alternative names (e.g., ['mail'])
   
   // Optional: Transform the value when parsed
   parseValue: (value) => {
@@ -87,29 +88,28 @@ export const tagMetadata = {
 
 ### Step 4: That's It!
 
-The tag is automatically registered and available! No need to:
+The supertag is automatically registered and available! No need to:
 - ❌ Update any import statements
 - ❌ Modify the parser
 - ❌ Register it manually
 - ❌ Update documentation
 
-## 📋 Tag Metadata Reference
+## 📋 Supertag Metadata Reference
 
 | Property      | Type     | Required | Description                                    |
 |---------------|----------|----------|------------------------------------------------|
-| `name`        | string   | Yes      | Tag identifier (used as `#@name=`)             |
+| `name`        | string   | Yes      | Supertag identifier (used as `#@name=`)        |
 | `displayName` | string   | Yes      | Human-readable name for UI                     |
-| `description` | string   | Yes      | What the tag does                              |
+| `description` | string   | Yes      | What the supertag does                         |
 | `example`     | string   | Yes      | Example usage (e.g., `crypto=bitcoin`)         |
 | `category`    | string   | Yes      | Category (`security`, `finance`, `reference`)  |
 | `icon`        | string   | Yes      | Emoji or icon for display                      |
-| `aliases`     | string[] | No       | Alternative names for the tag                  |
 | `parseValue`  | function | No       | Transform value when parsed                    |
 | `validate`    | function | No       | Validate value (return `{valid, error?}`)      |
 
 ## 🏷️ Categories
 
-Organize your tags into categories:
+Organize your supertags into categories:
 
 - **`security`**: Passwords, API keys, secrets, 2FA
 - **`finance`**: Cryptocurrency, cards, invoices  
@@ -117,46 +117,46 @@ Organize your tags into categories:
 - **`contact`**: Emails, phones, addresses
 - **`organization`**: Tags, pins, icons, dates
 - **`data`**: QR codes, IPs, domains
-- **`other`**: Uncategorized tags
+- **`other`**: Uncategorized supertags
 
 ## 🎨 Component Props
 
-Your tag component receives these props:
+Your supertag component receives these props:
 
 ```javascript
 props: {
-  value: String,    // The tag's value (e.g., for #@crypto=bitcoin, value is "bitcoin")
-  parsed: Object    // Full parsed note object with all tags
+  value: String,    // The supertag's value (e.g., for #@crypto=bitcoin, value is "bitcoin")
+  parsed: Object    // Full parsed note object with all supertags
 }
 ```
 
-## 🔍 Using the Tag Registry
+## 🔍 Using the Supertag Registry
 
 ```javascript
-import { tagRegistry, getTagComponent, getTagMetadata, getAllTags } from '@/tags'
+import { supertagRegistry, getSupertagComponent, getSupertagMetadata, getAllSupertags } from '@/supertags'
 
-// Get a specific tag's component
-const CryptoComponent = getTagComponent('crypto')
+// Get a specific supertag's component
+const CryptoComponent = getSupertagComponent('crypto')
 
-// Get tag metadata
-const metadata = getTagMetadata('crypto')
+// Get supertag metadata
+const metadata = getSupertagMetadata('crypto')
 
-// Get all registered tags
-const allTags = getAllTags()
+// Get all registered supertags
+const allSupertags = getAllSupertags()
 
-// Get tags by category
-const securityTags = tagRegistry.getTagsByCategory('security')
+// Get supertags by category
+const securitySupertags = supertagRegistry.getSupertagsByCategory('security')
 
-// Search tags
-const results = tagRegistry.searchTags('password')
+// Search supertags
+const results = supertagRegistry.searchSupertags('password')
 
 // Validate a value
-const validation = tagRegistry.validateTagValue('email', 'test@example.com')
+const validation = supertagRegistry.validateSupertagValue('email', 'test@example.com')
 ```
 
 ## ✨ Examples
 
-### Simple Display Tag
+### Simple Display Supertag
 
 ```vue
 <template>
@@ -184,7 +184,7 @@ export const tagMetadata = {
 </script>
 ```
 
-### Interactive Tag with API
+### Interactive Supertag with API
 
 ```vue
 <template>
@@ -231,18 +231,18 @@ export const tagMetadata = {
 
 ## 🚀 Benefits
 
-✅ **Modular**: Each tag is independent and self-contained  
+✅ **Modular**: Each supertag is independent and self-contained  
 ✅ **Auto-Discovery**: No manual registration needed  
-✅ **Type-Safe**: Built-in validation per tag  
-✅ **Maintainable**: Easy to add, update, or remove tags  
+✅ **Type-Safe**: Built-in validation per supertag  
+✅ **Maintainable**: Easy to add, update, or remove supertags  
 ✅ **Documented**: Metadata serves as inline documentation  
-✅ **Flexible**: Custom parsing and validation per tag  
+✅ **Flexible**: Custom parsing and validation per supertag  
 ✅ **Searchable**: Built-in search and filtering  
 
 ## 📝 Migration from Old System
 
 Old tag components in `src/components/tags/` can be migrated by:
-1. Moving them to `src/tags/`
+1. Moving them to `src/supertags/`
 2. Adding the `tagMetadata` export
 3. That's it!
 

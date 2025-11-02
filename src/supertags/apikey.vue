@@ -77,7 +77,6 @@ export const tagMetadata = {
   example: 'apikey=sk-1234567890abcdef',
   category: 'security',
   icon: '🔑',
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

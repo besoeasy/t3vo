@@ -70,7 +70,6 @@ export const tagMetadata = {
   example: 'wifi=MyNetwork:password123',
   category: 'security',
   icon: '📶',
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

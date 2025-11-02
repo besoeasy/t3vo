@@ -268,7 +268,6 @@ export const tagMetadata = {
   example: 'crypto=bitcoin',
   category: 'finance',
   icon: '₿',
-  aliases: [],
   parseValue: (value) => value.trim().toLowerCase(),
   validate: (value) => {
     if (!value || !value.trim()) {

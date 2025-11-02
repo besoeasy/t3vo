@@ -98,7 +98,6 @@ export const tagMetadata = {
   example: "address=123 Main St, New York, NY",
   category: "contact",
   icon: "📍",
-  aliases: ["addr", "location"],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

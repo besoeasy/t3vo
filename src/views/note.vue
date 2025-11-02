@@ -68,10 +68,10 @@
           <div class="lg:col-span-1 space-y-4">
             <!-- Render all tags in order -->
             <template v-for="(tag, index) in parsed?.allTags" :key="`${tag.key}-${index}`">
-              <!-- Dynamic tag component rendering -->
+              <!-- Dynamic supertag component rendering -->
               <component 
-                :is="getTagComponent(tag.key)" 
-                v-if="getTagComponent(tag.key) && shouldRenderTag(tag.key)"
+                :is="getSupertagComponent(tag.key)" 
+                v-if="getSupertagComponent(tag.key)"
                 :value="tag.value" 
                 :parsed="parsed"
               />
@@ -79,9 +79,6 @@
 
             <!-- Attachments -->
             <ParseAttachments v-if="note.attachments?.length" :attachments="note.attachments" />
-
-            <!-- Crypto Addresses -->
-            <ParseCryptoAddresses v-if="parsed?.cryptoAddresses?.length" :cryptoAddresses="parsed.cryptoAddresses" />
 
             <!-- References -->
             <ParseReferences v-if="parsed?.references?.length" :references="parsed.references" />
@@ -120,9 +117,8 @@ import { ArrowLeft, Edit, Trash2 } from "lucide-vue-next";
 import { format } from "timeago.js";
 import { Marked } from "marked";
 
-import { getTagComponent } from "@/supertags";
+import { getSupertagComponent } from "@/supertags";
 
-import ParseCryptoAddresses from "@/components/parsed/CryptoAddresses.vue";
 import ParseReferences from "@/components/parsed/References.vue";
 import ParseAttachments from "@/components/parsed/Attachments.vue";
 
@@ -171,41 +167,10 @@ const hasPasswordTags = computed(() => {
   return !!(parsed.value?.tags?.password || parsed.value?.tags?.email || parsed.value?.tags?.username);
 });
 
-const renderedOnce = ref(new Set());
-
-// Tags that should only render once (e.g., password combines email, username, password)
-const renderOnceMap = {
-  'password': ['password', 'email', 'username'],
-  '2fa': ['2fa', 'totp'],
-  'bookmark': ['bookmark', 'url']
-};
-
-const shouldRenderTag = (tagKey) => {
-  // Check if this tag is part of a render-once group
-  for (const [groupKey, tags] of Object.entries(renderOnceMap)) {
-    if (tags.includes(tagKey)) {
-      // If any tag in this group has been rendered, skip
-      if (renderedOnce.value.has(groupKey)) {
-        return false;
-      }
-      // Mark this group as rendered
-      renderedOnce.value.add(groupKey);
-      return true;
-    }
-  }
-  // All other tags can render multiple times
-  return true;
-};
-
-const resetRenderedOnce = () => {
-  renderedOnce.value.clear();
-};
-
 onMounted(async () => {
   noteId.value = route.params.id;
 
   try {
-    resetRenderedOnce();
     const loadedNote = await fetchNoteById(noteId.value);
     note.value = loadedNote;
   } catch (error) {
@@ -213,10 +178,6 @@ onMounted(async () => {
   } finally {
     isLoaded.value = true;
   }
-});
-
-watch(() => parsed.value, () => {
-  resetRenderedOnce();
 });
 
 const formatDate = (timestamp) => {

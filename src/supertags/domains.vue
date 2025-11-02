@@ -45,7 +45,6 @@ export const tagMetadata = {
   example: 'domains=github.com,gitlab.com',
   category: 'reference',
   icon: '🌐',
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

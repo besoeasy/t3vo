@@ -190,7 +190,6 @@ export const tagMetadata = {
   example: "ip=8.8.8.8",
   category: "data",
   icon: "🌐",
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

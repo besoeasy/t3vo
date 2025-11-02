@@ -37,7 +37,6 @@ export const tagMetadata = {
   example: "url=https://example.com",
   category: "reference",
   icon: "🔗",
-  aliases: ["link", "website"],
   parseValue: (value) => {
     const trimmed = value.trim();
     // Add https:// if no protocol is specified

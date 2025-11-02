@@ -61,7 +61,6 @@ export const tagMetadata = {
   example: 'bookmark=https://example.com',
   category: 'reference',
   icon: '🔖',
-  aliases: ['url'],
   parseValue: (value) => {
     const trimmed = value.trim()
     // Add https:// if no protocol specified

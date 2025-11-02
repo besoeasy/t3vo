@@ -193,17 +193,17 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { tagRegistry } from "@/supertags";
+import { supertagRegistry } from "@/supertags";
 
 const searchQuery = ref("");
 const selectedCategory = ref(null);
 const showCopiedToast = ref(false);
 
-// Get all tags and categories from registry
-const allTags = computed(() => tagRegistry.getAllTags());
-const categories = computed(() => tagRegistry.getCategories());
+// Get all supertags and categories from registry
+const allTags = computed(() => supertagRegistry.getAllSupertags());
+const categories = computed(() => supertagRegistry.getCategories());
 
-// Filter tags based on search and category
+// Filter supertags based on search and category
 const filteredTags = computed(() => {
   let tags = allTags.value;
 
@@ -219,8 +219,7 @@ const filteredTags = computed(() => {
       (tag) =>
         tag.name.toLowerCase().includes(query) ||
         tag.displayName.toLowerCase().includes(query) ||
-        tag.description.toLowerCase().includes(query) ||
-        (tag.aliases && tag.aliases.some((alias) => alias.toLowerCase().includes(query)))
+        tag.description.toLowerCase().includes(query)
     );
   }
 
@@ -233,7 +232,7 @@ const displayCategories = computed(() => {
   return Array.from(cats).sort();
 });
 
-// Get tags by category
+// Get supertags by category
 const getTagsByCategory = (category) => {
   return filteredTags.value.filter((tag) => tag.category === category);
 };

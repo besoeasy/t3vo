@@ -181,7 +181,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchNoteById, addNote, updateNote, addAttachments } from "@/db";
 import { ArrowLeft, Save, Key, Bookmark, FileText, Paperclip, Upload, File, X } from "lucide-vue-next";
-import { tagRegistry } from "@/supertags";
+import { supertagRegistry } from "@/supertags";
 
 const route = useRoute();
 const router = useRouter();
@@ -194,14 +194,14 @@ const textareaRef = ref(null);
 const attachments = ref([]);
 const tagSearch = ref("");
 
-// Get all tags from registry
-const allTags = computed(() => tagRegistry.getAllTags());
-const allCategories = computed(() => tagRegistry.getCategories());
+// Get all supertags from registry
+const allTags = computed(() => supertagRegistry.getAllSupertags());
+const allCategories = computed(() => supertagRegistry.getCategories());
 
-// Filter tags based on search
+// Filter supertags based on search
 const filteredTags = computed(() => {
   if (!tagSearch.value.trim()) return allTags.value;
-  return tagRegistry.searchTags(tagSearch.value);
+  return supertagRegistry.searchSupertags(tagSearch.value);
 });
 
 // Filter categories that have matching tags

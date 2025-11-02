@@ -84,7 +84,6 @@ export const tagMetadata = {
   example: 'qrcode=https://example.com',
   category: 'data',
   icon: '📱',
-  aliases: [],
   parseValue: (value) => value.trim(),
   validate: (value) => {
     if (!value || !value.trim()) {

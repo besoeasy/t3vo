@@ -77,7 +77,6 @@ export const tagMetadata = {
   example: 'card=4111111111111111-12/27-123',
   category: 'finance',
   icon: '💳',
-  aliases: [],
   parseValue: (value) => {
     if (typeof value === 'object') return value
     const parts = value.trim().split('-')
