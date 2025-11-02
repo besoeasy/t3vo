@@ -181,7 +181,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchNoteById, addNote, updateNote, addAttachments } from "@/db";
 import { ArrowLeft, Save, Key, Bookmark, FileText, Paperclip, Upload, File, X } from "lucide-vue-next";
-import { tagRegistry } from "@/tags";
+import { tagRegistry } from "@/supertags";
 
 const route = useRoute();
 const router = useRouter();

@@ -193,7 +193,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { tagRegistry } from "@/tags";
+import { tagRegistry } from "@/supertags";
 
 const searchQuery = ref("");
 const selectedCategory = ref(null);

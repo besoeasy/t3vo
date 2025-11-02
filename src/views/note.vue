@@ -120,7 +120,7 @@ import { ArrowLeft, Edit, Trash2 } from "lucide-vue-next";
 import { format } from "timeago.js";
 import { Marked } from "marked";
 
-import { getTagComponent } from "@/tags";
+import { getTagComponent } from "@/supertags";
 
 import ParseCryptoAddresses from "@/components/parsed/CryptoAddresses.vue";
 import ParseReferences from "@/components/parsed/References.vue";
