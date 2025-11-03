@@ -1,9 +1,9 @@
 <template>
-  <div class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
+  <div class="w-full p-6 sm:p-12 text-center flex flex-col justify-center min-h-screen">
     <!-- Lock Icon -->
     <div class="max-w-md mx-auto w-full">
-      <h1 class="text-4xl font-bold text-gray-900 mb-2">ZeroNote</h1>
-      <p class="text-gray-600 mb-8">Your Secure Note Vault</p>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2 uppercase">Zero Note</h1>
+      <p class="text-gray-600 mb-6">Your Secure Note Vault</p>
 
       <div class="w-full max-w-md mx-auto">
         <input
