@@ -141,12 +141,12 @@ const filteredNotes = computed(() => {
   }
   
   return filtered.slice().sort((a, b) => {
-    // Pinned notes come first
-    if (a.parsed.pinned && !b.parsed.pinned) return -1;
-    if (!a.parsed.pinned && b.parsed.pinned) return 1;
-    // Not deleted before deleted
+    // Not deleted before deleted (most important - deleted notes always go to bottom)
     if (!a.deletedAt && b.deletedAt) return -1;
     if (a.deletedAt && !b.deletedAt) return 1;
+    // Pinned notes come first (only among non-deleted notes)
+    if (a.parsed.pinned && !b.parsed.pinned) return -1;
+    if (!a.parsed.pinned && b.parsed.pinned) return 1;
     // Otherwise sort by updatedAt (newest first)
     return b.updatedAt - a.updatedAt;
   });
