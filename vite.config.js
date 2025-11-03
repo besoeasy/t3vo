@@ -13,9 +13,9 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "T3VO",
-        short_name: "T3VO",
-        description: "T3VO",
+        name: "ZeroNote",
+        short_name: "ZeroNote",
+        description: "ZeroNote",
         theme_color: "#ffffff",
 
         icons: [

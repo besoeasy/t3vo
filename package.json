@@ -1,6 +1,6 @@
 {
-  "name": "t3vo",
-  "version": "0.1.1",
+  "name": "zeronote",
+  "version": "0..1",
   "type": "module",
   "scripts": {
     "dev": "vite",

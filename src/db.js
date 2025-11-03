@@ -7,7 +7,7 @@ const ENCRYPTION_KEY = sessionStorage.getItem("ENCRYPTION_KEY") || "0";
 
 const hashedKey = ENCRYPTION_KEY ? getSha256Hash(ENCRYPTION_KEY, false) : null;
 
-export const db = new Dexie(`T3VO-${hashedKey}`);
+export const db = new Dexie(`ZeroNote-${hashedKey}`);
 
 db.version(1).stores({
   notes: "id, attachments, updatedAt, deletedAt",

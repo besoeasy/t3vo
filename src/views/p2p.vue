@@ -13,7 +13,7 @@
       </div>
     </div>
       <!-- Status Card -->
-      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
+      <div class="bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
         <div class="flex items-start gap-4">
           <div class="p-3 bg-blue-500 rounded-lg">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@
 
       <!-- Room Ready - Host waiting for others -->
       <div v-else-if="roomReady && !isConnected" class="space-y-6">
-        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
+        <div class="bg-linear-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
           <div class="flex items-start gap-4">
             <div class="p-3 bg-blue-500 rounded-lg">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,7 +163,7 @@
       <!-- Connected View -->
       <div v-else-if="isConnected" class="space-y-6">
         <!-- Room Info -->
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+        <div class="bg-linear-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-2">
@@ -221,7 +221,7 @@
                 <p class="text-sm font-medium text-gray-900">Remote Device</p>
                 <p class="text-xs text-gray-600 font-mono">{{ peerId }}</p>
               </div>
-              <span v-if="peerId.includes('-t3vo-' + roomCode) && !peerId.includes('-' + roomCode + '-')" class="px-2 py-1 bg-blue-400 text-white text-xs font-semibold rounded">HOST</span>
+              <span v-if="peerId.includes('-ZeroNote-' + roomCode) && !peerId.includes('-' + roomCode + '-')" class="px-2 py-1 bg-blue-400 text-white text-xs font-semibold rounded">HOST</span>
               <span v-else class="px-2 py-1 bg-purple-400 text-white text-xs font-semibold rounded">GUEST</span>
             </div>
 
@@ -382,7 +382,7 @@ async function joinRoom(code = null) {
 
   try {
     // Try to become host first - if room exists, we'll become guest automatically
-    const hostId = `t3vo-${sanitizedRoomCode}`;
+    const hostId = `ZeroNote-${sanitizedRoomCode}`;
     await initializePeer(hostId, true, sanitizedRoomCode);
   } catch (err) {
     console.error('Failed to join room:', err);
@@ -425,7 +425,7 @@ function initializePeer(peerId, tryHost = false, preserveRoomCode = null) {
         myPeerId.value = id;
         
         // Check if we became the host
-        if (tryHost && id === `t3vo-${savedRoomCode}`) {
+        if (tryHost && id === `ZeroNote-${savedRoomCode}`) {
           isHost.value = true;
           console.log('🎯 Became HOST with ID:', id);
           // Ensure roomCode is set
@@ -433,7 +433,7 @@ function initializePeer(peerId, tryHost = false, preserveRoomCode = null) {
           connecting.value = false;
           roomReady.value = true; // Room is created and ready for others to join
           resolve(id);
-        } else if (!tryHost && id.startsWith(`t3vo-${savedRoomCode}-`)) {
+        } else if (!tryHost && id.startsWith(`ZeroNote-${savedRoomCode}-`)) {
           isHost.value = false;
           console.log('👤 Became GUEST with ID:', id);
           // Ensure roomCode is set
@@ -466,7 +466,7 @@ function initializePeer(peerId, tryHost = false, preserveRoomCode = null) {
           console.log('Host ID taken, becoming guest...');
           
           // Create guest ID with timestamp
-          const guestId = `t3vo-${savedRoomCode}-${Date.now()}`;
+          const guestId = `ZeroNote-${savedRoomCode}-${Date.now()}`;
           console.log('Creating guest with ID:', guestId);
           // Preserve the room code when becoming guest
           initializePeer(guestId, false, savedRoomCode).then(resolve).catch(reject);
@@ -497,7 +497,7 @@ function initializePeer(peerId, tryHost = false, preserveRoomCode = null) {
 }
 
 function connectToHost() {
-  const hostId = `t3vo-${roomCode.value}`;
+  const hostId = `ZeroNote-${roomCode.value}`;
   console.log('🔌 Guest connecting to host:', hostId);
   
   // Connect immediately since we already waited in initializePeer

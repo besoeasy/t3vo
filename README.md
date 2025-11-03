@@ -1,16 +1,16 @@
-# T3VO: One App for Everything
+# ZeroNote: One App for Everything
 
 > **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
 **Stop juggling multiple apps.** One password manager. One bookmark manager. One notes app. One cloud service. One subscription. One privacy concern after another.
 
-**T3VO simplifies your digital life** with a single, intelligent note system that becomes whatever you need—password vault, bookmark organizer, document storage, or personal knowledge base. Everything is just a note with smart tags.
+**ZeroNote simplifies your digital life** with a single, intelligent note system that becomes whatever you need—password vault, bookmark organizer, document storage, or personal knowledge base. Everything is just a note with smart tags.
 
-## Why T3VO?
+## Why ZeroNote?
 
 ### Your Data, Your Control
 
-In a world where companies control your passwords, notes, and bookmarks—**T3VO puts you back in charge.**
+In a world where companies control your passwords, notes, and bookmarks—**ZeroNote puts you back in charge.**
 
 - **Offline-First**: Works completely without internet. Your data lives on your device, not someone's cloud.
 - **P2P Sync**: Share between your devices directly using peer-to-peer—no servers, no middlemen.
@@ -30,9 +30,9 @@ Stop switching between apps. Everything you need in one place:
 - 📎 **Document Storage** with attachments
 - 🌐 **URL Manager** with media embeds
 
-All powered by smart tags. Just type `#@password=`, `#@bookmark=`, or `#@cryptoaddress=` and T3VO does the rest.
+All powered by smart tags. Just type `#@password=`, `#@bookmark=`, or `#@cryptoaddress=` and ZeroNote does the rest.
 
-<img width="2880" height="1688" alt="T3VO Interface" src="https://github.com/user-attachments/assets/9f0e6753-09ab-4afc-a1b5-655cb8d613a5" />
+<img width="2880" height="1688" alt="ZeroNote Interface" src="https://github.com/user-attachments/assets/9f0e6753-09ab-4afc-a1b5-655cb8d613a5" />
 
 ## ✨ Key Features
 
@@ -81,13 +81,13 @@ All powered by smart tags. Just type `#@password=`, `#@bookmark=`, or `#@cryptoa
 
 **Fork this repository** and deploy to Vercel/Netlify for free. This gives you control over updates.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/besoeasy/t3vo/tree/latest)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/besoeasy/t3vo&branch=latest)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/besoeasy/ZeroNote/tree/latest)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/besoeasy/ZeroNote&branch=latest)
 
 Or run with Docker:
 
 ```bash
-docker run -d --name t3vo -p 8080:80 ghcr.io/besoeasy/t3vo:main
+docker run -d --name ZeroNote -p 8080:80 ghcr.io/besoeasy/ZeroNote:main
 ```
 
 ### 2. Set Up Your Vault
@@ -213,7 +213,7 @@ A: There's no recovery. This is by design for zero-knowledge security. Your pass
 A: Yes! It's a web app that works on any device with a browser. Install it as a PWA for app-like experience.
 
 **Q: Do I need internet?**  
-A: No. T3VO works 100% offline. Internet is only needed for optional P2P sync or S3 backup.
+A: No. ZeroNote works 100% offline. Internet is only needed for optional P2P sync or S3 backup.
 
 **Q: Where is my data stored?**  
 A: In your browser's IndexedDB. It never leaves your device unless you explicitly sync via P2P or S3.
@@ -225,16 +225,16 @@ A: Yes. Open source (MIT license). Deploy your own instance for free on Vercel/N
 
 We welcome contributions!
 
-- 🐛 [Report bugs](https://github.com/besoeasy/t3vo/issues)
-- 💡 [Suggest features](https://github.com/besoeasy/t3vo/issues)
+- 🐛 [Report bugs](https://github.com/besoeasy/ZeroNote/issues)
+- 💡 [Suggest features](https://github.com/besoeasy/ZeroNote/issues)
 - 🔧 Submit pull requests
 - ⭐ Star the repo if you find it useful!
 
 ## 📊 Comparison with Other Apps
 
-Below is a detailed comparison of **T3VO** with other popular note-taking and password management apps:
+Below is a detailed comparison of **ZeroNote** with other popular note-taking and password management apps:
 
-| Feature / App              | **T3VO** | Bitwarden | Standard Notes | Joplin | Notion | Obsidian |
+| Feature / App              | **ZeroNote** | Bitwarden | Standard Notes | Joplin | Notion | Obsidian |
 | -------------------------- | :------: | :-------: | :------------: | :----: | :----: | :------: |
 | **Client-Side Encryption** |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
 | **Zero-Knowledge**         |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
@@ -268,4 +268,4 @@ Below is a detailed comparison of **T3VO** with other popular note-taking and pa
 > - ✅\* = Unlimited for self-hosted/community version
 > - ❌\* = Usage limits on free plan
 
-**T3VO** stands out for its unified approach (notes, passwords, bookmarks, and more in one place), strong privacy, offline-first design, and unique peer-to-peer sync with optional S3/MinIO cloud backup. For a full breakdown of tag-based features, see [TAGS.md](src/supertags/README.md).
+**ZeroNote** stands out for its unified approach (notes, passwords, bookmarks, and more in one place), strong privacy, offline-first design, and unique peer-to-peer sync with optional S3/MinIO cloud backup. For a full breakdown of tag-based features, see [TAGS.md](src/supertags/README.md).

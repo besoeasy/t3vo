@@ -1,6 +1,6 @@
 # Modular Supertag System
 
-The T3VO supertag system is fully modular - each supertag is a self-contained Vue component with metadata that describes its behavior.
+The ZeroNote supertag system is fully modular - each supertag is a self-contained Vue component with metadata that describes its behavior.
 
 Supertags are different from regular tags (`#tag`). They are interactive components with the `#@` prefix that provide rich functionality like displaying cryptocurrency prices, generating QR codes, managing passwords, etc.
 

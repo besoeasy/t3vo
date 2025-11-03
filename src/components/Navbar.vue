@@ -1,11 +1,9 @@
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
     <!-- Desktop Sidebar Only -->
-    <aside
-      class="bg-white flex flex-col items-center border-r border-gray-200 w-[80px] py-6 px-2 relative"
-    >
+    <aside class="bg-white flex flex-col items-center border-r border-gray-200 w-20 py-6 px-2 relative">
       <!-- App Branding -->
-      <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">T3VO</h1>
+      <h1 class="text-xl font-semibold text-gray-900 mb-6 md:mb-8 uppercase">Zero<br />Note</h1>
 
       <!-- New Note Button (Dashboard only) -->
       <button
@@ -37,7 +35,11 @@
         title="Available Tags"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+          />
         </svg>
       </router-link>
 
@@ -49,7 +51,6 @@
       >
         <Database class="w-5 h-5" />
       </router-link>
-
 
       <!-- Stats Link -->
       <router-link
@@ -66,12 +67,14 @@
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
         title="Import Data"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
       </router-link>
 
       <!-- GitHub Link -->
       <a
-        href="https://github.com/besoeasy/t3vo"
+        href="https://github.com/besoeasy/ZeroNote"
         target="_blank"
         rel="noopener noreferrer"
         class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors mb-3"
@@ -86,7 +89,7 @@
         </svg>
       </a>
 
-           <!-- GitHub Link -->
+      <!-- GitHub Link -->
       <a
         href="https://coinos.io/BeSoEasy"
         target="_blank"

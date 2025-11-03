@@ -166,7 +166,7 @@ const backupDatabase = async () => {
     const jsonData = JSON.stringify(decryptedNotes, null, 2);
     const blob = new Blob([jsonData], { type: "application/json" });
     const timestamp = new Date().toISOString().split('T')[0];
-    saveAs(blob, `t3vo-backup-${timestamp}.json`);
+    saveAs(blob, `ZeroNote-backup-${timestamp}.json`);
 
     successMessage.value = `Successfully backed up ${notes.length} note${notes.length !== 1 ? 's' : ''}!`;
   } catch (error) {
