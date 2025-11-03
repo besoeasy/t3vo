@@ -2,15 +2,38 @@
   <!-- Notes Grid View -->
   <div class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
     <!-- Search Bar -->
-    <div class="mb-6 md:mb-8">
+    <div class="mb-4">
       <div class="relative">
         <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search"
+          placeholder="Search notes..."
           class="w-full pl-12 pr-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
+      </div>
+    </div>
+
+    <!-- Supertag Filters -->
+    <div class="mb-6 md:mb-8">
+      <div class="flex items-center gap-2 overflow-x-auto pb-2">
+        <button
+          @click="selectedSupertag = null"
+          :class="selectedSupertag === null ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap border border-gray-200"
+        >
+          All
+        </button>
+        <button
+          v-for="tag in availableSupertags"
+          :key="tag.name"
+          @click="selectedSupertag = tag.name"
+          :class="selectedSupertag === tag.name ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap border border-gray-200 flex items-center gap-1.5"
+        >
+          <span>{{ tag.icon }}</span>
+          <span>{{ tag.displayName }}</span>
+        </button>
       </div>
     </div>
 
@@ -86,22 +109,37 @@ import { useRouter } from "vue-router";
 import { fetchNotes, db } from "@/db";
 import { Search, FileText, Key, Bookmark } from "lucide-vue-next";
 import { format } from "timeago.js";
+import { supertagRegistry } from "@/supertags";
 
 const router = useRouter();
 
 // State
 const searchQuery = ref("");
+const selectedSupertag = ref(null);
 const isLoading = ref(false);
 const notes = ref([]);
+
+// Get all available supertags
+const availableSupertags = computed(() => supertagRegistry.getAllSupertags());
 
 // Computed
 // Show all notes, including deleted, but sort: pinned > not deleted > deleted, then by updatedAt
 const filteredNotes = computed(() => {
   let filtered = notes.value;
+  
+  // Filter by supertag
+  if (selectedSupertag.value) {
+    filtered = filtered.filter((note) => {
+      return note.parsed.tags && note.parsed.tags[selectedSupertag.value];
+    });
+  }
+  
+  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
+  
   return filtered.slice().sort((a, b) => {
     // Pinned notes come first
     if (a.parsed.pinned && !b.parsed.pinned) return -1;

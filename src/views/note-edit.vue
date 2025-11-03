@@ -117,6 +117,18 @@
             <div class="flex items-center gap-4">
               <h3 class="text-sm font-semibold text-gray-900">Content</h3>
               <span class="text-xs text-gray-500">{{ noteContent.length }} characters</span>
+              <a 
+                href="https://www.markdownguide.org/cheat-sheet/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline"
+                title="Markdown formatting help"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Markdown supported
+              </a>
             </div>
             <div class="flex items-center gap-2">
               <Paperclip class="w-4 h-4 text-gray-600" />
