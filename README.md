@@ -1,4 +1,4 @@
-# ZeroNote: One App for Everything
+# ZeroNote: One Notes App for Everything
 
 > **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
