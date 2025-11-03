@@ -1,6 +1,6 @@
 <template>
   <!-- Notes Grid View -->
-  <div class="w-full mx-auto p-4 md:p-8 pt-16 md:pt-8">
+  <div class="w-full mx-auto p-2 md:p-8 pt-8 md:pt-8">
     <!-- Search Bar -->
     <div class="mb-4">
       <div class="relative">
