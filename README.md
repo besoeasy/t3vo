@@ -1,5 +1,7 @@
 # ZeroNote: One Notes App for Everything
 
+ZeroNote is an open-source, offline-first unified app that replaces your password manager, bookmark manager, notes app, and 2FA authenticator with a single encrypted note-taking system powered by smart tags, where everything is stored locally on your device with zero-knowledge encryption and optional peer-to-peer or S3 sync.
+
 > **Note:** We highly recommend that you **fork this repository and deploy your own instance** (it's free). By forking, you can maintain your own stable version and control when to update, ensuring your web app remains consistent and reliable for your needs.
 
 **Stop juggling multiple apps.** One password manager. One bookmark manager. One notes app. One cloud service. One subscription. One privacy concern after another.
