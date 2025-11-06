@@ -38,12 +38,12 @@
     </div>
 
     <!-- Notes Grid -->
-    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
       <div
         v-for="note in filteredNotes"
         :key="note.id"
         @click="note.deletedAt ? undefined : openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[300px] flex flex-col relative"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg aspect-square flex flex-col relative"
         :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : '']"
       >
         <!-- Pin Indicator -->
@@ -59,11 +59,11 @@
           </p>
           <!-- Supertag Icons -->
           <div v-if="getSupertags(note).length > 0" class="flex items-center gap-1.5 mt-2 flex-wrap">
-            <span 
-              v-for="supertag in getSupertags(note)" 
+            <span
+              v-for="supertag in getSupertags(note)"
               :key="supertag.name"
               :title="supertag.displayName"
-              class="text-base opacity-70 hover:opacity-100 transition-opacity"
+              class="text-base opacity-70 hover:opacity-100 transition-opacity bg-white/50 rounded-full p-1"
             >
               {{ supertag.icon }}
             </span>
@@ -133,20 +133,20 @@ const availableSupertags = computed(() => supertagRegistry.getAllSupertags());
 // Show all notes, including deleted, but sort: pinned > not deleted > deleted, then by updatedAt
 const filteredNotes = computed(() => {
   let filtered = notes.value;
-  
+
   // Filter by supertag
   if (selectedSupertag.value) {
     filtered = filtered.filter((note) => {
       return note.parsed.tags && note.parsed.tags[selectedSupertag.value];
     });
   }
-  
+
   // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter((note) => note.parsed.title?.toLowerCase().includes(query) || note.parsed.content?.toLowerCase().includes(query));
   }
-  
+
   return filtered.slice().sort((a, b) => {
     // Not deleted before deleted (most important - deleted notes always go to bottom)
     if (!a.deletedAt && b.deletedAt) return -1;
@@ -215,7 +215,7 @@ const getCardColor = (note) => {
 // Get supertags with their metadata for a note
 const getSupertags = (note) => {
   if (!note.parsed.tags) return [];
-  
+
   const supertags = [];
   for (const [tagName, tagValue] of Object.entries(note.parsed.tags)) {
     const supertagDef = supertagRegistry.getSupertag(tagName);
@@ -224,11 +224,11 @@ const getSupertags = (note) => {
         name: tagName,
         icon: supertagDef.icon,
         displayName: supertagDef.displayName,
-        value: tagValue
+        value: tagValue,
       });
     }
   }
-  
+
   return supertags;
 };
 
