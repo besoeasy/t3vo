@@ -43,7 +43,7 @@
         v-for="note in filteredNotes"
         :key="note.id"
         @click="note.deletedAt ? undefined : openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[250px] flex flex-col relative"
+        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg min-h-[300px] flex flex-col relative"
         :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : '']"
       >
         <!-- Pin Indicator -->
@@ -57,6 +57,17 @@
           <p class="text-sm text-gray-800 line-clamp-3">
             {{ note.parsed.content || "......." }}
           </p>
+          <!-- Supertag Icons -->
+          <div v-if="getSupertags(note).length > 0" class="flex items-center gap-1.5 mt-2 flex-wrap">
+            <span 
+              v-for="supertag in getSupertags(note)" 
+              :key="supertag.name"
+              :title="supertag.displayName"
+              class="text-base opacity-70 hover:opacity-100 transition-opacity"
+            >
+              {{ supertag.icon }}
+            </span>
+          </div>
         </div>
         <!-- Footer -->
         <div class="flex items-center justify-between text-xs text-gray-700 mt-auto">
@@ -67,10 +78,6 @@
             <span v-if="(note.parsed.customTags || []).length > 2" class="font-medium">+{{ (note.parsed.customTags || []).length - 2 }}</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <span v-if="note.parsed.type !== 'note'">
-              <Key v-if="note.parsed.type === 'password'" class="w-3 h-3" />
-              <Bookmark v-else-if="note.parsed.type === 'bookmark'" class="w-3 h-3" />
-            </span>
             <span class="font-medium">{{ formatDate(note.updatedAt) }}</span>
           </div>
         </div>
@@ -203,6 +210,26 @@ const getCardColor = (note) => {
 
   const colorIndex = Math.abs(hash) % cardColors.length;
   return cardColors[colorIndex];
+};
+
+// Get supertags with their metadata for a note
+const getSupertags = (note) => {
+  if (!note.parsed.tags) return [];
+  
+  const supertags = [];
+  for (const [tagName, tagValue] of Object.entries(note.parsed.tags)) {
+    const supertagDef = supertagRegistry.getSupertag(tagName);
+    if (supertagDef && supertagDef.icon) {
+      supertags.push({
+        name: tagName,
+        icon: supertagDef.icon,
+        displayName: supertagDef.displayName,
+        value: tagValue
+      });
+    }
+  }
+  
+  return supertags;
 };
 
 // Countdown for deleted notes
