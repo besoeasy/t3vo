@@ -38,54 +38,67 @@
     </div>
 
     <!-- Notes Grid -->
-    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+    <div v-if="!isLoading && filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       <div
         v-for="note in filteredNotes"
         :key="note.id"
         @click="note.deletedAt ? undefined : openNote(note)"
-        class="group cursor-pointer rounded-xl p-5 transition-all duration-200 hover:shadow-lg aspect-square flex flex-col relative"
-        :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : '']"
+        class="group cursor-pointer rounded-lg p-4 transition-all duration-200 hover:shadow-lg border border-gray-200 flex flex-col relative min-h-[180px]"
+        :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : 'hover:border-gray-300']"
       >
-        <!-- Pin Indicator -->
-        <div v-if="note.parsed.pinned" class="absolute top-3 right-3 text-lg opacity-70">📌</div>
+        <!-- Emojis and Supertags in top right -->
+        <div class="absolute top-2 right-2 flex items-center gap-1 flex-wrap justify-end max-w-[50%]">
+          <span v-if="note.parsed.icon" class="text-2xl">{{ note.parsed.icon }}</span>
+          <span
+            v-for="supertag in getSupertags(note)"
+            :key="supertag.name"
+            :title="supertag.displayName"
+            class="text-base opacity-60 hover:opacity-100 transition-opacity"
+          >
+            {{ supertag.icon }}
+          </span>
+          <span v-if="note.parsed.pinned" class="text-base opacity-60">📌</span>
+        </div>
+
         <!-- Content -->
         <div class="flex-1 mb-3">
-          <h3 v-if="note.parsed.title" class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
-            <span v-if="note.parsed.icon" class="mr-2 text-2xl">{{ note.parsed.icon }}</span>
+          <h3 v-if="note.parsed.title" class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight pr-12">
             {{ note.parsed.title }}
           </h3>
-          <p class="text-sm text-gray-800 line-clamp-3">
+          <p class="text-xs text-gray-600 line-clamp-4 leading-relaxed">
             {{ note.parsed.content || "......." }}
           </p>
-          <!-- Supertag Icons -->
-          <div v-if="getSupertags(note).length > 0" class="flex items-center gap-1.5 mt-2 flex-wrap">
-            <span
-              v-for="supertag in getSupertags(note)"
-              :key="supertag.name"
-              :title="supertag.displayName"
-              class="text-base opacity-70 hover:opacity-100 transition-opacity bg-white/50 rounded-full p-1"
-            >
-              {{ supertag.icon }}
-            </span>
-          </div>
         </div>
+
         <!-- Footer -->
-        <div class="flex items-center justify-between text-xs text-gray-700 mt-auto">
-          <div class="flex items-center gap-1.5">
-            <span v-for="tag in (note.parsed.customTags || []).slice(0, 2)" :key="tag" class="px-2 py-0.5 bg-gray-900/95 text-white rounded">
+        <div class="flex items-center justify-between text-xs text-gray-500 mt-auto pt-2 border-t border-gray-100">
+          <div class="flex items-center gap-1 flex-wrap">
+            <span
+              v-for="tag in (note.parsed.customTags || []).slice(0, 2)"
+              :key="tag"
+              class="px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-[10px] font-medium"
+            >
               {{ tag }}
             </span>
-            <span v-if="(note.parsed.customTags || []).length > 2" class="font-medium">+{{ (note.parsed.customTags || []).length - 2 }}</span>
+            <span v-if="(note.parsed.customTags || []).length > 2" class="text-[10px] font-medium text-gray-400"
+              >+{{ (note.parsed.customTags || []).length - 2 }}</span
+            >
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-medium">{{ formatDate(note.updatedAt) }}</span>
+          <div class="flex items-center gap-1">
+            <span class="text-[10px]">{{ formatDate(note.updatedAt) }}</span>
           </div>
         </div>
+
         <!-- Deleted note badge and countdown -->
-        <div v-if="note.deletedAt" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-xl z-10">
+        <div v-if="note.deletedAt" class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 rounded-lg z-10 backdrop-blur-sm">
           <div class="text-xs font-semibold text-red-600 mb-1">Pending Deletion</div>
-          <div class="text-xs text-gray-700 dark:text-gray-300 mb-2">Deleting in {{ getPurgeCountdown(note.deletedAt) }}</div>
-          <button @click.stop="restoreNote(note)" class="px-3 py-1 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700">Restore</button>
+          <div class="text-xs text-gray-600 mb-2">Deleting in {{ getPurgeCountdown(note.deletedAt) }}</div>
+          <button
+            @click.stop="restoreNote(note)"
+            class="px-3 py-1.5 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
+          >
+            Restore
+          </button>
         </div>
       </div>
     </div>
@@ -193,13 +206,13 @@ const formatDate = (timestamp) => {
 
 // Color palette for note cards - soft pastel colors
 const cardColors = [
-  "bg-[#FFE4E1] hover:shadow-xl", // Misty rose
-  "bg-[#E6F3FF] hover:shadow-xl", // Light sky blue
-  "bg-[#F0E6FF] hover:shadow-xl", // Lavender
-  "bg-[#E1FFE1] hover:shadow-xl", // Honeydew green
-  "bg-[#FFF0E6] hover:shadow-xl", // Peach
-  "bg-[#FFE6F0] hover:shadow-xl", // Light pink
-  "bg-[#FFFACD] hover:shadow-xl", // Lemon chiffon
+  "bg-[#FFE4E1]", // Misty rose
+  "bg-[#E6F3FF]", // Light sky blue
+  "bg-[#F0E6FF]", // Lavender
+  "bg-[#E1FFE1]", // Honeydew green
+  "bg-[#FFF0E6]", // Peach
+  "bg-[#FFE6F0]", // Light pink
+  "bg-[#FFFACD]", // Lemon chiffon
 ];
 
 const getCardColor = (note) => {
