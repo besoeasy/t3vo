@@ -11,6 +11,7 @@ import S3 from "@/views/s3.vue";
 import Sync from "@/views/sync.vue";
 import ImportView from "@/views/import.vue";
 import Tags from "@/views/tags.vue";
+import About from "@/views/about.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -68,6 +69,11 @@ const router = createRouter({
       path: "/tags",
       name: "tags",
       component: Tags,
+    },
+    {
+      path: "/about",
+      name: "about",
+      component: About,
     },
   ],
 });
