@@ -47,7 +47,7 @@
         :class="[getCardColor(note), note.deletedAt ? 'opacity-50 grayscale hover:shadow-none' : 'hover:border-gray-300']"
       >
         <!-- Emojis and Supertags in top right -->
-        <div class="absolute top-2 right-2 flex items-center gap-1 flex-wrap justify-end max-w-[50%]">
+        <div class="absolute top-2 right-2 flex items-center gap-1 flex-wrap justify-end max-w-[50%] bg-white rounded-lg px-2 py-1 shadow-sm">
           <span v-if="note.parsed.icon" class="text-2xl">{{ note.parsed.icon }}</span>
           <span
             v-for="supertag in getSupertags(note)"
@@ -204,15 +204,13 @@ const formatDate = (timestamp) => {
   return format(timestamp);
 };
 
-// Color palette for note cards - soft pastel colors
+// Color palette for note cards - curated modern colors
 const cardColors = [
-  "bg-[#FFE4E1]", // Misty rose
-  "bg-[#E6F3FF]", // Light sky blue
-  "bg-[#F0E6FF]", // Lavender
-  "bg-[#E1FFE1]", // Honeydew green
-  "bg-[#FFF0E6]", // Peach
-  "bg-[#FFE6F0]", // Light pink
-  "bg-[#FFFACD]", // Lemon chiffon
+  "bg-[#E8F4F8]", // Soft cyan - calm and professional
+  "bg-[#F5E6FF]", // Soft purple - creative and elegant
+  "bg-[#FFE8E8]", // Soft coral - warm and inviting
+  "bg-[#E8F8E8]", // Soft mint - fresh and clean
+  "bg-[#FFF4E6]", // Soft amber - warm and cozy
 ];
 
 const getCardColor = (note) => {
