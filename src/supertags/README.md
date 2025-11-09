@@ -266,12 +266,3 @@ export const tagMetadata = {
 ✅ **Documented**: Metadata serves as inline documentation  
 ✅ **Flexible**: Custom parsing and validation per supertag  
 ✅ **Searchable**: Built-in search and filtering  
-
-## 📝 Migration from Old System
-
-Old tag components in `src/components/tags/` can be migrated by:
-1. Moving them to `src/supertags/`
-2. Adding the `tagMetadata` export
-3. That's it!
-
-The registry will automatically pick them up.
