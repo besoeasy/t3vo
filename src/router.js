@@ -10,7 +10,7 @@ import p2p from "@/views/p2p.vue";
 import S3 from "@/views/s3.vue";
 import Sync from "@/views/sync.vue";
 import ImportView from "@/views/import.vue";
-import Tags from "@/views/tags.vue";
+import SuperTag from "@/views/supertags.vue";
 import About from "@/views/about.vue";
 
 const router = createRouter({
@@ -66,9 +66,9 @@ const router = createRouter({
       component: ImportView,
     },
     {
-      path: "/tags",
-      name: "tags",
-      component: Tags,
+      path: "/supertag",
+      name: "supertag",
+      component: SuperTag,
     },
     {
       path: "/about",
