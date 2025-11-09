@@ -12,9 +12,7 @@
           </h2>
         </div>
         <div class="flex items-center space-x-3">
-          <button @click="handleCancel" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
-            Cancel
-          </button>
+          <button @click="handleCancel" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
           <button
             @click="handleSaveClick"
             :disabled="!noteContent.trim()"
@@ -64,7 +62,8 @@
                       <div class="flex items-center gap-2 mb-1">
                         <span class="text-sm font-medium text-gray-900">{{ tag.displayName }}</span>
                       </div>
-                      <code class="text-xs text-gray-600 font-mono">#@{{ tag.name }}=</code>
+                      <code class="text-xs text-gray-600 font-mono mt-2 block w-fit">#@{{ tag.example }}</code>
+
                       <p class="text-xs text-gray-500 mt-1">{{ tag.description }}</p>
                     </div>
                   </div>
@@ -117,9 +116,9 @@
             <div class="flex items-center gap-4">
               <h3 class="text-sm font-semibold text-gray-900">Content</h3>
               <span class="text-xs text-gray-500">{{ noteContent.length }} characters</span>
-              <a 
-                href="https://www.markdownguide.org/cheat-sheet/" 
-                target="_blank" 
+              <a
+                href="https://www.markdownguide.org/cheat-sheet/"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline"
                 title="Markdown formatting help"
@@ -219,7 +218,7 @@ const filteredTags = computed(() => {
 // Filter categories that have matching tags
 const filteredCategories = computed(() => {
   const matchingCategories = new Set();
-  filteredTags.value.forEach(tag => {
+  filteredTags.value.forEach((tag) => {
     if (tag.category) matchingCategories.add(tag.category);
   });
   return Array.from(matchingCategories).sort();
@@ -227,7 +226,7 @@ const filteredCategories = computed(() => {
 
 // Get tags by category
 const getTagsByCategory = (category) => {
-  return filteredTags.value.filter(tag => tag.category === category);
+  return filteredTags.value.filter((tag) => tag.category === category);
 };
 
 // Insert tag at cursor position
@@ -238,10 +237,10 @@ const insertTag = (tag) => {
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const text = noteContent.value;
-  
+
   const tagText = `#@${tag.name}=`;
   noteContent.value = text.substring(0, start) + tagText + text.substring(end);
-  
+
   // Set cursor position after the inserted tag
   setTimeout(() => {
     textarea.focus();
