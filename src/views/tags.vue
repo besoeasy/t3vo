@@ -1,5 +1,14 @@
 <template>
   <div class="max-w-4xl mx-auto p-4 md:p-8 pt-16 md:pt-8">
+    <!-- Info about supertag definitions -->
+    <div class="mb-4">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
+        You can read all supertag definitions directly from the
+        <a href="https://github.com/besoeasy/ZeroNote/tree/main/src/supertags" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">
+          GitHub Supertags Directory
+        </a>.
+      </div>
+    </div>
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Supertags</h1>
