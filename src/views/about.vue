@@ -1,6 +1,6 @@
 <template>
-  <div class="flex-1 overflow-auto">
-    <div class="max-w-3xl mx-auto px-6 py-12">
+  <div class="flex min-h-screen items-center justify-center bg-white">
+    <div class="max-w-3xl w-full mx-auto px-6 py-12">
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-3">About ZeroNote</h1>
