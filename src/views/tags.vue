@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto p-4 md:p-8 pt-16 md:pt-8">
+  <div class=" mx-auto p-4 md:p-8 pt-16 md:pt-8">
     <!-- Info about supertag definitions -->
     <div class="mb-4">
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
