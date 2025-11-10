@@ -91,6 +91,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { getCachedData, setCachedData } from '../utils/supertagCache'
 
 const props = defineProps({
   value: {
@@ -102,41 +103,7 @@ const props = defineProps({
 const cryptoData = ref(null)
 const isLoading = ref(false)
 
-const CACHE_DURATION = 4 * 60 * 60 * 1000
-const CACHE_KEY_PREFIX = 'crypto_cache_'
 const COINGECKO_API = 'https://api.coingecko.com/api/v3'
-
-const getCachedData = (key) => {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY_PREFIX + key)
-    if (!cached) return null
-
-    const { data, timestamp } = JSON.parse(cached)
-    const now = Date.now()
-
-    if (now - timestamp < CACHE_DURATION) {
-      return data
-    }
-
-    localStorage.removeItem(CACHE_KEY_PREFIX + key)
-    return null
-  } catch (error) {
-    console.error('Error reading cache:', error)
-    return null
-  }
-}
-
-const setCachedData = (key, data) => {
-  try {
-    const cacheData = {
-      data,
-      timestamp: Date.now(),
-    }
-    localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheData))
-  } catch (error) {
-    console.error('Error saving cache:', error)
-  }
-}
 
 const fetchCryptoData = async (cryptoId) => {
   if (!cryptoId || !cryptoId.trim()) {
@@ -144,9 +111,9 @@ const fetchCryptoData = async (cryptoId) => {
   }
 
   const trimmedId = cryptoId.trim().toLowerCase()
-  const cacheKey = trimmedId
 
-  const cached = getCachedData(cacheKey)
+  // Check cache first (4 hour cache)
+  const cached = getCachedData('crypto', trimmedId)
   if (cached) {
     console.log(`Using cached data for ${trimmedId}`)
     return cached
@@ -188,7 +155,8 @@ const fetchCryptoData = async (cryptoId) => {
       last_updated: data.last_updated,
     }
 
-    setCachedData(cacheKey, cryptoData)
+    // Cache for 4 hours
+    setCachedData('crypto', trimmedId, cryptoData, '4h')
     return cryptoData
   } catch (error) {
     console.error(`Error fetching ${trimmedId}:`, error)
