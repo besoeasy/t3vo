@@ -22,12 +22,11 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built Vite assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-
 # Copy custom nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose HTTP
-EXPOSE 80
+EXPOSE 8000
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

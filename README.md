@@ -89,7 +89,7 @@ All powered by smart tags. Just type `#@password=`, `#@bookmark=`, or `#@cryptoa
 Or run with Docker:
 
 ```bash
-docker run -d --name ZeroNote -p 8080:80 ghcr.io/besoeasy/zeronote:main
+docker run -d --name ZeroNote -p 8000:8000 ghcr.io/besoeasy/zeronote:main
 ```
 
 ### 2. Set Up Your Vault
