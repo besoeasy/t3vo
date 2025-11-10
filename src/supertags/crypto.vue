@@ -14,7 +14,7 @@
         <p class="font-semibold text-sm">Failed to load {{ cryptoData.id }}</p>
       </div>
     </div>
-    
+
     <!-- Crypto Data -->
     <div v-else-if="cryptoData">
       <!-- Header -->
@@ -34,7 +34,7 @@
         <div class="text-2xl font-bold text-gray-900">{{ formatCryptoPrice(cryptoData.current_price) }}</div>
         <div v-if="cryptoData.price_change_24h != null" class="flex items-center gap-1 mt-1">
           <span :class="getPriceChangeColor(cryptoData.price_change_24h)" class="text-xs font-semibold">
-            {{ cryptoData.price_change_24h >= 0 ? '▲' : '▼' }}
+            {{ cryptoData.price_change_24h >= 0 ? "▲" : "▼" }}
             {{ Math.abs(cryptoData.price_change_24h).toFixed(2) }}%
           </span>
           <span class="text-xs text-gray-500">24h</span>
@@ -53,33 +53,36 @@
         </div>
         <div v-if="cryptoData.high_24h && cryptoData.low_24h" class="flex items-center justify-between">
           <span class="text-gray-600">24h Range</span>
-          <span class="font-bold text-gray-900">
-            {{ formatCryptoPrice(cryptoData.low_24h) }} - {{ formatCryptoPrice(cryptoData.high_24h) }}
-          </span>
+          <span class="font-bold text-gray-900"> {{ formatCryptoPrice(cryptoData.low_24h) }} - {{ formatCryptoPrice(cryptoData.high_24h) }} </span>
         </div>
         <div v-if="cryptoData.price_change_7d != null" class="flex items-center justify-between pt-2 border-t border-gray-100">
           <span class="text-gray-600">7d Change</span>
           <span :class="getPriceChangeColor(cryptoData.price_change_7d)" class="font-bold">
-            {{ cryptoData.price_change_7d >= 0 ? '+' : '' }}{{ cryptoData.price_change_7d.toFixed(1) }}%
+            {{ cryptoData.price_change_7d >= 0 ? "+" : "" }}{{ cryptoData.price_change_7d.toFixed(1) }}%
           </span>
         </div>
         <div v-if="cryptoData.price_change_30d != null" class="flex items-center justify-between">
           <span class="text-gray-600">30d Change</span>
           <span :class="getPriceChangeColor(cryptoData.price_change_30d)" class="font-bold">
-            {{ cryptoData.price_change_30d >= 0 ? '+' : '' }}{{ cryptoData.price_change_30d.toFixed(1) }}%
+            {{ cryptoData.price_change_30d >= 0 ? "+" : "" }}{{ cryptoData.price_change_30d.toFixed(1) }}%
           </span>
         </div>
-        
+
         <!-- CoinGecko Link -->
         <div class="pt-2 border-t border-gray-100">
-          <a 
-            :href="`https://www.coingecko.com/en/coins/${cryptoData.id}`" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            :href="`https://www.coingecko.com/en/coins/${cryptoData.id}`"
+            target="_blank"
+            rel="noopener noreferrer"
             class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-medium"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              ></path>
             </svg>
             <span>View on CoinGecko</span>
           </a>
@@ -90,50 +93,49 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { getCachedData, setCachedData } from '../utils/supertagCache'
+import { ref, computed, onMounted, watch } from "vue";
+import { getCachedData, setCachedData } from "../utils/supertagCache";
 
 const props = defineProps({
   value: {
     type: String,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-const cryptoData = ref(null)
-const isLoading = ref(false)
+const cryptoData = ref(null);
+const isLoading = ref(false);
 
-const COINGECKO_API = 'https://api.coingecko.com/api/v3'
+const COINGECKO_API = "https://api.coingecko.com/api/v3";
 
 const fetchCryptoData = async (cryptoId) => {
   if (!cryptoId || !cryptoId.trim()) {
-    return null
+    return null;
   }
 
-  const trimmedId = cryptoId.trim().toLowerCase()
+  const trimmedId = cryptoId.trim().toLowerCase();
 
-  // Check cache first (4 hour cache)
-  const cached = getCachedData('crypto', trimmedId)
+  const cached = getCachedData("crypto", trimmedId);
   if (cached) {
-    console.log(`Using cached data for ${trimmedId}`)
-    return cached
+    console.log(`Using cached data for ${trimmedId}`);
+    return cached;
   }
 
   try {
     const response = await fetch(
       `${COINGECKO_API}/coins/${trimmedId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
-    )
+    );
 
     if (!response.ok) {
-      console.error(`Failed to fetch ${trimmedId}: ${response.status}`)
+      console.error(`Failed to fetch ${trimmedId}: ${response.status}`);
       return {
         id: trimmedId,
         error: true,
         message: `Failed to fetch data for ${trimmedId}`,
-      }
+      };
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     const cryptoData = {
       id: data.id,
@@ -153,91 +155,94 @@ const fetchCryptoData = async (cryptoId) => {
       website: data.links?.homepage?.[0],
       blockchain_site: data.links?.blockchain_site?.[0],
       last_updated: data.last_updated,
-    }
+    };
 
     // Cache for 4 hours
-    setCachedData('crypto', trimmedId, cryptoData, '4h')
-    return cryptoData
+    setCachedData("crypto", trimmedId, cryptoData, "4h");
+    return cryptoData;
   } catch (error) {
-    console.error(`Error fetching ${trimmedId}:`, error)
+    console.error(`Error fetching ${trimmedId}:`, error);
     return {
       id: trimmedId,
       error: true,
       message: error.message,
-    }
+    };
   }
-}
+};
 
 const formatCryptoPrice = (price) => {
-  if (!price) return 'N/A'
-  
+  if (!price) return "N/A";
+
   if (price < 0.01) {
-    return `$${price.toFixed(6)}`
+    return `$${price.toFixed(6)}`;
   } else if (price < 1) {
-    return `$${price.toFixed(4)}`
+    return `$${price.toFixed(4)}`;
   } else if (price < 100) {
-    return `$${price.toFixed(2)}`
+    return `$${price.toFixed(2)}`;
   } else {
-    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
-}
+};
 
 const formatLargeNumber = (num) => {
-  if (!num) return 'N/A'
-  
+  if (!num) return "N/A";
+
   if (num >= 1e12) {
-    return `$${(num / 1e12).toFixed(2)}T`
+    return `$${(num / 1e12).toFixed(2)}T`;
   } else if (num >= 1e9) {
-    return `$${(num / 1e9).toFixed(2)}B`
+    return `$${(num / 1e9).toFixed(2)}B`;
   } else if (num >= 1e6) {
-    return `$${(num / 1e6).toFixed(2)}M`
+    return `$${(num / 1e6).toFixed(2)}M`;
   } else if (num >= 1e3) {
-    return `$${(num / 1e3).toFixed(2)}K`
+    return `$${(num / 1e3).toFixed(2)}K`;
   } else {
-    return `$${num.toFixed(2)}`
+    return `$${num.toFixed(2)}`;
   }
-}
+};
 
 const getPriceChangeColor = (change) => {
-  if (!change && change !== 0) return 'text-gray-500'
-  return change >= 0 ? 'text-green-600' : 'text-red-600'
-}
+  if (!change && change !== 0) return "text-gray-500";
+  return change >= 0 ? "text-green-600" : "text-red-600";
+};
 
 const loadCryptoData = async () => {
-  if (!props.value) return
-  
-  isLoading.value = true
-  cryptoData.value = null
+  if (!props.value) return;
+
+  isLoading.value = true;
+  cryptoData.value = null;
 
   try {
-    const data = await fetchCryptoData(props.value)
-    cryptoData.value = data
+    const data = await fetchCryptoData(props.value);
+    cryptoData.value = data;
   } catch (error) {
-    console.error('Error loading crypto data:', error)
+    console.error("Error loading crypto data:", error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
-onMounted(() => loadCryptoData())
-watch(() => props.value, () => loadCryptoData())
+onMounted(() => loadCryptoData());
+watch(
+  () => props.value,
+  () => loadCryptoData()
+);
 </script>
 
 <script>
 // Tag metadata - exported for the tag registry system
 export const tagMetadata = {
-  name: 'crypto',
-  displayName: 'Cryptocurrency',
-  description: 'Track cryptocurrency prices and market data from CoinGecko',
-  example: 'crypto=bitcoin',
-  category: 'finance',
-  icon: '₿',
+  name: "crypto",
+  displayName: "Cryptocurrency",
+  description: "Track cryptocurrency prices and market data from CoinGecko",
+  example: "crypto=bitcoin",
+  category: "finance",
+  icon: "₿",
   parseValue: (value) => value.trim().toLowerCase(),
   validate: (value) => {
     if (!value || !value.trim()) {
-      return { valid: false, error: 'Cryptocurrency name is required' }
+      return { valid: false, error: "Cryptocurrency name is required" };
     }
-    return { valid: true }
-  }
-}
+    return { valid: true };
+  },
+};
 </script>
