@@ -236,32 +236,32 @@ We welcome contributions!
 
 Below is a detailed comparison of **ZeroNote** with other popular note-taking and password management apps:
 
-| Feature / App              | **ZeroNote** | Bitwarden | Standard Notes | Joplin | Notion | Obsidian |
-| -------------------------- | :------: | :-------: | :------------: | :----: | :----: | :------: |
-| **Client-Side Encryption** |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Zero-Knowledge**         |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Offline-First**          |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Smart Tag System**       |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **Markdown Support**       |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **File Attachments**       |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **Media Embeds**           |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
-| **Password Manager**       |    ✅    |    ✅     |       ❌       |   ❌   |   ❌   |    ❌    |
-| **2FA/TOTP Support**       |    ✅    |    ✅     |       ❌       |   ❌   |   ❌   |    ❌    |
-| **Bookmark Manager**       |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
-| **P2P Device Sync**        |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
-| **S3/MinIO Sync**          |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
-| **Cloud Sync**             |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **Mobile Support**         |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **Open Source**            |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **No Tracking/Analytics**  |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Free to Self-Host**      |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Rich Statistics**        |    ✅    |    ❌     |       ❌       |   ❌   |   ❌   |    ❌    |
-| **Split-Screen Editor**    |    ✅    |    ❌     |       ❌       |   ✅   |   ✅   |    ✅    |
-| **Distraction-Free Mode**  |    ✅    |    ❌     |       ✅       |   ✅   |   ✅   |    ✅    |
-| **Works Without Server**   |    ✅    |    ❌     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Works on Web**           |    ✅    |    ✅     |       ✅       |   ✅   |   ✅   |    ❌    |
-| **Self-Hosted**            |    ✅    |    ✅     |       ✅       |   ✅   |   ❌   |    ✅    |
-| **Unlimited Usage**        |    ✅    |   ✅\*    |       ✅       |   ✅   |  ❌\*  |    ✅    |
+| Feature / App              | **ZeroNote** | Bitwarden | Joplin | Notion | Obsidian |
+| -------------------------- | :------: | :-------: | :----: | :----: | :------: |
+| **Client-Side Encryption** |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Zero-Knowledge**         |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Offline-First**          |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Smart Tag System**       |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **Markdown Support**       |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **File Attachments**       |    ✅    |    ✅     |   ✅   |   ✅   |    ✅    |
+| **Media Embeds**           |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **Password Manager**       |    ✅    |    ✅     |   ❌   |   ❌   |    ❌    |
+| **2FA/TOTP Support**       |    ✅    |    ✅     |   ❌   |   ❌   |    ❌    |
+| **Bookmark Manager**       |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **P2P Device Sync**        |    ✅    |    ❌     |   ❌   |   ❌   |    ❌    |
+| **S3/MinIO Sync**          |    ✅    |    ❌     |   ❌   |   ❌   |    ❌    |
+| **Cloud Sync**             |    ✅    |    ✅     |   ✅   |   ✅   |    ✅    |
+| **Mobile Support**         |    ✅    |    ✅     |   ✅   |   ✅   |    ✅    |
+| **Open Source**            |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **No Tracking/Analytics**  |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Free to Self-Host**      |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Rich Statistics**        |    ✅    |    ❌     |   ❌   |   ❌   |    ❌    |
+| **Split-Screen Editor**    |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **Distraction-Free Mode**  |    ✅    |    ❌     |   ✅   |   ✅   |    ✅    |
+| **Works Without Server**   |    ✅    |    ❌     |   ✅   |   ❌   |    ✅    |
+| **Works on Web**           |    ✅    |    ✅     |   ✅   |   ✅   |    ❌    |
+| **Self-Hosted**            |    ✅    |    ✅     |   ✅   |   ❌   |    ✅    |
+| **Unlimited Usage**        |    ✅    |   ✅\*    |   ✅   |  ❌\*  |    ✅    |
 
 > **Legend:**
 >
