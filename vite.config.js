@@ -17,19 +17,6 @@ export default defineConfig({
         short_name: "ZeroNote",
         description: "ZeroNote",
         theme_color: "#ffffff",
-
-        icons: [
-          {
-            src: "/logo.jpg",
-            sizes: "192x192",
-            type: "image/jpeg",
-          },
-          {
-            src: "/logo.jpg",
-            sizes: "512x512",
-            type: "image/jpeg",
-          },
-        ],
       },
     }),
   ],
