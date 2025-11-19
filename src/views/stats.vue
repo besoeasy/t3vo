@@ -53,8 +53,8 @@
 
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Database Name</span>
-            <span class="text-sm font-mono font-medium text-gray-900">{{ stats.dbName }}</span>
+            <span class="text-sm text-gray-600">Database<br>Name</span>
+            <div class="text-sm font-mono font-medium text-gray-900 whitespace-pre-wrap">{{ stats.dbName }}</div>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600">App Version</span>
@@ -111,7 +111,8 @@ const loadStats = async () => {
     }
 
     // Get DB name
-    stats.value.dbName = db.name;
+    const name = db.name;
+    stats.value.dbName = name.slice(0, Math.ceil(name.length / 2)) + '\n' + name.slice(Math.ceil(name.length / 2));
 
   // ...existing code...
   } catch (error) {
