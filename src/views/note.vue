@@ -125,23 +125,6 @@ const renderedMarkdown = computed(() => {
   }
 });
 
-const typeClass = computed(() => {
-  if (!parsed.value?.type) return "";
-
-  const classes = {
-    password: "bg-blue-100 text-blue-800",
-    bookmark: "bg-purple-100 text-purple-800",
-    crypto: "bg-orange-100 text-orange-800",
-    note: "bg-gray-100 text-gray-800",
-  };
-
-  return classes[parsed.value.type] || classes.note;
-});
-
-const hasPasswordTags = computed(() => {
-  return !!(parsed.value?.tags?.password || parsed.value?.tags?.email || parsed.value?.tags?.username);
-});
-
 onMounted(async () => {
   noteId.value = route.params.id;
 
