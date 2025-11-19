@@ -239,17 +239,13 @@ const showWarning = computed(() => {
 });
 
 const unlockApp = () => {
-  if (passwordStrength.value < 50 && passwordInput.value.length > 0) {
-    const confirmUse = confirm("Your master password is weak. Are you sure you want to use this password?");
-    if (!confirmUse) return;
-  }
-
-  // making the encryption key more complex by hashing with sha512 and adding a static salt, to prevent hackers from matching common passwords incase users use weak passwords
   const encryptionKey = sha512("besoeasy" + passwordInput.value + pinInput.value);
 
   sessionStorage.setItem("ENCRYPTION_KEY", encryptionKey);
+
   passwordInput.value = "";
   pinInput.value = "";
+
   emit("unlock");
 };
 </script>
