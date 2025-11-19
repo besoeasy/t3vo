@@ -15,46 +15,7 @@
     </div>
   </div>
 
-  <!-- Note View -->
   <div v-else class="h-full flex flex-col bg-white">
-    <!-- Header -->
-    <div class="bg-white border-b border-gray-200 px-4 md:px-8 py-4">
-      <div class="flex items-center gap-3 mb-3">
-        <router-link to="/dashboard" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Back to Dashboard">
-          <ArrowLeft class="w-5 h-5" />
-        </router-link>
-        <div class="flex items-center gap-2 flex-1 min-w-0">
-          <span v-if="parsed?.icon" class="text-2xl flex-shrink-0">{{ parsed.icon }}</span>
-          <span v-if="parsed?.type && parsed.type !== 'note'" class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0" :class="typeClass">
-            {{ parsed.type }}
-          </span>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <router-link
-            :to="`/notes/${noteId}/edit`"
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <Edit class="w-4 h-4" />
-            <span class="hidden md:inline">Edit</span>
-          </router-link>
-          <button @click="handleDelete" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Note">
-            <Trash2 class="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Title and Metadata -->
-      <div class="ml-14">
-        <h1 v-if="parsed?.title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          {{ parsed.title }}
-        </h1>
-        <h1 v-else class="text-3xl md:text-4xl font-bold text-gray-400 mb-2 italic">Untitled Note</h1>
-        <div class="flex items-center gap-3 text-sm text-gray-500">
-          <span>{{ formatDate(note.updatedAt) }}</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Content -->
     <div class="flex-1 overflow-auto bg-gray-50">
       <div class="mx-auto p-6 md:p-12">
@@ -77,6 +38,29 @@
 
           <!-- Right Column - Content -->
           <div class="lg:col-span-2">
+            <div class="flex items-center justify-between shrink-0 mb-6">
+              <div class="text-sm text-gray-500">
+                Updated {{ formatDate(note.updatedAt) }}
+              </div>
+              <div class="flex items-center gap-3">
+                <router-link
+                  :to="`/notes/${noteId}/edit`"
+                  class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md"
+                >
+                  <Edit class="w-4 h-4" />
+                  <span class="hidden md:inline">Edit Note</span>
+                </router-link>
+                <button
+                  @click="handleDelete"
+                  class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md"
+                  title="Delete Note"
+                >
+                  <Trash2 class="w-4 h-4" />
+                  <span class="hidden md:inline">Delete</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Bookmark content goes in the card on left, so show full markdown here -->
             <div v-if="parsed?.tags?.bookmark && parsed?.content" class="p-8 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px]">
               <div class="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Description</div>
