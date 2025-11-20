@@ -228,7 +228,7 @@
 <script setup>
 import { reactive, watch, ref, onMounted } from "vue";
 import { db, getAllNotes } from "@/db";
-import { S3Client, ListObjectsV2Command, PutObjectCommand, GetObjectCommand, HeadBucketCommand, CreateBucketCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, PutObjectCommand, GetObjectCommand, HeadBucketCommand, CreateBucketCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 // Sync log state
 const syncLogs = ref([]);
@@ -358,13 +358,21 @@ async function checkS3Status() {
     let oldestEntry = null;
     const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
     if (listRes.Contents) {
-      totalNotes = listRes.Contents.length;
+      const uniqueNotes = new Set();
       for (const obj of listRes.Contents) {
-        const lastModified = new Date(obj.LastModified);
-        if (!oldestEntry || lastModified < oldestEntry) {
-          oldestEntry = lastModified;
+        const filename = obj.Key.split('/').pop();
+        const match = filename.match(/^(.+)-(\d+)\.json$/);
+        if (match) {
+          const [, noteID] = match;
+          uniqueNotes.add(noteID);
+          
+          const lastModified = new Date(obj.LastModified);
+          if (!oldestEntry || lastModified < oldestEntry) {
+            oldestEntry = lastModified;
+          }
         }
       }
+      totalNotes = uniqueNotes.size;
     }
     s3Status.value = { connected: true, totalNotes, oldestEntry };
     addSyncLog(`✓ S3 connected - ${totalNotes} notes found`);
@@ -384,34 +392,84 @@ async function fullSync() {
   progress.value = 0;
 
   try {
-    addSyncLog('🔄 Starting full sync...');
+    addSyncLog('🔄 Starting optimized full sync...');
     const localNotes = await getAllNotes();
     addSyncLog(`📱 Found ${localNotes.length} local notes`);
     
     const listRes = await s3Client.send(new ListObjectsV2Command({ Bucket: BUCKET_NAME, Prefix: `${userID}/` }));
 
     const cloudObjects = listRes.Contents || [];
-    addSyncLog(`☁️ Found ${cloudObjects.length} cloud notes`);
+    addSyncLog(`☁️ Found ${cloudObjects.length} cloud objects`);
+    
+    // Parse cloud notes with timestamps from filenames
     const cloudNotes = {};
-
+    const filesToDelete = [];
+    
     for (const obj of cloudObjects) {
-      const getObjRes = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: obj.Key }));
-      const data = await streamToString(getObjRes.Body);
-      const note = JSON.parse(data);
-      cloudNotes[note.noteID] = note;
+      const filename = obj.Key.split('/').pop();
+      const match = filename.match(/^(.+)-(\d+)\.json$/);
+      
+      if (match) {
+        const [, noteID, timestampStr] = match;
+        const timestamp = parseInt(timestampStr);
+        
+        if (!cloudNotes[noteID] || timestamp > cloudNotes[noteID].timestamp) {
+          // Mark older version for deletion if we have a newer one
+          if (cloudNotes[noteID]) {
+            filesToDelete.push(cloudNotes[noteID].key);
+          }
+          
+          cloudNotes[noteID] = {
+            key: obj.Key,
+            noteID,
+            timestamp,
+            size: obj.Size,
+            lastModified: obj.LastModified
+          };
+        } else {
+          // This is an older version, mark for deletion
+          filesToDelete.push(obj.Key);
+        }
+      } else {
+        // Old format file, mark for deletion (no backward compatibility)
+        filesToDelete.push(obj.Key);
+      }
+    }
+
+    addSyncLog(`📋 Parsed ${Object.keys(cloudNotes).length} unique cloud notes`);
+    if (filesToDelete.length > 0) {
+      addSyncLog(`🗑️ Will clean up ${filesToDelete.length} old versions`);
     }
 
     const uploaded = { new: 0, updated: 0 };
     const downloaded = { new: 0, updated: 0 };
 
     addSyncLog('📤 Processing uploads...');
-    for (const localNote of localNotes) {
-      const s3Key = `${userID}/${localNote.id}.json`;
-      const remoteNote = cloudNotes[localNote.id];
-      const localUpdated = new Date(localNote.updatedAt);
-      const remoteUpdated = remoteNote ? new Date(remoteNote.updatedAt) : null;
-
-      if (!remoteNote) {
+    total.value = localNotes.length;
+    
+    for (let i = 0; i < localNotes.length; i++) {
+      const localNote = localNotes[i];
+      progress.value = i + 1;
+      statusMessage.value = `Processing ${localNote.id}...`;
+      
+      const localTimestamp = new Date(localNote.updatedAt).getTime();
+      const cloudNote = cloudNotes[localNote.id];
+      
+      const needsUpload = !cloudNote || localTimestamp > cloudNote.timestamp;
+      
+      if (needsUpload) {
+        // Delete old version if it exists
+        if (cloudNote) {
+          try {
+            await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: cloudNote.key }));
+            addSyncLog(`🗑️ Deleted old version: ${cloudNote.key}`);
+          } catch (e) {
+            addSyncLog(`⚠️ Failed to delete old version: ${e.message}`);
+          }
+        }
+        
+        const s3Key = `${userID}/${localNote.id}-${localTimestamp}.json`;
+        
         await s3Client.send(
           new PutObjectCommand({
             Bucket: BUCKET_NAME,
@@ -430,68 +488,65 @@ async function fullSync() {
             ContentType: "application/json",
           })
         );
-        uploaded.new++;
-        addSyncLog(`⬆️ Uploaded new note: ${localNote.id}`);
-        continue;
-      }
-
-      if (remoteUpdated > localUpdated) {
-        await db.notes.delete(localNote.id);
-        const attachments = (remoteNote.attachments || []).map((att) => ({
-          ...att,
-          data: att.data ? base64ToArrayBuffer(att.data) : null,
-        }));
-        await db.notes.add({
-          id: remoteNote.noteID,
-          content: remoteNote.content,
-          updatedAt: remoteNote.updatedAt,
-          deletedAt: remoteNote.deletedAt || null,
-          attachments,
-        });
-        downloaded.updated++;
-        addSyncLog(`⬇️ Downloaded updated note: ${localNote.id}`);
-      } else if (localUpdated > remoteUpdated) {
-        await s3Client.send(
-          new PutObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: s3Key,
-            Body: JSON.stringify({
-              noteID: localNote.id,
-              userID,
-              content: localNote.content,
-              updatedAt: localNote.updatedAt,
-              deletedAt: localNote.deletedAt || null,
-              attachments: (localNote.attachments || []).map((att) => ({
-                ...att,
-                data: att.data ? arrayBufferToBase64(att.data) : null,
-              })),
-            }),
-            ContentType: "application/json",
-          })
-        );
-        uploaded.updated++;
-        addSyncLog(`⬆️ Uploaded updated note: ${localNote.id}`);
+        
+        if (cloudNote) {
+          uploaded.updated++;
+          addSyncLog(`⬆️ Updated note: ${localNote.id}`);
+        } else {
+          uploaded.new++;
+          addSyncLog(`⬆️ Uploaded new note: ${localNote.id}`);
+        }
       }
     }
 
     addSyncLog('📥 Processing downloads...');
-    for (const key in cloudNotes) {
-      const note = cloudNotes[key];
-      const existsLocal = await db.notes.get(note.noteID);
-      if (!existsLocal) {
-        const attachments = (note.attachments || []).map((att) => ({
+    for (const noteID in cloudNotes) {
+      const cloudNote = cloudNotes[noteID];
+      const existsLocal = await db.notes.get(noteID);
+      
+      if (!existsLocal || new Date(existsLocal.updatedAt).getTime() < cloudNote.timestamp) {
+        // Download the note
+        const getObjRes = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: cloudNote.key }));
+        const data = await streamToString(getObjRes.Body);
+        const noteData = JSON.parse(data);
+        
+        if (existsLocal) {
+          await db.notes.delete(noteID);
+        }
+        
+        const attachments = (noteData.attachments || []).map((att) => ({
           ...att,
           data: att.data ? base64ToArrayBuffer(att.data) : null,
         }));
+        
         await db.notes.add({
-          id: note.noteID,
-          content: note.content,
-          updatedAt: note.updatedAt,
-          deletedAt: note.deletedAt || null,
+          id: noteData.noteID,
+          content: noteData.content,
+          updatedAt: noteData.updatedAt,
+          deletedAt: noteData.deletedAt || null,
           attachments,
         });
-        downloaded.new++;
-        addSyncLog(`⬇️ Downloaded new note: ${note.noteID}`);
+        
+        if (existsLocal) {
+          downloaded.updated++;
+          addSyncLog(`⬇️ Downloaded updated note: ${noteID}`);
+        } else {
+          downloaded.new++;
+          addSyncLog(`⬇️ Downloaded new note: ${noteID}`);
+        }
+      }
+    }
+
+    // Clean up old versions
+    if (filesToDelete.length > 0) {
+      addSyncLog(`🧹 Cleaning up ${filesToDelete.length} old versions...`);
+      for (const key of filesToDelete) {
+        try {
+          await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+          addSyncLog(`✅ Deleted: ${key}`);
+        } catch (e) {
+          addSyncLog(`⚠️ Failed to delete ${key}: ${e.message}`);
+        }
       }
     }
 
